@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Detect and reset release lockfiles whose BUNDLED WITH version lacks a matching Bundler checksum.
-
 ### Security
+
+## [3.0.34] - 2026-09-09
+
+- TAG: [v3.0.34][3.0.34t]
+- COVERAGE: 91.67% -- 6082/6635 lines in 47 files
+- BRANCH COVERAGE: 76.27% -- 2327/3051 branches in 47 files
+- 50.23% documented
+
+### Fixed
+
+- Detect and reset release lockfiles whose BUNDLED WITH version lacks a matching Bundler checksum.
 
 ## [3.0.33] - 2026-09-07
 
@@ -3836,7 +3845,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.0.33...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.0.34...HEAD
+[3.0.34]: https://github.com/kettle-dev/kettle-dev/compare/v3.0.33...v3.0.34
+[3.0.34t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.0.34
 [3.0.33]: https://github.com/kettle-dev/kettle-dev/compare/v3.0.32...v3.0.33
 [3.0.33t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.0.33
 [3.0.32]: https://github.com/kettle-dev/kettle-dev/compare/v3.0.31...v3.0.32
