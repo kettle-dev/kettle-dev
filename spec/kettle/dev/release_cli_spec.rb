@@ -1803,7 +1803,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           LOCK
 
           expect(local_cli).to receive(:run_cmd!).with(
-            a_string_matching(/KETTLE_DEV_DEV=false.*BUNDLE_GEMFILE=.*Gemfile.*bundle lock .*--update --bundler --add-checksums/)
+            a_string_matching(/KETTLE_DEV_DEV=false.*BUNDLE_GEMFILE=.*Gemfile.*bundle lock .*--update.*bundle update --bundler=.*bundle lock --add-checksums/)
           ) do
             File.write(File.join(root, "Gemfile.lock"), <<~LOCK)
               GEM
@@ -1861,7 +1861,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
 
           expect(local_cli).to receive(:run_cmd!).with(
             a_string_matching(
-              /BUNDLE_GEMFILE=.*Appraisal\.root\.gemfile.*BUNDLE_LOCKFILE=.*Appraisal\.root\.gemfile\.lock.*bundle lock .*--update --bundler --add-checksums/
+              /BUNDLE_GEMFILE=.*Appraisal\.root\.gemfile.*BUNDLE_LOCKFILE=.*Appraisal\.root\.gemfile\.lock.*bundle lock .*--update.*bundle update --bundler=.*bundle lock --add-checksums/
             )
           ).ordered do
             File.write(File.join(root, "Appraisal.root.gemfile.lock"), <<~LOCK)
@@ -1878,7 +1878,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
             LOCK
           end
           expect(local_cli).to receive(:run_cmd!).with(
-            a_string_matching(/BUNDLE_GEMFILE=.*Gemfile.*BUNDLE_LOCKFILE=.*Gemfile\.lock.*bundle lock .*--update --bundler --add-checksums/)
+            a_string_matching(/BUNDLE_GEMFILE=.*Gemfile.*BUNDLE_LOCKFILE=.*Gemfile\.lock.*bundle lock .*--update.*bundle update --bundler=.*bundle lock --add-checksums/)
           ).ordered do
             File.write(File.join(root, "Gemfile.lock"), <<~LOCK)
               GEM
@@ -2079,7 +2079,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           LOCK
 
           expect(local_cli).to receive(:run_cmd!).with(
-            a_string_matching(/bundle lock .*--update --bundler --add-checksums/)
+            a_string_matching(/bundle lock .*--update.*bundle update --bundler=.*bundle lock --add-checksums/)
           ) do
             File.write(File.join(root, "Gemfile.lock"), <<~LOCK)
               GEM
@@ -2135,7 +2135,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           LOCK
 
           expect(local_cli).to receive(:run_cmd!).with(
-            a_string_matching(/bundle lock .*--update --bundler --add-checksums/)
+            a_string_matching(/bundle lock .*--update.*bundle update --bundler=.*bundle lock --add-checksums/)
           ) do
             File.write(File.join(root, "Gemfile.lock"), <<~LOCK)
               GEM

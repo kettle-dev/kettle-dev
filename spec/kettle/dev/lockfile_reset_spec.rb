@@ -124,7 +124,8 @@ RSpec.describe Kettle::Dev::LockfileReset do
 
     reset.reset("release-lockfiles")
 
-    expect(commands.first).to include("--update --bundler --add-checksums")
+    expect(commands.first).to include("bundle update --bundler=#{Bundler::VERSION}")
+    expect(commands.first).to include("bundle lock --add-checksums")
   end
 
   it "preserves configured monorepo path sources during a release lockfile reset" do
@@ -706,6 +707,27 @@ RSpec.describe Kettle::Dev::LockfileReset do
 
     expect(diagnostics.join("\n")).to include("has local path remote")
     expect(diagnostics.join("\n")).to include("CHECKSUMS has no sha256 for rake 13.4.2")
+  end
+
+  it "detects a BUNDLED WITH version without a matching Bundler checksum" do
+    reset = described_class.new(root: @root, command_runner: ->(_command) {})
+    path = File.join(@root, "Gemfile.lock")
+    File.write(path, <<~LOCK)
+      GEM
+        remote: https://rubygems.org/
+        specs:
+          rake (13.4.2)
+
+      CHECKSUMS
+        bundler (4.0.20) sha256=abc123
+        rake (13.4.2) sha256=def456
+
+      BUNDLED WITH
+        4.1.0.beta1
+    LOCK
+
+    expect(reset.normalization_needed?(path)).to be(true)
+    expect(reset.diagnostics(path)).to include(a_string_ending_with("Gemfile.lock BUNDLED WITH 4.1.0.beta1 has no matching Bundler checksum"))
   end
 
   it "does not require registry checksums for Git-sourced specs" do

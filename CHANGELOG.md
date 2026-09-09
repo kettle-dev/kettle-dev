@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Detect and reset release lockfiles whose BUNDLED WITH version lacks a matching Bundler checksum.
+
 ### Security
 
 ## [3.0.33] - 2026-09-07

@@ -194,6 +194,29 @@ module Kettle
           env["GEM_HOME"] = isolated_gem_home
           env["GEM_PATH"] = isolated_gem_path || isolated_gem_home
         end
+        command_prefix = bundler_command_prefix(env)
+        command = +"#{command_prefix} bundle lock"
+        # Bundler accepts each platform option once followed by a list. Repeating
+        # either option silently keeps only the final occurrence with Bundler 4.
+        command << " --remove-platform #{removed_platforms.sort.map { |platform| Shellwords.escape(platform) }.join(" ")}" unless removed_platforms.empty?
+        command << " --add-platform #{platforms.map { |platform| Shellwords.escape(platform) }.join(" ")}" unless platforms.empty?
+        command << " --update"
+        command << " #{update_gems.map { |gem_name| Shellwords.escape(gem_name) }.join(" ")}" unless update_gems.empty?
+        command << " --add-checksums" unless update_bundler
+        return command unless update_bundler
+
+        # `bundle lock --bundler` accepts a requirement and retains a locked
+        # prerelease that satisfies it. `bundle update --bundler=VERSION`
+        # records the exact Bundler that is executing the reset instead.
+        # Finish with `bundle lock --add-checksums`, since `bundle update`
+        # does not support that option.
+        bundler_version = Shellwords.escape(Bundler::VERSION)
+        command << " && #{command_prefix} bundle update --bundler=#{bundler_version}"
+        command << " && #{command_prefix} bundle lock --add-checksums"
+        command
+      end
+
+      def bundler_command_prefix(env)
         command = +"env"
         UNBUNDLED_ENV_KEYS.each do |key|
           command << " -u #{key}"
@@ -201,19 +224,6 @@ module Kettle
         env.each do |key, value|
           command << " #{key}=#{Shellwords.escape(value)}"
         end
-        command << " bundle lock"
-        # Bundler accepts each platform option once followed by a list. Repeating
-        # either option silently keeps only the final occurrence with Bundler 4.
-        command << " --remove-platform #{removed_platforms.sort.map { |platform| Shellwords.escape(platform) }.join(" ")}" unless removed_platforms.empty?
-        command << " --add-platform #{platforms.map { |platform| Shellwords.escape(platform) }.join(" ")}" unless platforms.empty?
-        command << " --update"
-        command << " #{update_gems.map { |gem_name| Shellwords.escape(gem_name) }.join(" ")}" unless update_gems.empty?
-        # Bundler preserves BUNDLED WITH during a normal lockfile update.
-        # Release lockfiles must record the Bundler that performed the final
-        # reset, or the next release command can dirty them after the prep
-        # commit by reconciling to a newer installed Bundler.
-        command << " --bundler" if update_bundler
-        command << " --add-checksums"
         command
       end
 
@@ -254,7 +264,10 @@ module Kettle
       end
 
       def normalization_needed?(path)
-        has_local_path_remote?(path) || !empty_registry_checksums(path).empty? || !unreleased_workspace_registry_specs(path).empty?
+        has_local_path_remote?(path) ||
+          !empty_registry_checksums(path).empty? ||
+          !unreleased_workspace_registry_specs(path).empty? ||
+          bundled_with_checksum_mismatch?(path)
       end
 
       def diagnostics(path)
@@ -267,6 +280,9 @@ module Kettle
         end
         unreleased_workspace_registry_specs(path).each do |name, version, line_number|
           diagnostics << "#{display_path(path)} locks local workspace gem #{name} #{version} as a registry gem, but that version is not resolvable from the configured gem source at line #{line_number}"
+        end
+        if bundled_with_checksum_mismatch?(path)
+          diagnostics.push("#{display_path(path)} BUNDLED WITH #{bundled_with_version(path)} has no matching Bundler checksum")
         end
         diagnostics
       end
@@ -457,6 +473,33 @@ module Kettle
 
           stripped.include?("sha256=")
         end
+      end
+
+      # A release reset updates both `BUNDLED WITH` and CHECKSUMS. When a
+      # nested tool leaked its Bundler into a member lockfile, a later cleanup
+      # can otherwise replace only the checksum entry and leave an impossible
+      # lockfile behind. Only flag a mismatch when the lockfile already tracks
+      # Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.
+      def bundled_with_checksum_mismatch?(path)
+        version = bundled_with_version(path)
+        return false if version.empty?
+
+        checksums = self.class.checksum_entries_from_source(File.read(path))
+        return false unless checksums&.keys&.any? { |name, _checksum_version| name == "bundler" }
+
+        !checksums.key?(["bundler", version])
+      end
+
+      def bundled_with_version(path)
+        lines = File.readlines(path)
+        marker = lines.index { |line| line.strip == "BUNDLED WITH" }
+        return "" unless marker
+
+        lines[marker.succ..-1].each do |line|
+          version = line.strip
+          return version unless version.empty?
+        end
+        ""
       end
 
       def path_source_gems(path)
