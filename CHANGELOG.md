@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Declare the intentional version_gem runtime-heads dependency overlap for templating self-tests.
+
 ### Security
 
 ## [3.0.34] - 2026-09-09
