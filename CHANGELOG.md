@@ -28,20 +28,20 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Declare the intentional version_gem runtime-heads dependency overlap for templating self-tests.
-
 ### Security
 
 ## [3.0.34] - 2026-09-09
 
 - TAG: [v3.0.34][3.0.34t]
-- COVERAGE: 91.67% -- 6082/6635 lines in 47 files
-- BRANCH COVERAGE: 76.27% -- 2327/3051 branches in 47 files
+- COVERAGE: 91.95% -- 6101/6635 lines in 47 files
+- BRANCH COVERAGE: 76.43% -- 2332/3051 branches in 47 files
 - 50.23% documented
 
 ### Fixed
 
 - Detect and reset release lockfiles whose BUNDLED WITH version lacks a matching Bundler checksum.
+
+- Declare the intentional version_gem runtime-heads dependency overlap for templating self-tests.
 
 ## [3.0.33] - 2026-09-07
 
