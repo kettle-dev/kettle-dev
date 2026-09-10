@@ -5,7 +5,7 @@ module Kettle
     # Version namespace for this gem.
     module Version
       # Current gem version.
-      VERSION = "3.0.35"
+      VERSION = "3.1.0"
     end
     # Current gem version exposed at the traditional constant location.
     VERSION = Version::VERSION # Traditional Constant Location
