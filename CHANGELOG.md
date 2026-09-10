@@ -28,11 +28,20 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+### Security
+
+## [3.1.0] - 2026-09-10
+
+- TAG: [v3.1.0][3.1.0t]
+- COVERAGE: 91.86% -- 6141/6685 lines in 48 files
+- BRANCH COVERAGE: 76.10% -- 2337/3071 branches in 48 files
+- 51.02% documented
+
+### Fixed
+
 - [kc] release-graph-contracts: Honor the serialized release graph for lockfile normalization and child commands, retaining only declared CI-resident monorepo paths.
 
 - Validate serialized family release graph contracts in release lockfile normalization and child commands instead of reconstructing local-path policy from ambient environment.
-
-### Security
 
 ## [3.0.34] - 2026-09-09
 
@@ -3851,7 +3860,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.0.34...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/kettle-dev/kettle-dev/compare/v3.0.34...v3.1.0
+[3.1.0t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.0
 [3.0.34]: https://github.com/kettle-dev/kettle-dev/compare/v3.0.33...v3.0.34
 [3.0.34t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.0.34
 [3.0.33]: https://github.com/kettle-dev/kettle-dev/compare/v3.0.32...v3.0.33
