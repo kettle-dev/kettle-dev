@@ -888,11 +888,11 @@ module Kettle
       end
 
       def release_lockfile_normalization_needed?(path)
-        lockfile_reset.normalization_needed?(path)
+        lockfile_reset.normalization_needed?(path, strict: true)
       end
 
       def normalize_release_lockfile!(path)
-        lockfile_reset.reset_lockfile!(path)
+        lockfile_reset.reset_lockfile!(path, strict: true)
       end
 
       def release_gemfile_for_lockfile(path)
@@ -900,7 +900,7 @@ module Kettle
       end
 
       def release_lockfile_normalization_env
-        lockfile_reset.normalization_env
+        lockfile_reset.release_normalization_env
       end
 
       # The release process has three distinct lockfile roles:
@@ -918,11 +918,11 @@ module Kettle
       end
 
       def release_lockfile_diagnostics(path)
-        lockfile_reset.diagnostics(path)
+        lockfile_reset.diagnostics(path, strict: true)
       end
 
       def release_lockfile_has_local_path_remote?(path)
-        lockfile_reset.has_local_path_remote?(path)
+        lockfile_reset.has_local_path_remote?(path, strict: true)
       end
 
       def release_lockfile_local_path_remote_lines(path)

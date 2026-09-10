@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Normalize every release lockfile and release child against registry dependencies even when the launching family uses an allowed local monorepo graph.
+
 ### Security
 
 ## [3.0.34] - 2026-09-09

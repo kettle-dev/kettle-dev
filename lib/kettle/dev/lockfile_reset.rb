@@ -120,21 +120,25 @@ module Kettle
       def reset(target, skip_changelog_dependency: false)
         BundlerEnvGuard.warn_unexpected_env!
         paths = lockfile_paths_for(target)
-        # A monorepo lockfile may deliberately use paths rooted in the
-        # repository's members directory. Keep that valid development graph;
-        # only rebuild when an unapproved path or other diagnostic remains.
-        force_full_update = release_lockfiles_target?(target) &&
-          (allowed_local_path_roots.empty? || paths.any? { |path| normalization_needed?(path) })
+        release_lockfiles = release_lockfiles_target?(target)
+        # Local paths are useful while developing a monorepo, but a tracked
+        # release lockfile must always resolve from the registry. The caller
+        # may use an allowed local graph to launch this command; that allowance
+        # never applies to the release-lockfile target itself.
+        force_full_update = release_lockfiles && (
+          allowed_local_path_roots.empty? || paths.any? { |path| normalization_needed?(path, strict: true) }
+        )
         platforms = release_platforms_for(paths) if force_full_update
         uninstall_unreleased_local_gems(paths) if force_full_update
         paths.each do |path|
-          if force_full_update || normalization_needed?(path)
+          if force_full_update || normalization_needed?(path, strict: release_lockfiles)
             reset_lockfile!(
               path,
               full_update: force_full_update,
               platforms: platforms&.fetch(path),
               skip_changelog_dependency: skip_changelog_dependency,
-              update_bundler: force_full_update
+              update_bundler: force_full_update,
+              strict: release_lockfiles
             )
           end
         end
@@ -145,17 +149,18 @@ module Kettle
               full_update: true,
               platforms: platforms.fetch(path),
               skip_changelog_dependency: skip_changelog_dependency,
-              update_bundler: true
+              update_bundler: true,
+              strict: release_lockfiles
             )
           end
         end
-        diagnostics = paths.flat_map { |path| diagnostics(path) }
+        diagnostics = paths.flat_map { |path| diagnostics(path, strict: release_lockfiles) }
         raise Error, validation_message(target, diagnostics) unless diagnostics.empty?
 
         paths
       end
 
-      def reset_lockfile!(path, full_update: false, platforms: nil, skip_changelog_dependency: false, update_bundler: false)
+      def reset_lockfile!(path, full_update: false, platforms: nil, skip_changelog_dependency: false, update_bundler: false, strict: false)
         gemfile = gemfile_for_lockfile(path)
         unless gemfile && File.file?(gemfile)
           warn("Cannot reset #{display_path(path)} because its Gemfile was not found.")
@@ -171,9 +176,10 @@ module Kettle
             platforms: platforms,
             skip_changelog_dependency: skip_changelog_dependency,
             update_bundler: update_bundler,
-            isolated_gem_home: gem_home
+            isolated_gem_home: gem_home,
+            strict: strict
           )
-          if full_update || has_local_path_remote?(path)
+          if full_update || has_local_path_remote?(path, strict: strict)
             rebuild_lockfile(path) { command_runner.call(command) }
           else
             command_runner.call(command)
@@ -181,11 +187,11 @@ module Kettle
         end
       end
 
-      def reset_command(path:, gemfile:, full_update: false, platforms: nil, skip_changelog_dependency: false, update_bundler: false, isolated_gem_home: nil, isolated_gem_path: nil)
-        update_gems = (full_update || has_local_path_remote?(path)) ? [] : reset_update_gems(path)
+      def reset_command(path:, gemfile:, full_update: false, platforms: nil, skip_changelog_dependency: false, update_bundler: false, isolated_gem_home: nil, isolated_gem_path: nil, strict: false)
+        update_gems = (full_update || has_local_path_remote?(path, strict: strict)) ? [] : reset_update_gems(path)
         platforms ||= reset_platforms(path)
         removed_platforms = full_update ? [] : lockfile_platforms(path) - platforms
-        env = normalization_env.merge(
+        env = (strict ? release_normalization_env : normalization_env).merge(
           "BUNDLE_GEMFILE" => gemfile,
           "BUNDLE_LOCKFILE" => path
         )
@@ -263,16 +269,16 @@ module Kettle
         ).uniq.sort
       end
 
-      def normalization_needed?(path)
-        has_local_path_remote?(path) ||
+      def normalization_needed?(path, strict: false)
+        has_local_path_remote?(path, strict: strict) ||
           !empty_registry_checksums(path).empty? ||
           !unreleased_workspace_registry_specs(path).empty? ||
           bundled_with_checksum_mismatch?(path)
       end
 
-      def diagnostics(path)
+      def diagnostics(path, strict: false)
         diagnostics = []
-        disallowed_local_path_remote_lines(path).each do |line_number|
+        (strict ? local_path_remote_lines(path) : disallowed_local_path_remote_lines(path)).each do |line_number|
           diagnostics << "#{display_path(path)} has local path remote at line #{line_number}"
         end
         empty_registry_checksums(path).each do |name, version, line_number|
@@ -332,9 +338,23 @@ module Kettle
       end
 
       def normalization_env
-        DEFAULT_DISABLED_ENV
-          .reject { |name, _| allowed_local_path_env_names.include?(name) }
-          .merge(dynamic_local_path_env)
+        disabled_local_path_env
+      end
+
+      # Release tasks and the release-lockfile target must not inherit the
+      # development graph that launched the process. This intentionally does
+      # not honor KETTLE_RELEASE_ALLOWED_LOCAL_PATH_ENVS.
+      def release_normalization_env
+        disabled_local_path_env(include_allowed: true)
+      end
+
+      def disabled_local_path_env(include_allowed: false)
+        disabled = if include_allowed
+          DEFAULT_DISABLED_ENV
+        else
+          DEFAULT_DISABLED_ENV.reject { |name, _| allowed_local_path_env_names.include?(name) }
+        end
+        disabled.merge(dynamic_local_path_env(include_allowed: include_allowed))
       end
 
       # Appraisal generation normally uses the release-normalized environment.
@@ -350,11 +370,11 @@ module Kettle
         end
       end
 
-      def dynamic_local_path_env
+      def dynamic_local_path_env(include_allowed: false)
         ENV.each_with_object({}) do |(key, value), env|
           next unless key.end_with?("_DEV", "_LOCAL")
           next unless local_path_env_value?(value)
-          next if allowed_local_path_env_names.include?(key)
+          next if !include_allowed && allowed_local_path_env_names.include?(key)
 
           env[key] = "false"
         end
@@ -376,8 +396,9 @@ module Kettle
         local_path_env_value?(ENV[name])
       end
 
-      def has_local_path_remote?(path)
-        !disallowed_local_path_remote_lines(path).empty?
+      def has_local_path_remote?(path, strict: false)
+        paths = strict ? local_path_remote_lines(path) : disallowed_local_path_remote_lines(path)
+        !paths.empty?
       end
 
       def local_path_remote_lines(path)

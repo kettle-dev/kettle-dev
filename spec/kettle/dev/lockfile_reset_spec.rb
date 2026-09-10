@@ -128,7 +128,7 @@ RSpec.describe Kettle::Dev::LockfileReset do
     expect(commands.first).to include("bundle lock --add-checksums")
   end
 
-  it "preserves configured monorepo path sources during a release lockfile reset" do
+  it "treats configured monorepo path sources as invalid for release lockfiles" do
     monorepo_gems = File.join(@root, "gems")
     local_gem = File.join(monorepo_gems, "demo")
     FileUtils.mkdir_p(local_gem)
@@ -143,19 +143,20 @@ RSpec.describe Kettle::Dev::LockfileReset do
         demo!
     LOCK
 
-    commands = []
     stub_env(
       "KETTLE_RELEASE_ALLOWED_LOCAL_PATH_ROOTS" => monorepo_gems,
       "KETTLE_RELEASE_ALLOWED_LOCAL_PATH_ENVS" => "STRUCTUREDMERGE_DEV",
       "STRUCTUREDMERGE_DEV" => monorepo_gems
     )
-    reset = described_class.new(root: @root, command_runner: ->(command) { commands << command })
+    reset = described_class.new(root: @root, command_runner: ->(_command) {})
 
-    reset.reset("release-lockfiles")
-
-    expect(commands).to be_empty
+    expect(reset.normalization_needed?(File.join(@root, "Gemfile.lock"), strict: true)).to be(true)
+    expect(reset.diagnostics(File.join(@root, "Gemfile.lock"), strict: true)).to include(
+      a_string_matching(/has local path remote/)
+    )
     expect(reset.diagnostics(File.join(@root, "Gemfile.lock"))).to be_empty
     expect(reset.normalization_env).not_to include("STRUCTUREDMERGE_DEV" => "false")
+    expect(reset.release_normalization_env).to include("STRUCTUREDMERGE_DEV" => "false")
   end
 
   it "preserves an allowed template context with configured monorepo paths" do

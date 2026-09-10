@@ -671,7 +671,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         )
       end
 
-      it "preserves an allowed monorepo path environment while disabling sibling paths" do
+      it "disables an allowed monorepo path environment for release children" do
         monorepo_gems = "/workspace/structuredmerge/ruby/gems"
         stub_env(
           "KETTLE_DEV_DEV" => "/workspace/kettle-dev",
@@ -684,7 +684,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         environment = local_cli.send(:release_child_environment)
 
         expect(environment).to include("KETTLE_DEV_DEV" => "false")
-        expect(environment).not_to include("STRUCTUREDMERGE_DEV" => "false")
+        expect(environment).to include("STRUCTUREDMERGE_DEV" => "false")
       end
 
       it "builds a runnable env command with unset options before assignments" do
