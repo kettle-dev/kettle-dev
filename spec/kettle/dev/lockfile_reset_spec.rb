@@ -128,7 +128,7 @@ RSpec.describe Kettle::Dev::LockfileReset do
     expect(commands.first).to include("bundle lock --add-checksums")
   end
 
-  it "treats configured monorepo path sources as invalid for release lockfiles" do
+  it "retains declared CI-resident monorepo paths in release lockfiles" do
     monorepo_gems = File.join(@root, "gems")
     local_gem = File.join(monorepo_gems, "demo")
     FileUtils.mkdir_p(local_gem)
@@ -144,31 +144,40 @@ RSpec.describe Kettle::Dev::LockfileReset do
     LOCK
 
     stub_env(
-      "KETTLE_RELEASE_ALLOWED_LOCAL_PATH_ROOTS" => monorepo_gems,
-      "KETTLE_RELEASE_ALLOWED_LOCAL_PATH_ENVS" => "STRUCTUREDMERGE_DEV",
+      "KETTLE_RELEASE_GRAPH_CONTRACT_JSON" => {
+        "name" => "monorepo_ci_local",
+        "local_path_roots" => [monorepo_gems],
+        "selector_env" => {"STRUCTUREDMERGE_DEV" => monorepo_gems}
+      }.to_json,
       "STRUCTUREDMERGE_DEV" => monorepo_gems
     )
     reset = described_class.new(root: @root, command_runner: ->(_command) {})
 
-    expect(reset.normalization_needed?(File.join(@root, "Gemfile.lock"), strict: true)).to be(true)
-    expect(reset.diagnostics(File.join(@root, "Gemfile.lock"), strict: true)).to include(
-      a_string_matching(/has local path remote/)
-    )
+    expect(reset.normalization_needed?(File.join(@root, "Gemfile.lock"), strict: true)).to be(false)
+    expect(reset.diagnostics(File.join(@root, "Gemfile.lock"), strict: true)).to be_empty
     expect(reset.diagnostics(File.join(@root, "Gemfile.lock"))).to be_empty
-    expect(reset.normalization_env).not_to include("STRUCTUREDMERGE_DEV" => "false")
-    expect(reset.release_normalization_env).to include("STRUCTUREDMERGE_DEV" => "false")
+    expect(reset.normalization_env).to include("STRUCTUREDMERGE_DEV" => "false")
+    expect(reset.release_normalization_env).to include("STRUCTUREDMERGE_DEV" => monorepo_gems)
   end
 
-  it "preserves an allowed template context with configured monorepo paths" do
+  it "does not preserve template mode in a monorepo release graph" do
+    monorepo_gems = File.join(@root, "gems")
+    FileUtils.mkdir_p(monorepo_gems)
     stub_env(
-      "KETTLE_RELEASE_ALLOWED_LOCAL_PATH_ENVS" => "STRUCTUREDMERGE_DEV,K_JEM_TEMPLATING",
-      "STRUCTUREDMERGE_DEV" => File.join(@root, "gems"),
+      "KETTLE_RELEASE_GRAPH_CONTRACT_JSON" => {
+        "name" => "monorepo_ci_local",
+        "local_path_roots" => [monorepo_gems],
+        "selector_env" => {"STRUCTUREDMERGE_DEV" => monorepo_gems}
+      }.to_json,
+      "STRUCTUREDMERGE_DEV" => monorepo_gems,
       "K_JEM_TEMPLATING" => "true"
     )
     reset = described_class.new(root: @root, command_runner: ->(_command) {})
 
-    expect(reset.normalization_env).not_to include("STRUCTUREDMERGE_DEV" => "false")
-    expect(reset.normalization_env).not_to include("K_JEM_TEMPLATING" => "false")
+    expect(reset.release_normalization_env).to include(
+      "STRUCTUREDMERGE_DEV" => monorepo_gems,
+      "K_JEM_TEMPLATING" => "false"
+    )
   end
 
   it "preserves explicitly selected local paths while generating appraisals during templating" do

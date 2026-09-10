@@ -671,20 +671,30 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         )
       end
 
-      it "disables an allowed monorepo path environment for release children" do
-        monorepo_gems = "/workspace/structuredmerge/ruby/gems"
-        stub_env(
-          "KETTLE_DEV_DEV" => "/workspace/kettle-dev",
-          "STRUCTUREDMERGE_DEV" => monorepo_gems,
-          "KETTLE_RELEASE_ALLOWED_LOCAL_PATH_ROOTS" => monorepo_gems,
-          "KETTLE_RELEASE_ALLOWED_LOCAL_PATH_ENVS" => "STRUCTUREDMERGE_DEV"
-        )
-        local_cli = described_class.new
+      it "preserves the declared CI-resident monorepo graph for release children" do
+        Dir.mktmpdir do |root|
+          allow(ci_helpers).to receive(:project_root).and_return(root)
+          monorepo_gems = File.join(root, "gems")
+          FileUtils.mkdir_p(monorepo_gems)
+          stub_env(
+            "KETTLE_DEV_DEV" => "/workspace/kettle-dev",
+            "STRUCTUREDMERGE_DEV" => monorepo_gems,
+            "KETTLE_RELEASE_GRAPH_CONTRACT_JSON" => {
+              "name" => "monorepo_ci_local",
+              "ci_root" => root,
+              "local_path_roots" => [monorepo_gems],
+              "selector_env" => {"STRUCTUREDMERGE_DEV" => monorepo_gems}
+            }.to_json
+          )
+          local_cli = described_class.new
 
-        environment = local_cli.send(:release_child_environment)
+          environment = local_cli.send(:release_child_environment)
 
-        expect(environment).to include("KETTLE_DEV_DEV" => "false")
-        expect(environment).to include("STRUCTUREDMERGE_DEV" => "false")
+          expect(environment).to include(
+            "KETTLE_DEV_DEV" => "false",
+            "STRUCTUREDMERGE_DEV" => monorepo_gems
+          )
+        end
       end
 
       it "builds a runnable env command with unset options before assignments" do

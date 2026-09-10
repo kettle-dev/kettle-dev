@@ -49,6 +49,7 @@ module Kettle
     autoload :OpenCollectiveConfig, "kettle/dev/open_collective_config"
     autoload :ReleaseNotifier, "kettle/dev/release_notifier"
     autoload :ReleaseCLI, "kettle/dev/release_cli"
+    autoload :ReleaseGraphContract, "kettle/dev/release_graph_contract"
     autoload :ReleaseSecrets, "kettle/dev/release_secrets"
     autoload :ReleaseSecretsDoctor, "kettle/dev/release_secrets_doctor"
     autoload :ResetCLI, "kettle/dev/reset_cli"

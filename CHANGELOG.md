@@ -28,7 +28,9 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Normalize every release lockfile and release child against registry dependencies even when the launching family uses an allowed local monorepo graph.
+- [kc] release-graph-contracts: Honor the serialized release graph for lockfile normalization and child commands, retaining only declared CI-resident monorepo paths.
+
+- Validate serialized family release graph contracts in release lockfile normalization and child commands instead of reconstructing local-path policy from ambient environment.
 
 ### Security
 

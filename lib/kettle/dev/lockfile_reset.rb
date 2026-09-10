@@ -9,6 +9,7 @@ require "bundler"
 require "ripper"
 
 require_relative "bundler_env_guard"
+require_relative "release_graph_contract"
 
 module Kettle
   module Dev
@@ -22,8 +23,6 @@ module Kettle
         "GALTZO_FLOSS_DEV" => "false",
         "UR_BRAIN_DEV" => "false"
       }.freeze
-      ALLOWED_LOCAL_PATH_ROOTS_ENV = "KETTLE_RELEASE_ALLOWED_LOCAL_PATH_ROOTS"
-      ALLOWED_LOCAL_PATH_ENVS_ENV = "KETTLE_RELEASE_ALLOWED_LOCAL_PATH_ENVS"
       RELEASE_LOCKFILES_TARGET = "release-lockfiles"
       SUPPORTED_TARGETS = ["Gemfile.lock", "Appraisal.root.gemfile.lock", RELEASE_LOCKFILES_TARGET].freeze
       UNBUNDLED_ENV_KEYS = (BundlerEnvGuard::RESET_ENV_KEYS + %w[
@@ -113,20 +112,18 @@ module Kettle
         @root = root
         @command_runner = command_runner
         @release_platforms = {}
-        @allowed_local_path_roots = configured_allowed_local_path_roots
-        @allowed_local_path_env_names = configured_allowed_local_path_env_names
+        @release_graph_contract = ReleaseGraphContract.from_environment(root: root)
       end
 
       def reset(target, skip_changelog_dependency: false)
         BundlerEnvGuard.warn_unexpected_env!
         paths = lockfile_paths_for(target)
         release_lockfiles = release_lockfiles_target?(target)
-        # Local paths are useful while developing a monorepo, but a tracked
-        # release lockfile must always resolve from the registry. The caller
-        # may use an allowed local graph to launch this command; that allowance
-        # never applies to the release-lockfile target itself.
+        # The selected graph governs both tracked release locks and disposable
+        # release-task locks. Registry contracts reject every PATH source;
+        # CI-resident monorepo contracts retain only declared contained paths.
         force_full_update = release_lockfiles && (
-          allowed_local_path_roots.empty? || paths.any? { |path| normalization_needed?(path, strict: true) }
+          release_graph_contract.registry_only? || paths.any? { |path| normalization_needed?(path, strict: true) }
         )
         platforms = release_platforms_for(paths) if force_full_update
         uninstall_unreleased_local_gems(paths) if force_full_update
@@ -278,7 +275,7 @@ module Kettle
 
       def diagnostics(path, strict: false)
         diagnostics = []
-        (strict ? local_path_remote_lines(path) : disallowed_local_path_remote_lines(path)).each do |line_number|
+        disallowed_local_path_remote_lines(path).each do |line_number|
           diagnostics << "#{display_path(path)} has local path remote at line #{line_number}"
         end
         empty_registry_checksums(path).each do |name, version, line_number|
@@ -341,20 +338,14 @@ module Kettle
         disabled_local_path_env
       end
 
-      # Release tasks and the release-lockfile target must not inherit the
-      # development graph that launched the process. This intentionally does
-      # not honor KETTLE_RELEASE_ALLOWED_LOCAL_PATH_ENVS.
+      # The release graph, not ambient development ENV, decides which local
+      # selectors remain active while Bundler normalizes a release lockfile.
       def release_normalization_env
-        disabled_local_path_env(include_allowed: true)
+        disabled_local_path_env.merge(release_graph_contract.normalization_environment)
       end
 
-      def disabled_local_path_env(include_allowed: false)
-        disabled = if include_allowed
-          DEFAULT_DISABLED_ENV
-        else
-          DEFAULT_DISABLED_ENV.reject { |name, _| allowed_local_path_env_names.include?(name) }
-        end
-        disabled.merge(dynamic_local_path_env(include_allowed: include_allowed))
+      def disabled_local_path_env
+        DEFAULT_DISABLED_ENV.merge(dynamic_local_path_env)
       end
 
       # Appraisal generation normally uses the release-normalized environment.
@@ -370,11 +361,11 @@ module Kettle
         end
       end
 
-      def dynamic_local_path_env(include_allowed: false)
+      def dynamic_local_path_env
         ENV.each_with_object({}) do |(key, value), env|
           next unless key.end_with?("_DEV", "_LOCAL")
           next unless local_path_env_value?(value)
-          next if !include_allowed && allowed_local_path_env_names.include?(key)
+          next if release_graph_contract.selector_env.key?(key)
 
           env[key] = "false"
         end
@@ -397,7 +388,7 @@ module Kettle
       end
 
       def has_local_path_remote?(path, strict: false)
-        paths = strict ? local_path_remote_lines(path) : disallowed_local_path_remote_lines(path)
+        paths = disallowed_local_path_remote_lines(path)
         !paths.empty?
       end
 
@@ -405,7 +396,7 @@ module Kettle
         self.class.local_path_remote_lines_from_source(File.read(path))
       end
 
-      attr_reader :allowed_local_path_roots, :allowed_local_path_env_names
+      attr_reader :release_graph_contract
 
       def disallowed_local_path_remote_lines(path)
         local_path_remote_lines(path).reject do |line_number|
@@ -413,25 +404,12 @@ module Kettle
         end
       end
 
-      def configured_allowed_local_path_roots
-        ENV.fetch(ALLOWED_LOCAL_PATH_ROOTS_ENV, "").split(File::PATH_SEPARATOR).filter_map do |value|
-          next if value.strip.empty?
-
-          canonical_path(value)
-        end.uniq
-      end
-
-      def configured_allowed_local_path_env_names
-        ENV.fetch(ALLOWED_LOCAL_PATH_ENVS_ENV, "").split(",").map(&:strip).reject(&:empty?).uniq
-      end
-
       def local_path_remote_at(path, line_number)
         File.readlines(path)[line_number - 1].to_s.split("remote:", 2).last.to_s.strip
       end
 
       def allowed_local_path?(path)
-        remote = canonical_path(path)
-        allowed_local_path_roots.any? { |root| remote == root || remote.start_with?("#{root}/") }
+        release_graph_contract.allowed_path?(path)
       end
 
       def canonical_path(path)

@@ -905,14 +905,17 @@ module Kettle
 
       # The release process has three distinct lockfile roles:
       #
-      # - canonical: tracked project lockfiles, always registry-backed;
+      # - canonical: tracked project lockfiles, using the declared release
+      #   graph (normally registry-only, or contained CI-resident monorepo
+      #   paths when kettle-family supplied that contract);
       # - task: a disposable Gemfile.lock copy for build and publication; and
       # - tool: a tool-owned Gemfile, such as kettle-changelog's release bundle.
       #
-      # A family may use local sibling gems to launch this process, but no
-      # release child may inherit that graph. Git hooks are release children
-      # too: they commonly load project tooling and otherwise can silently
-      # rewrite the canonical lockfile with local PATH sources.
+      # A family may use local sibling gems to launch this process. Release
+      # children receive only the serialized release graph, never the ambient
+      # launcher graph. Git hooks are release children too: they commonly load
+      # project tooling and otherwise can silently rewrite a lockfile with an
+      # undeclared local PATH source.
       def release_git_hook_environment
         release_child_environment
       end
@@ -1123,9 +1126,9 @@ module Kettle
       end
 
       # Every release child runs outside the release tool's Bundler context and
-      # with local sibling switches disabled. The optional lockfile identifies
-      # a disposable task lockfile; omitting it deliberately selects the
-      # canonical tracked lockfile for setup, checks, docs, and checksums.
+      # with only the serialized release graph enabled. The optional lockfile
+      # identifies a disposable task lockfile; omitting it deliberately selects
+      # the canonical tracked lockfile for setup, checks, docs, and checksums.
       def release_child_command(command, environment: {}, lockfile: nil)
         command_body = command
         command = +"env"
