@@ -1139,6 +1139,50 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         cli.send(:ensure_github_pull_request_for_ci!)
       end
 
+      it "records a generated validation PR for branch-stack cleanup" do
+        allow(cli).to receive(:current_branch).and_return("r1_8-even-v0")
+        allow(cli).to receive(:detect_trunk_branch).and_return("main")
+        allow(cli).to receive(:preferred_github_remote).and_return("origin")
+        allow(cli).to receive(:remote_url).with("origin").and_return("git@github.com:me/repo.git")
+        allow(cli).to receive(:github_pull_request_for_branch).and_return(nil)
+        allow(cli).to receive(:create_github_pull_request!).and_return("42")
+        allow(cli).to receive(:branch_stack_release_branch?).with("r1_8-even-v0", "main").and_return(true)
+
+        cli.send(:ensure_github_pull_request_for_ci!)
+
+        expect(cli.instance_variable_get(:@release_ci_pull_request)).to include(
+          owner: "me", repo: "repo", number: "42", cleanup: true
+        )
+      end
+
+      it "does not close an ordinary feature pull request" do
+        cli.instance_variable_set(:@release_ci_pull_request, {
+          owner: "me", repo: "repo", number: "42", cleanup: true
+        })
+        allow(cli).to receive(:current_branch).and_return("feature/release")
+        allow(cli).to receive(:detect_trunk_branch).and_return("main")
+        allow(cli).to receive(:branch_stack_release_branch?).with("feature/release", "main").and_return(false)
+
+        expect(Open3).not_to receive(:capture3)
+        cli.send(:close_generated_branch_stack_pull_request!)
+      end
+
+      it "closes a generated branch-stack pull request after release" do
+        cli.instance_variable_set(:@release_ci_pull_request, {
+          owner: "me", repo: "repo", number: "42", cleanup: true
+        })
+        allow(cli).to receive(:current_branch).and_return("r1_8-even-v0")
+        allow(cli).to receive(:detect_trunk_branch).and_return("main")
+        allow(cli).to receive(:branch_stack_release_branch?).with("r1_8-even-v0", "main").and_return(true)
+        allow(cli.class).to receive(:send).with(:command_env).and_return({})
+        expect(Open3).to receive(:capture3).with(
+          {}, "gh", "pr", "close", "42", "--repo", "me/repo", "--comment",
+          "Release completed successfully; closing the CI-only validation PR."
+        ).and_return(["", "", instance_double(Process::Status, success?: true)])
+
+        cli.send(:close_generated_branch_stack_pull_request!)
+      end
+
       it "git_output trims and returns success flag" do
         # Ensure GitAdapter is used and its output is trimmed
         adapter = instance_double(Kettle::Dev::GitAdapter)

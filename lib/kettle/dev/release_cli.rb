@@ -214,6 +214,7 @@ module Kettle
         @version_override = Kettle::Dev::Versioning.normalize_explicit_version(version)
         @appraisal_task = normalize_appraisal_task(appraisal_task || ENV["KETTLE_RELEASE_APPRAISAL_TASK"])
         @release_candidate = nil
+        @release_ci_pull_request = nil
         @event_stream = options[:event_stream]
         @event_recorder = Kettle::Ndjson.event_recorder(@event_stream, phase_timings: [])
         @secrets_provider = options[:secrets_provider] || Kettle::Dev::ReleaseSecrets::Factory.build(provider_name: secrets_provider_name)
@@ -554,6 +555,11 @@ module Kettle
 
         # 19. push tags to remotes (final step)
         push_tags! if run_step?(19) && !local_ci?
+
+        # Branch-stack PRs exist only to trigger pull-request-only CI. They are
+        # deliberately not merged into trunk, so close the release-created PR
+        # after the publication has completed successfully.
+        close_generated_branch_stack_pull_request!
 
         # Final success message
         begin
@@ -1460,11 +1466,24 @@ module Kettle
 
         pull_request = github_pull_request_for_branch(owner: owner, repo: repo, branch: branch, base: trunk)
         if pull_request
-          puts "GitHub pull request ##{pull_request.fetch("number")} already open for #{branch} -> #{trunk}: #{pull_request.fetch("url")}"
+          body = pull_request["body"]
+          @release_ci_pull_request = {
+            owner: owner,
+            repo: repo,
+            number: pull_request["number"],
+            cleanup: body.is_a?(String) && body.index("Automated release validation PR for") == 0
+          }
+          puts "GitHub pull request ##{pull_request["number"]} already open for #{branch} -> #{trunk}: #{pull_request["url"]}"
           return
         end
 
-        create_github_pull_request!(owner: owner, repo: repo, branch: branch, base: trunk)
+        number = create_github_pull_request!(owner: owner, repo: repo, branch: branch, base: trunk)
+        @release_ci_pull_request = {
+          owner: owner,
+          repo: repo,
+          number: number,
+          cleanup: true
+        }
       end
 
       def github_pull_request_for_branch(owner:, repo:, branch:, base:)
@@ -1480,7 +1499,7 @@ module Kettle
           "--state",
           "open",
           "--json",
-          "number,url",
+          "number,url,body",
           "--limit",
           "1"
         )
@@ -1503,9 +1522,36 @@ module Kettle
           "--title",
           "Release #{branch}",
           "--body",
-          "Automated release validation PR for `#{branch}`.\n\nThis PR lets GitHub Actions run before kettle-release merges the branch into `#{base}`."
+          release_validation_pull_request_body(branch)
         )
         puts "Created GitHub pull request for #{branch} -> #{base}: #{output.strip}"
+        output[/\/pull\/(\d+)/, 1]
+      end
+
+      def release_validation_pull_request_body(branch)
+        "Automated release validation PR for `#{branch}`.\n\nThis PR exists only to run pull-request-only GitHub Actions before publishing the branch-stack release. Branch-stack releases are not merged into trunk."
+      end
+
+      def close_generated_branch_stack_pull_request!
+        pull_request = @release_ci_pull_request
+        return unless pull_request && pull_request[:cleanup]
+
+        branch = current_branch
+        trunk = detect_trunk_branch
+        return unless branch_stack_release_branch?(branch, trunk)
+
+        args = [
+          "pr", "close", pull_request[:number].to_s,
+          "--repo", "#{pull_request[:owner]}/#{pull_request[:repo]}",
+          "--comment", "Release completed successfully; closing the CI-only validation PR."
+        ]
+        stdout, stderr, status = Open3.capture3(self.class.send(:command_env), "gh", *args)
+        if status.success?
+          puts "Closed release validation PR ##{pull_request[:number]} for #{branch}."
+        else
+          detail = stderr.strip.empty? ? stdout.strip : stderr.strip
+          warn "Could not close release validation PR ##{pull_request[:number]}: #{detail}"
+        end
       end
 
       def gh_output!(*args)
@@ -1748,7 +1794,7 @@ module Kettle
       def git_output(args)
         # Route all git interactions through the GitAdapter so tests can safely mock them
         out, ok = @git.capture(args)
-        [out.to_s.strip, !!ok]
+        [out ? out.strip : "", !!ok]
       end
 
       def ensure_git_user!
