@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Close release-created branch-stack validation PRs after successful publication instead of leaving obsolete conflicted PRs open.
-
 ### Security
+
+## [3.1.1] - 2026-09-14
+
+- TAG: [v3.1.1][3.1.1t]
+- COVERAGE: 91.54% -- 6138/6705 lines in 48 files
+- BRANCH COVERAGE: 76.08% -- 2344/3081 branches in 48 files
+- 51.02% documented
+
+### Fixed
+
+- Close release-created branch-stack validation PRs after successful publication instead of leaving obsolete conflicted PRs open.
 
 ## [3.1.0] - 2026-09-10
 
@@ -3862,7 +3871,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.1...HEAD
+[3.1.1]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.0...v3.1.1
+[3.1.1t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.1
 [3.1.0]: https://github.com/kettle-dev/kettle-dev/compare/v3.0.34...v3.1.0
 [3.1.0t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.0
 [3.0.34]: https://github.com/kettle-dev/kettle-dev/compare/v3.0.33...v3.0.34
