@@ -3,9 +3,8 @@
 # kettle-changelog depends on the current kettle-dev APIs and the structured
 # Markdown merger. Keep it out of older appraisal jobs whose Ruby cannot load
 # its runtime dependency floor.
-# The dependency-specific switch remains available for explicit bootstrap or
-# release graphs that cannot resolve the unpublished downstream tool. Normal
-# development and tracked lockfile updates must leave this dependency enabled.
+# Release lockfile/build commands set this dependency-specific switch so
+# the development tool cannot pull unpublished family gems into resolution.
 kettle_changelog_skip = ENV.fetch("KETTLE_DEV_SKIP_CHANGELOG_DEPENDENCY", "false").downcase
 kettle_changelog_skip = %w[true 1 yes on].include?(kettle_changelog_skip)
 kettle_changelog_local = ENV.fetch("KETTLE_DEV_DEV", "false").downcase
@@ -20,6 +19,6 @@ unless kettle_changelog_skip
       root: ["src", "my", "kettle-dev"]
     )
   elsif Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("4.0.0")
-    gem "kettle-changelog", "~> 1.0", ">= 1.0.3"
+    gem "kettle-changelog", "~> 1.0", ">= 1.0.7"
   end
 end

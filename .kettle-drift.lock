@@ -17,7 +17,8 @@
         78,
         82,
         86,
-        90
+        90,
+        94
       ]
     }
   ],
@@ -39,7 +40,17 @@
         77,
         81,
         85,
-        89
+        89,
+        93
+      ]
+    }
+  ],
+  "exec_cmd: \"kettle-test\"\nrubygems: latest": [
+    {
+      "file": ".github/workflows/current.yml",
+      "lines": [
+        43,
+        49
       ]
     }
   ]

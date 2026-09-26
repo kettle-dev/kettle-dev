@@ -107,6 +107,9 @@ dependency_conflicts:
   # Set true only after every discovered conflict has an intentional action.
   reviewed: true
   resolve:
+    # The gemspec defines the released runtime contract. runtime_heads
+    # intentionally resolves version_gem from main to detect upstream changes
+    # before release, so both declarations must remain.
     - gem: version_gem
       direct: kettle-dev.gemspec
       modular: gemfiles/modular/runtime_heads.gemfile
