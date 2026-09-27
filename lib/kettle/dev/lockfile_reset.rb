@@ -41,11 +41,18 @@ module Kettle
             end
             next unless in_path
             next unless stripped.start_with?("remote:")
-            next if stripped == "remote: ."
-            next unless stripped.start_with?("remote: /", "remote: ./", "remote: ../")
+            remote = stripped["remote:".length, stripped.length].strip
+            next if remote == "."
+            next unless local_path_remote?(remote)
 
             index
           end
+        end
+
+        def local_path_remote?(remote)
+          return true if remote.start_with?("/", "./", "../", ".\\", "..\\", "\\\\")
+
+          remote.length >= 3 && remote[1] == ":" && ["/", "\\"].include?(remote[2])
         end
 
         def checksum_entries_from_source(lockfile_source)

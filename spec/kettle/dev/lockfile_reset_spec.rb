@@ -958,6 +958,27 @@ RSpec.describe Kettle::Dev::LockfileReset do
     expect(described_class.local_path_remote_lines_from_source(source)).to eq([5])
   end
 
+  it "parses Windows local path remotes from lockfile source" do
+    source = <<~LOCK
+      PATH
+        remote: C:\\workspace\\family\\alpha
+        specs:
+          alpha (1.0.0)
+      PATH
+        remote: ..\\sibling
+        specs:
+          sibling (1.0.0)
+      PATH
+        remote: \\\\server\\share\\gem
+        specs:
+          gem (1.0.0)
+      GEM
+        remote: https://gem.coop/
+    LOCK
+
+    expect(described_class.local_path_remote_lines_from_source(source)).to eq([2, 6, 10])
+  end
+
   it "parses checksum entries from lockfile source" do
     source = <<~LOCK
       GEM

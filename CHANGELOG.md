@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Recognize Windows drive, UNC, and relative paths as local lockfile remotes during release validation.
+
 ### Security
 
 ## [3.1.2] - 2026-09-27
