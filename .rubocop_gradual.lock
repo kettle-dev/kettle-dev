@@ -1391,7 +1391,7 @@
     [13, 74, 5, "Lint/LtsRuby/UnavailableMethod: Matrix/Vector#[]= is unavailable before Ruby 2.6.", 240418772],
     [46, 74, 4, "Lint/LtsRuby/UnavailableMethod: StringScanner#size is unavailable before Ruby 2.5.", 2088346912]
   ],
-  "spec/kettle/dev/changelog_cli_spec.rb:3113937755": [
+  "spec/kettle/dev/changelog_cli_spec.rb:2876834757": [
     [41, 94, 4, "Lint/LtsRuby/UnavailableMethod: Set#join is unavailable before Ruby 3.0.", 2088000679],
     [542, 48, 4, "Lint/LtsRuby/UnavailableMethod: StringScanner#size is unavailable before Ruby 2.5.", 2088346912],
     [587, 48, 4, "Lint/LtsRuby/UnavailableMethod: StringScanner#size is unavailable before Ruby 2.5.", 2088346912],
