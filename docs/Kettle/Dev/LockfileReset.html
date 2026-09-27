@@ -241,6 +241,29 @@
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#local_path_remote%3F-class_method" title="local_path_remote? (class method)">.<strong>local_path_remote?</strong>(remote)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#local_path_remote_lines_from_source-class_method" title="local_path_remote_lines_from_source (class method)">.<strong>local_path_remote_lines_from_source</strong>(lockfile_source)  &#x21d2; Object </a>
     
 
@@ -1202,15 +1225,15 @@
       <pre class="lines">
 
 
-111
-112
-113
-114
-115
-116</pre>
+118
+119
+120
+121
+122
+123</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 111</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 118</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='label'>root:</span><span class='comma'>,</span> <span class='label'>command_runner:</span><span class='rparen'>)</span>
   <span class='ivar'>@root</span> <span class='op'>=</span> <span class='id identifier rubyid_root'><span class='object_link'><a href="../../top-level-namespace.html" title="Top Level Namespace (root)">root</a></span></span>
@@ -1255,12 +1278,12 @@
       <pre class="lines">
 
 
-399
-400
-401</pre>
+406
+407
+408</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 399</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 406</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_release_graph_contract'>release_graph_contract</span>
   <span class='ivar'>@release_graph_contract</span>
@@ -1292,13 +1315,6 @@
       <pre class="lines">
 
 
-51
-52
-53
-54
-55
-56
-57
 58
 59
 60
@@ -1309,10 +1325,17 @@
 65
 66
 67
-68</pre>
+68
+69
+70
+71
+72
+73
+74
+75</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 51</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 58</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_checksum_entries_from_source'>checksum_entries_from_source</span><span class='lparen'>(</span><span class='id identifier rubyid_lockfile_source'>lockfile_source</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_in_checksums'>in_checksums</span> <span class='op'>=</span> <span class='kw'>false</span>
@@ -1352,13 +1375,6 @@
       <pre class="lines">
 
 
-70
-71
-72
-73
-74
-75
-76
 77
 78
 79
@@ -1377,10 +1393,17 @@
 92
 93
 94
-95</pre>
+95
+96
+97
+98
+99
+100
+101
+102</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 70</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 77</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_gem_specs_from_source'>gem_specs_from_source</span><span class='lparen'>(</span><span class='id identifier rubyid_lockfile_source'>lockfile_source</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_in_gem'>in_gem</span> <span class='op'>=</span> <span class='kw'>false</span>
@@ -1407,6 +1430,63 @@
     <span class='id identifier rubyid_specs'>specs</span> <span class='op'>&lt;&lt;</span> <span class='lbracket'>[</span><span class='id identifier rubyid_parsed'>parsed</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='symbol'>:name</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_parsed'>parsed</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='symbol'>:version</span><span class='rparen'>)</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_parsed'>parsed</span>
   <span class='kw'>end</span>
   <span class='id identifier rubyid_specs'>specs</span><span class='period'>.</span><span class='id identifier rubyid_uniq'>uniq</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="local_path_remote?-class_method">
+  
+    .<strong>local_path_remote?</strong>(remote)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+52
+53
+54
+55
+56</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 52</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_local_path_remote?'>local_path_remote?</span><span class='lparen'>(</span><span class='id identifier rubyid_remote'>remote</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>true</span> <span class='kw'>if</span> <span class='id identifier rubyid_remote'>remote</span><span class='period'>.</span><span class='id identifier rubyid_start_with?'>start_with?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>/</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>./</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>../</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>.\\</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>..\\</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\\\\</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_remote'>remote</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;=</span> <span class='int'>3</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_remote'>remote</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>:</span><span class='tstring_end'>&quot;</span></span> <span class='op'>&amp;&amp;</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>/</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\\</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_remote'>remote</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1443,7 +1523,8 @@
 46
 47
 48
-49</pre>
+49
+50</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 34</span>
@@ -1458,8 +1539,9 @@
     <span class='kw'>end</span>
     <span class='kw'>next</span> <span class='kw'>unless</span> <span class='id identifier rubyid_in_path'>in_path</span>
     <span class='kw'>next</span> <span class='kw'>unless</span> <span class='id identifier rubyid_stripped'>stripped</span><span class='period'>.</span><span class='id identifier rubyid_start_with?'>start_with?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>remote:</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-    <span class='kw'>next</span> <span class='kw'>if</span> <span class='id identifier rubyid_stripped'>stripped</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>remote: .</span><span class='tstring_end'>&quot;</span></span>
-    <span class='kw'>next</span> <span class='kw'>unless</span> <span class='id identifier rubyid_stripped'>stripped</span><span class='period'>.</span><span class='id identifier rubyid_start_with?'>start_with?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>remote: /</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>remote: ./</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>remote: ../</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_remote'>remote</span> <span class='op'>=</span> <span class='id identifier rubyid_stripped'>stripped</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>remote:</span><span class='tstring_end'>&quot;</span></span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span><span class='comma'>,</span> <span class='id identifier rubyid_stripped'>stripped</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span>
+    <span class='kw'>next</span> <span class='kw'>if</span> <span class='id identifier rubyid_remote'>remote</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>.</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>next</span> <span class='kw'>unless</span> <span class='id identifier rubyid_local_path_remote?'>local_path_remote?</span><span class='lparen'>(</span><span class='id identifier rubyid_remote'>remote</span><span class='rparen'>)</span>
 
     <span class='id identifier rubyid_index'>index</span>
   <span class='kw'>end</span>
@@ -1513,12 +1595,12 @@
       <pre class="lines">
 
 
-386
-387
-388</pre>
+393
+394
+395</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 386</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 393</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_active_local_path_env?'>active_local_path_env?</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_local_path_env_value?'>local_path_env_value?</span><span class='lparen'>(</span><span class='const'>ENV</span><span class='lbracket'>[</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span><span class='rparen'>)</span>
@@ -1566,12 +1648,12 @@
       <pre class="lines">
 
 
-411
-412
-413</pre>
+418
+419
+420</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 411</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 418</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_allowed_local_path?'>allowed_local_path?</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_release_graph_contract'>release_graph_contract</span><span class='period'>.</span><span class='id identifier rubyid_allowed_path?'>allowed_path?</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
@@ -1609,17 +1691,17 @@ unpublished sibling dependencies.</p>
       <pre class="lines">
 
 
-355
-356
-357
-358
-359
-360
-361
-362</pre>
+362
+363
+364
+365
+366
+367
+368
+369</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 355</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 362</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_appraisal_normalization_env'>appraisal_normalization_env</span>
   <span class='id identifier rubyid_env'>env</span> <span class='op'>=</span> <span class='id identifier rubyid_normalization_env'>normalization_env</span>
@@ -1676,18 +1758,18 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-482
-483
-484
-485
-486
-487
-488
 489
-490</pre>
+490
+491
+492
+493
+494
+495
+496
+497</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 482</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 489</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_bundled_with_checksum_mismatch?'>bundled_with_checksum_mismatch?</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_version'>version</span> <span class='op'>=</span> <span class='id identifier rubyid_bundled_with_version'>bundled_with_version</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
@@ -1718,20 +1800,20 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-492
-493
-494
-495
-496
-497
-498
 499
 500
 501
-502</pre>
+502
+503
+504
+505
+506
+507
+508
+509</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 492</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 499</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_bundled_with_version'>bundled_with_version</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_lines'>lines</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_readlines'>readlines</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
@@ -1764,19 +1846,19 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-222
-223
-224
-225
-226
-227
-228
 229
 230
-231</pre>
+231
+232
+233
+234
+235
+236
+237
+238</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 222</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 229</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_bundler_command_prefix'>bundler_command_prefix</span><span class='lparen'>(</span><span class='id identifier rubyid_env'>env</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_command'>command</span> <span class='op'>=</span> <span class='op'>+</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>env</span><span class='tstring_end'>&quot;</span></span>
@@ -1808,15 +1890,15 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-415
-416
-417
-418
-419
-420</pre>
+422
+423
+424
+425
+426
+427</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 415</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 422</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_canonical_path'>canonical_path</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_expanded'>expanded</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_expand_path'>expand_path</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='id identifier rubyid_root'><span class='object_link'><a href="../../top-level-namespace.html" title="Top Level Namespace (root)">root</a></span></span><span class='rparen'>)</span>
@@ -1844,13 +1926,6 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-276
-277
-278
-279
-280
-281
-282
 283
 284
 285
@@ -1859,10 +1934,17 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
 288
 289
 290
-291</pre>
+291
+292
+293
+294
+295
+296
+297
+298</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 276</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 283</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_diagnostics'>diagnostics</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='label'>strict:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_diagnostics'>diagnostics</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
@@ -1900,12 +1982,12 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-347
-348
-349</pre>
+354
+355
+356</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 347</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 354</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_disabled_local_path_env'>disabled_local_path_env</span>
   <span class='const'><span class='object_link'><a href="#DEFAULT_DISABLED_ENV-constant" title="Kettle::Dev::LockfileReset::DEFAULT_DISABLED_ENV (constant)">DEFAULT_DISABLED_ENV</a></span></span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='id identifier rubyid_dynamic_local_path_env'>dynamic_local_path_env</span><span class='rparen'>)</span>
@@ -1930,14 +2012,14 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-401
-402
-403
-404
-405</pre>
+408
+409
+410
+411
+412</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 401</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 408</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_disallowed_local_path_remote_lines'>disallowed_local_path_remote_lines</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_local_path_remote_lines'>local_path_remote_lines</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_line_number'>line_number</span><span class='op'>|</span>
@@ -1964,12 +2046,12 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-524
-525
-526</pre>
+531
+532
+533</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 524</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 531</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_display_path'>display_path</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="../../Kettle.html" title="Kettle (module)">Kettle</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Dev.html" title="Kettle::Dev (module)">Dev</a></span></span><span class='period'>.</span><span class='id identifier rubyid_display_path'><span class='object_link'><a href="../Dev.html#display_path-class_method" title="Kettle::Dev.display_path (method)">display_path</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
@@ -1994,18 +2076,18 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-364
-365
-366
-367
-368
-369
-370
 371
-372</pre>
+372
+373
+374
+375
+376
+377
+378
+379</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 364</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 371</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_dynamic_local_path_env'>dynamic_local_path_env</span>
   <span class='const'>ENV</span><span class='period'>.</span><span class='id identifier rubyid_each_with_object'>each_with_object</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_env'>env</span><span class='op'>|</span>
@@ -2036,13 +2118,6 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-422
-423
-424
-425
-426
-427
-428
 429
 430
 431
@@ -2062,10 +2137,17 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
 445
 446
 447
-448</pre>
+448
+449
+450
+451
+452
+453
+454
+455</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 422</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 429</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_empty_registry_checksums'>empty_registry_checksums</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_non_registry_gems'>non_registry_gems</span> <span class='op'>=</span> <span class='id identifier rubyid_non_registry_source_gems'>non_registry_source_gems</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span> <span class='op'>|</span> <span class='id identifier rubyid_path_dependency_gems'>path_dependency_gems</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
@@ -2114,15 +2196,15 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-330
-331
-332
-333
-334
-335</pre>
+337
+338
+339
+340
+341
+342</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 330</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 337</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_gemfile_for_lockfile'>gemfile_for_lockfile</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_basename'>basename</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_basename'>basename</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
@@ -2173,22 +2255,22 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-463
-464
-465
-466
-467
-468
-469
 470
 471
 472
 473
 474
-475</pre>
+475
+476
+477
+478
+479
+480
+481
+482</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 463</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 470</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_has_any_sha_checksum?'>has_any_sha_checksum?</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_in_checksums'>in_checksums</span> <span class='op'>=</span> <span class='kw'>false</span>
@@ -2246,13 +2328,13 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-390
-391
-392
-393</pre>
+397
+398
+399
+400</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 390</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 397</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_has_local_path_remote?'>has_local_path_remote?</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='label'>strict:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_paths'>paths</span> <span class='op'>=</span> <span class='id identifier rubyid_disallowed_local_path_remote_lines'>disallowed_local_path_remote_lines</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
@@ -2301,16 +2383,16 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-374
-375
-376
-377
-378
-379
-380</pre>
+381
+382
+383
+384
+385
+386
+387</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 374</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 381</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_local_path_env_value?'>local_path_env_value?</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_text'>text</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span>
@@ -2339,12 +2421,12 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-407
-408
-409</pre>
+414
+415
+416</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 407</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 414</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_local_path_remote_at'>local_path_remote_at</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='id identifier rubyid_line_number'>line_number</span><span class='rparen'>)</span>
   <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_readlines'>readlines</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span><span class='lbracket'>[</span><span class='id identifier rubyid_line_number'>line_number</span> <span class='op'>-</span> <span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='period'>.</span><span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>remote:</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='int'>2</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span>
@@ -2369,12 +2451,12 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-395
-396
-397</pre>
+402
+403
+404</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 395</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 402</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_local_path_remote_lines'>local_path_remote_lines</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_local_path_remote_lines_from_source'>local_path_remote_lines_from_source</span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span><span class='rparen'>)</span>
@@ -2422,15 +2504,15 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-301
-302
-303
-304
-305
-306</pre>
+308
+309
+310
+311
+312
+313</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 301</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 308</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_lockfile_path_for'>lockfile_path_for</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_paths'>paths</span> <span class='op'>=</span> <span class='id identifier rubyid_lockfile_paths_for'>lockfile_paths_for</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='rparen'>)</span>
@@ -2458,16 +2540,16 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-293
-294
-295
-296
-297
-298
-299</pre>
+300
+301
+302
+303
+304
+305
+306</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 293</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 300</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_lockfile_paths'>lockfile_paths</span>
   <span class='id identifier rubyid_candidates'>candidates</span> <span class='op'>=</span> <span class='lbracket'>[</span>
@@ -2519,13 +2601,6 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-308
-309
-310
-311
-312
-313
-314
 315
 316
 317
@@ -2535,10 +2610,17 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
 321
 322
 323
-324</pre>
+324
+325
+326
+327
+328
+329
+330
+331</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 308</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 315</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_lockfile_paths_for'>lockfile_paths_for</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_normalized'>normalized</span> <span class='op'>=</span> <span class='id identifier rubyid_target'>target</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span>
@@ -2577,23 +2659,23 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-245
-246
-247
-248
-249
-250
-251
 252
 253
 254
 255
 256
 257
-258</pre>
+258
+259
+260
+261
+262
+263
+264
+265</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 245</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 252</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_lockfile_platforms'>lockfile_platforms</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_in_platforms'>in_platforms</span> <span class='op'>=</span> <span class='kw'>false</span>
@@ -2629,14 +2711,14 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-511
-512
-513
-514
-515</pre>
+518
+519
+520
+521
+522</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 511</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 518</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_non_registry_source_gems'>non_registry_source_gems</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_lockfile_parser'>lockfile_parser</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_specs'>specs</span><span class='period'>.</span><span class='id identifier rubyid_each_with_object'>each_with_object</span><span class='lparen'>(</span><span class='const'>Set</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_spec'>spec</span><span class='comma'>,</span> <span class='id identifier rubyid_gems'>gems</span><span class='op'>|</span>
@@ -2663,12 +2745,12 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-337
-338
-339</pre>
+344
+345
+346</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 337</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 344</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_normalization_env'>normalization_env</span>
   <span class='id identifier rubyid_disabled_local_path_env'>disabled_local_path_env</span>
@@ -2716,15 +2798,15 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-269
-270
-271
-272
-273
-274</pre>
+276
+277
+278
+279
+280
+281</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 269</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 276</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_normalization_needed?'>normalization_needed?</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='label'>strict:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_has_local_path_remote?'>has_local_path_remote?</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='label'>strict:</span> <span class='id identifier rubyid_strict'>strict</span><span class='rparen'>)</span> <span class='op'>||</span>
@@ -2752,15 +2834,15 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-517
-518
-519
-520
-521
-522</pre>
+524
+525
+526
+527
+528
+529</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 517</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 524</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_path_dependency_gems'>path_dependency_gems</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_lockfile_parser'>lockfile_parser</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_dependencies'>dependencies</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span><span class='period'>.</span><span class='id identifier rubyid_each_with_object'>each_with_object</span><span class='lparen'>(</span><span class='const'>Set</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_dependency'>dependency</span><span class='comma'>,</span> <span class='id identifier rubyid_gems'>gems</span><span class='op'>|</span>
@@ -2788,15 +2870,15 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-504
-505
-506
-507
-508
-509</pre>
+511
+512
+513
+514
+515
+516</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 504</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 511</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_path_source_gems'>path_source_gems</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_lockfile_parser'>lockfile_parser</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_specs'>specs</span><span class='period'>.</span><span class='id identifier rubyid_each_with_object'>each_with_object</span><span class='lparen'>(</span><span class='const'>Set</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_spec'>spec</span><span class='comma'>,</span> <span class='id identifier rubyid_gems'>gems</span><span class='op'>|</span>
@@ -2847,12 +2929,12 @@ Bundler in CHECKSUMS, preserving older lockfiles that lack that entry.</p>
       <pre class="lines">
 
 
-326
-327
-328</pre>
+333
+334
+335</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 326</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 333</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_release_lockfiles_target?'>release_lockfiles_target?</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_target'>target</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span><span class='period'>.</span><span class='id identifier rubyid_casecmp'>casecmp</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#RELEASE_LOCKFILES_TARGET-constant" title="Kettle::Dev::LockfileReset::RELEASE_LOCKFILES_TARGET (constant)">RELEASE_LOCKFILES_TARGET</a></span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_zero?'>zero?</span>
@@ -2888,12 +2970,12 @@ selectors remain active while Bundler normalizes a release lockfile.</p>
       <pre class="lines">
 
 
-343
-344
-345</pre>
+350
+351
+352</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 343</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 350</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_release_normalization_env'>release_normalization_env</span>
   <span class='id identifier rubyid_disabled_local_path_env'>disabled_local_path_env</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='id identifier rubyid_release_graph_contract'>release_graph_contract</span><span class='period'>.</span><span class='id identifier rubyid_normalization_environment'>normalization_environment</span><span class='rparen'>)</span>
@@ -2918,14 +3000,14 @@ selectors remain active while Bundler normalizes a release lockfile.</p>
       <pre class="lines">
 
 
-239
-240
-241
-242
-243</pre>
+246
+247
+248
+249
+250</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 239</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 246</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_release_platforms_for'>release_platforms_for</span><span class='lparen'>(</span><span class='id identifier rubyid_paths'>paths</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_each_with_object'>each_with_object</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='id identifier rubyid_platforms'>platforms</span><span class='op'>|</span>
@@ -2975,13 +3057,6 @@ selectors remain active while Bundler normalizes a release lockfile.</p>
       <pre class="lines">
 
 
-118
-119
-120
-121
-122
-123
-124
 125
 126
 127
@@ -3015,10 +3090,17 @@ selectors remain active while Bundler normalizes a release lockfile.</p>
 155
 156
 157
-158</pre>
+158
+159
+160
+161
+162
+163
+164
+165</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 118</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 125</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reset'>reset</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='comma'>,</span> <span class='label'>skip_changelog_dependency:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="BundlerEnvGuard.html" title="Kettle::Dev::BundlerEnvGuard (module)">BundlerEnvGuard</a></span></span><span class='period'>.</span><span class='id identifier rubyid_warn_unexpected_env!'><span class='object_link'><a href="BundlerEnvGuard.html#warn_unexpected_env!-class_method" title="Kettle::Dev::BundlerEnvGuard.warn_unexpected_env! (method)">warn_unexpected_env!</a></span></span>
@@ -3081,13 +3163,6 @@ selectors remain active while Bundler normalizes a release lockfile.</p>
       <pre class="lines">
 
 
-187
-188
-189
-190
-191
-192
-193
 194
 195
 196
@@ -3114,10 +3189,17 @@ selectors remain active while Bundler normalizes a release lockfile.</p>
 217
 218
 219
-220</pre>
+220
+221
+222
+223
+224
+225
+226
+227</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 187</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 194</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reset_command'>reset_command</span><span class='lparen'>(</span><span class='label'>path:</span><span class='comma'>,</span> <span class='label'>gemfile:</span><span class='comma'>,</span> <span class='label'>full_update:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>platforms:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>skip_changelog_dependency:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>update_bundler:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>isolated_gem_home:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>isolated_gem_path:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>strict:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_update_gems'>update_gems</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_full_update'>full_update</span> <span class='op'>||</span> <span class='id identifier rubyid_has_local_path_remote?'>has_local_path_remote?</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='label'>strict:</span> <span class='id identifier rubyid_strict'>strict</span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='op'>:</span> <span class='id identifier rubyid_reset_update_gems'>reset_update_gems</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
@@ -3173,13 +3255,6 @@ selectors remain active while Bundler normalizes a release lockfile.</p>
       <pre class="lines">
 
 
-160
-161
-162
-163
-164
-165
-166
 167
 168
 169
@@ -3198,10 +3273,17 @@ selectors remain active while Bundler normalizes a release lockfile.</p>
 182
 183
 184
-185</pre>
+185
+186
+187
+188
+189
+190
+191
+192</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 160</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 167</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reset_lockfile!'>reset_lockfile!</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='label'>full_update:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>platforms:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>skip_changelog_dependency:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>update_bundler:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>strict:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_gemfile'>gemfile</span> <span class='op'>=</span> <span class='id identifier rubyid_gemfile_for_lockfile'>gemfile_for_lockfile</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
@@ -3249,14 +3331,14 @@ selectors remain active while Bundler normalizes a release lockfile.</p>
       <pre class="lines">
 
 
-233
-234
-235
-236
-237</pre>
+240
+241
+242
+243
+244</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 233</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 240</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reset_platforms'>reset_platforms</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_platforms'>platforms</span> <span class='op'>=</span> <span class='id identifier rubyid_lockfile_platforms'>lockfile_platforms</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
@@ -3283,17 +3365,17 @@ selectors remain active while Bundler normalizes a release lockfile.</p>
       <pre class="lines">
 
 
-260
-261
-262
-263
-264
-265
-266
-267</pre>
+267
+268
+269
+270
+271
+272
+273
+274</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 260</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 267</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reset_update_gems'>reset_update_gems</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='lparen'>(</span>
@@ -3346,12 +3428,12 @@ selectors remain active while Bundler normalizes a release lockfile.</p>
       <pre class="lines">
 
 
-382
-383
-384</pre>
+389
+390
+391</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 382</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 389</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_template_local_environment?'>template_local_environment?</span>
   <span class='qwords_beg'>%w[</span><span class='tstring_content'>1</span><span class='words_sep'> </span><span class='tstring_content'>true</span><span class='words_sep'> </span><span class='tstring_content'>yes</span><span class='words_sep'> </span><span class='tstring_content'>on</span><span class='tstring_end'>]</span></span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='const'>ENV</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>K_JEM_TEMPLATING</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span><span class='period'>.</span><span class='id identifier rubyid_downcase'>downcase</span><span class='rparen'>)</span>
@@ -3376,21 +3458,21 @@ selectors remain active while Bundler normalizes a release lockfile.</p>
       <pre class="lines">
 
 
-450
-451
-452
-453
-454
-455
-456
 457
 458
 459
 460
-461</pre>
+461
+462
+463
+464
+465
+466
+467
+468</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 450</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/lockfile_reset.rb', line 457</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_unreleased_workspace_registry_specs'>unreleased_workspace_registry_specs</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_local_names'>local_names</span> <span class='op'>=</span> <span class='id identifier rubyid_local_workspace_gem_names'>local_workspace_gem_names</span>

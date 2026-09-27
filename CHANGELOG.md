@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Recognize Windows drive, UNC, and relative paths as local lockfile remotes during release validation.
-
 ### Security
+
+## [3.1.3] - 2026-09-27
+
+- TAG: [v3.1.3][3.1.3t]
+- COVERAGE: 91.63% -- 6155/6717 lines in 48 files
+- BRANCH COVERAGE: 76.05% -- 2347/3086 branches in 48 files
+- 51.13% documented
+
+### Fixed
+
+- Recognize Windows drive, UNC, and relative paths as local lockfile remotes during release validation.
 
 ## [3.1.2] - 2026-09-27
 
@@ -3907,7 +3916,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.2...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.3...HEAD
+[3.1.3]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.2...v3.1.3
+[3.1.3t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.3
 [3.1.2]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.1...v3.1.2
 [3.1.2t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.2
 [3.1.1]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.0...v3.1.1
