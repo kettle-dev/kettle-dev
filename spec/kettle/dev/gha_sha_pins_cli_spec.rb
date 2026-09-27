@@ -117,14 +117,14 @@ RSpec.describe Kettle::Dev::GhaShaPinsCLI do
       File.write(nested_workflow, File.read(workflow_path))
       cli = described_class.new(["--root", workflow_root])
 
-      expect(cli.send(:discover_workflow_files, workflow_root, Set.new)).to eq([workflow_path])
+      expect(cli.send(:discover_workflow_files, workflow_root, Set.new)).to eq([File.realpath(workflow_path)])
     end
 
     it "accepts a workflow directory as the analysis root" do
       workflow_dir = File.dirname(workflow_path)
       cli = described_class.new(["--root", workflow_dir])
 
-      expect(cli.send(:discover_workflow_files, workflow_dir, Set.new)).to eq([workflow_path])
+      expect(cli.send(:discover_workflow_files, workflow_dir, Set.new)).to eq([File.realpath(workflow_path)])
     end
   end
 
@@ -697,7 +697,7 @@ RSpec.describe Kettle::Dev::GhaShaPinsCLI do
 
       expect(payload.fetch("outdated_pins")).to contain_exactly(
         a_hash_including(
-          "path" => workflow_path,
+          "path" => File.realpath(workflow_path),
           "line" => 7,
           "action" => "foo/bar",
           "old_ref" => "v1.2.0",
@@ -718,7 +718,7 @@ RSpec.describe Kettle::Dev::GhaShaPinsCLI do
       expect do
         cli.run!
       end.to output(
-        %r{Outdated actions \(1\):\nAction Current Latest Location Reason\nfoo/bar 1\.2\.0 1\.3\.0 #{Regexp.escape(workflow_path)}:\d+ #{Regexp.escape(described_class::UPGRADE_REASON)}}
+        %r{Outdated actions \(1\):\nAction Current Latest Location Reason\nfoo/bar 1\.2\.0 1\.3\.0 #{Regexp.escape(File.realpath(workflow_path))}:\d+ #{Regexp.escape(described_class::UPGRADE_REASON)}}
       ).to_stdout
     end
 

@@ -50,8 +50,8 @@ module Kettle
                 end
               end
             end
-          rescue Errno::EIO
-            # PTY raises EIO when the child process exits after closing the slave.
+          rescue Errno::EIO, EOFError
+            # PTY platforms signal a closed child with EIO or EOFError.
           rescue Kettle::Dev::Error
             Process.kill("TERM", pid)
             raise

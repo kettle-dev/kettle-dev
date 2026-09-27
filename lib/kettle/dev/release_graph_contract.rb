@@ -87,7 +87,18 @@ module Kettle
 
       def canonical_path(path)
         expanded = File.expand_path(path, @root)
-        File.realpath(expanded)
+        candidate = expanded
+        suffix = []
+
+        until File.exist?(candidate) || File.symlink?(candidate)
+          parent = File.dirname(candidate)
+          return expanded if parent == candidate
+
+          suffix.unshift(File.basename(candidate))
+          candidate = parent
+        end
+
+        suffix.reduce(File.realpath(candidate)) { |base, component| File.join(base, component) }
       rescue Errno::ENOENT
         expanded
       end

@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Handle macOS PTY EOF and canonicalize release-contract paths beneath symlinked temporary roots.
+
 ### Security
 
 ## [3.1.2] - 2026-09-27
