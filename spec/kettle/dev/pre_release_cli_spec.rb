@@ -519,8 +519,11 @@ RSpec.describe Kettle::Dev::PreReleaseCLI do
           bad = File.join(root, "bad.md")
           File.write(bad, "![x](https://e.com/a.png)\n")
           glob = File.join(root, "*.md")
-          allow(File).to receive(:read).and_call_original
-          allow(File).to receive(:read).with(bad).and_raise(Errno::EACCES)
+          allow(File).to receive(:read).and_wrap_original do |original, path, *args|
+            raise Errno::EACCES, path if File.basename(path) == "bad.md"
+
+            original.call(path, *args)
+          end
 
           urls = described_class.extract_image_urls_from_files(glob)
           expect(urls).to be_empty

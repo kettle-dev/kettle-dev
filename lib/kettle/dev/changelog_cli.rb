@@ -968,7 +968,7 @@ module Kettle
 
         # Run the canonical docs task to get the documentation percentage.
         commands.each do |command|
-          prepare_yard_fence_tmp_files if command == [File.join(@root, "bin", "yard")]
+          prepare_yard_fence_tmp_files if command.include?(File.join(@root, "bin", "yard"))
           output, status = capture_yard_command(command)
           unless command_successful?(status)
             return handle_yard_documentation_failure(yard_command_failure_message(command, output, status))
@@ -1012,9 +1012,9 @@ module Kettle
 
       def yard_command_label(command)
         command = Array(command)
-        bin = command.first.to_s
+        bin = command.find { |part| [File.join(@root, "bin", "rake"), File.join(@root, "bin", "yard")].include?(part) }.to_s
         if bin == File.join(@root, "bin", "rake")
-          "bin/rake #{command.drop(1).join(" ")}".strip
+          "bin/rake #{command.drop_while { |part| part != bin }.drop(1).join(" ")}".strip
         elsif bin == File.join(@root, "bin", "yard")
           "bin/yard"
         else
@@ -1025,9 +1025,9 @@ module Kettle
       def yard_documentation_commands
         commands = []
         rake = File.join(@root, "bin", "rake")
-        commands << [rake, "yard"] if File.executable?(rake)
+        commands << [RbConfig.ruby, rake, "yard"] if File.file?(rake)
         yard = File.join(@root, "bin", "yard")
-        commands << [yard] if File.executable?(yard)
+        commands << [RbConfig.ruby, yard] if File.file?(yard)
         commands
       end
 

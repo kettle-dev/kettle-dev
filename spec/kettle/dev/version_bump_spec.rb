@@ -33,7 +33,9 @@ RSpec.describe Kettle::Dev::VersionBump, :check_output, :prism_only do
 
     expect(bump.current_version).to eq("1.2.3")
     expect(bump.target_version).to eq("1.2.4")
-    expect(edits.map { |edit| edit.fetch(:path) }).to contain_exactly(version_file, gemspec_path)
+    expect(edits.map { |edit| File.basename(edit.fetch(:path)) }).to contain_exactly("version.rb", "demo.gemspec")
+    expect(edits.any? { |edit| File.identical?(edit[:path], version_file) }).to be(true)
+    expect(edits.any? { |edit| File.identical?(edit[:path], gemspec_path) }).to be(true)
     expect(File.read(version_file)).to include('VERSION = "1.2.3"')
     expect(File.read(gemspec_path)).to include('spec.version = "1.2.3"')
   end

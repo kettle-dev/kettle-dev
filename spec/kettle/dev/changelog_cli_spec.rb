@@ -1196,7 +1196,8 @@ RSpec.describe Kettle::Dev::ChangelogCLI, :check_output do
         FileUtils.mkdir_p(coverage_root)
         File.write(File.join(member_root, "Gemfile"), "source \"https://rubygems.org\"\n")
         File.write(File.join(coverage_root, "Gemfile"), "source \"https://rubygems.org\"\n")
-        File.write(File.join(fake_bin, "bundle"), <<~RUBY)
+        bundle_script = File.join(fake_bin, "bundle.rb")
+        File.write(bundle_script, <<~RUBY)
           #!/usr/bin/env ruby
           require "fileutils"
           require "json"
@@ -1225,7 +1226,13 @@ RSpec.describe Kettle::Dev::ChangelogCLI, :check_output do
             )
           )
         RUBY
-        FileUtils.chmod(0o755, File.join(fake_bin, "bundle"))
+        if Gem.win_platform?
+          File.write(File.join(fake_bin, "bundle.bat"), "@echo off\r\n\"#{RbConfig.ruby}\" \"#{bundle_script}\" %*\r\n")
+        else
+          bundle = File.join(fake_bin, "bundle")
+          File.write(bundle, "#!/usr/bin/env ruby\nload #{bundle_script.dump}\n")
+          FileUtils.chmod(0o755, bundle)
+        end
 
         allow(Kettle::Dev::CIHelpers).to receive(:project_root).and_return(member_root)
         stub_env(
@@ -1241,13 +1248,13 @@ RSpec.describe Kettle::Dev::ChangelogCLI, :check_output do
         snapshot = JSON.parse(File.read(snapshot_path))
 
         expect(snapshot).to include(
-          "argv" => %w[exec kettle-test],
-          "cwd" => File.realpath(coverage_root),
-          "bundle_gemfile" => File.join(coverage_root, "Gemfile")
+          "argv" => %w[exec kettle-test]
         )
+        expect(File.identical?(snapshot.fetch("cwd"), coverage_root)).to be(true)
+        expect(File.identical?(snapshot.fetch("bundle_gemfile"), File.join(coverage_root, "Gemfile"))).to be(true)
         expect(snapshot.fetch("bundle_bin_path")).to be_nil.or eq("")
-        expect(snapshot.fetch("bundler_setup")).to be_nil.or eq("")
-        expect(snapshot.fetch("rubyopt")).to be_nil.or eq("")
+        expect(snapshot["bundler_setup"]).to be_nil.or eq("")
+        expect(snapshot["rubyopt"]).to be_nil.or eq("")
         expect(line_cov).to eq("COVERAGE: 50.00% -- 1/2 lines in 1 files")
         expect(branch_cov).to eq("BRANCH COVERAGE: 50.00% -- 1/2 branches in 1 files")
       end
@@ -1386,8 +1393,8 @@ RSpec.describe Kettle::Dev::ChangelogCLI, :check_output do
         File.write(yard, "#!/usr/bin/env ruby\n")
         FileUtils.chmod(0o755, rake)
         FileUtils.chmod(0o755, yard)
-        allow(Open3).to receive(:capture2e).with(rake, "yard", {chdir: root}).and_return(["no task here\n", double("rake status")])
-        allow(Open3).to receive(:capture2e).with(yard, {chdir: root}).and_return(["95.35% documented\n", double("yard status")])
+        allow(Open3).to receive(:capture2e).with(RbConfig.ruby, rake, "yard", {chdir: root}).and_return(["no task here\n", double("rake status")])
+        allow(Open3).to receive(:capture2e).with(RbConfig.ruby, yard, {chdir: root}).and_return(["95.35% documented\n", double("yard status")])
 
         cli = described_class.new(strict: true)
         expect(cli.send(:yard_percent_documented)).to eq("95.35% documented")
@@ -1404,7 +1411,7 @@ RSpec.describe Kettle::Dev::ChangelogCLI, :check_output do
         FileUtils.chmod(0o755, rake)
         status = instance_double(Process::Status, success?: false, exitstatus: 1)
         output = "bundle exec yard-lint lib\nrake aborted!\nCommand failed with status (1): [bundle exec yard-lint lib]\n"
-        allow(Open3).to receive(:capture2e).with(rake, "yard", {chdir: root}).and_return([output, status])
+        allow(Open3).to receive(:capture2e).with(RbConfig.ruby, rake, "yard", {chdir: root}).and_return([output, status])
 
         cli = described_class.new(strict: true)
 

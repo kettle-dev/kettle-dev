@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Run bundled YARD scripts through Ruby on Windows and accept absolute Windows RUBOCOP_LTS_LOCAL paths.
+
 ### Security
 
 ## [3.1.2] - 2026-09-27

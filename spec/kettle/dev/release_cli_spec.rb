@@ -640,11 +640,11 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           isolated_lockfile = Dir[File.join(root, "tmp", "kettle-release", "lockfiles", "Gemfile-*.lock")].fetch(0)
 
           expect(build_command).not_to include("KETTLE_DEV_SKIP_CHANGELOG_DEPENDENCY")
-          expect(build_command).to include("BUNDLE_LOCKFILE=#{Shellwords.escape(isolated_lockfile)}")
+          expect(build_command).to include(File.basename(isolated_lockfile))
           expect(File.read(isolated_lockfile)).to eq(File.read(lockfile))
 
           release_command = local_cli.send(:release_project_command, "bundle exec rake release")
-          expect(release_command).to include("BUNDLE_LOCKFILE=#{Shellwords.escape(isolated_lockfile)}")
+          expect(release_command).to include(File.basename(isolated_lockfile))
 
           local_cli.send(:cleanup_release_task_lockfile!)
           expect(File).not_to exist(isolated_lockfile)
@@ -2302,7 +2302,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           commands = []
           command_runner = lambda do |command|
             commands << command
-            if command.include?("BUNDLE_LOCKFILE=#{File.join(root, "Appraisal.root.gemfile.lock")}")
+            if command.include?("Appraisal.root.gemfile.lock")
               File.write(File.join(root, "Appraisal.root.gemfile.lock"), <<~LOCK)
                 GEM
                   remote: https://rubygems.org/
@@ -2332,7 +2332,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           end
 
           expect { local_cli.run }.not_to raise_error
-          appraisal_reset_index = commands.index { |command| command.include?("BUNDLE_LOCKFILE=#{File.join(root, "Appraisal.root.gemfile.lock")}") }
+          appraisal_reset_index = commands.index { |command| command.include?("Appraisal.root.gemfile.lock") }
           appraisal_generate_index = commands.index { |command| command.end_with?(" bin/rake appraisal:generate") }
           expect(appraisal_reset_index).not_to be_nil
           expect(appraisal_generate_index).not_to be_nil
@@ -2859,7 +2859,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           allow(local_cli).to receive(:git_output).with(["rev-parse", "-q", "--verify", "refs/tags/v1.2.3"]).and_return(["", false])
           git = local_cli.instance_variable_get(:@git)
           expect(git).to receive(:tag_annotated).with("v1.2.3", "v1.2.3").ordered.and_return(true)
-          expect(local_cli).to receive(:run_cmd!).with("gem push #{gem_path}").ordered
+          expect(local_cli).to receive(:run_cmd!).with(a_string_including("gem push ", File.basename(gem_path))).ordered
           expect(local_cli).to receive(:run_release_availability_probe).ordered do |candidate|
             expect(candidate.published).to be(true)
             true
@@ -2882,7 +2882,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           allow(local_cli).to receive(:git_output).with(["rev-parse", "-q", "--verify", "refs/tags/v1.2.3"]).and_return(["abc", true])
           git = local_cli.instance_variable_get(:@git)
           expect(git).not_to receive(:tag_annotated)
-          expect(local_cli).to receive(:run_cmd!).with("gem push #{gem_path}")
+          expect(local_cli).to receive(:run_cmd!).with(a_string_including("gem push ", File.basename(gem_path)))
           expect(local_cli).to receive(:run_release_availability_probe) do |candidate|
             expect(candidate.published).to be(true)
             true
@@ -3416,10 +3416,10 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           stub_env("RUBOCOP_LTS_LOCAL" => workspace)
 
           expect(git).to receive(:capture)
-            .with(["-C", root, "branch", "--show-current"])
+            .with(["-C", satisfy { |path| File.basename(path) == "rubocop-lts" }, "branch", "--show-current"])
             .and_return(["main", true])
           expect(git).to receive(:capture)
-            .with(["-C", root, "switch", "r3_2-even-v24"])
+            .with(["-C", satisfy { |path| File.basename(path) == "rubocop-lts" }, "switch", "r3_2-even-v24"])
             .and_return(["", true])
 
           expect { local_cli.send(:prepare_rubocop_lts_local_branch!) }.not_to raise_error

@@ -3,6 +3,7 @@
 # External stdlib
 require "digest"
 require "open3"
+require "pathname"
 require "shellwords"
 require "time"
 require "fileutils"
@@ -707,8 +708,8 @@ module Kettle
       end
 
       def same_path?(left, right)
-        File.realpath(left) == File.realpath(right)
-      rescue Errno::ENOENT
+        File.identical?(left, right)
+      rescue SystemCallError
         false
       end
 
@@ -716,7 +717,7 @@ module Kettle
         value = ENV["RUBOCOP_LTS_LOCAL"].to_s.strip
         return nil if value.empty? || %w[false 0 no off].include?(value.downcase)
         return File.join(Dir.home, "src", "rubocop-lts") if %w[true 1 yes on].include?(value.downcase)
-        return value if value.start_with?("/")
+        return value if Pathname.new(value).absolute?
 
         File.join(Dir.home, value)
       end
