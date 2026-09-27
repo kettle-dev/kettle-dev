@@ -28,15 +28,13 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Handle macOS PTY EOF and canonicalize release-contract paths beneath symlinked temporary roots.
-
 ### Security
 
 ## [3.1.2] - 2026-09-27
 
 - TAG: [v3.1.2][3.1.2t]
-- COVERAGE: 91.57% -- 6140/6705 lines in 48 files
-- BRANCH COVERAGE: 76.14% -- 2346/3081 branches in 48 files
+- COVERAGE: 91.69% -- 6154/6712 lines in 48 files
+- BRANCH COVERAGE: 75.97% -- 2343/3084 branches in 48 files
 - 51.02% documented
 
 ### Added
@@ -59,6 +57,10 @@ Please file a bug if you notice a violation of semantic versioning.
   - dependencies (1)
   - other (1)
   - workflows (30)
+
+### Fixed
+
+- Handle macOS PTY EOF and canonicalize release-contract paths beneath symlinked temporary roots.
 
 ## [3.1.1] - 2026-09-14
 
