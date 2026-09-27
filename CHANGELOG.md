@@ -28,15 +28,13 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Run bundled YARD scripts through Ruby on Windows and accept absolute Windows RUBOCOP_LTS_LOCAL paths.
-
 ### Security
 
 ## [3.1.2] - 2026-09-27
 
 - TAG: [v3.1.2][3.1.2t]
-- COVERAGE: 91.54% -- 6144/6712 lines in 48 files
-- BRANCH COVERAGE: 75.97% -- 2343/3084 branches in 48 files
+- COVERAGE: 91.60% -- 6149/6713 lines in 48 files
+- BRANCH COVERAGE: 76.10% -- 2347/3084 branches in 48 files
 - 51.02% documented
 
 ### Added
@@ -63,6 +61,8 @@ Please file a bug if you notice a violation of semantic versioning.
 ### Fixed
 
 - Handle macOS PTY EOF and canonicalize release-contract paths beneath symlinked temporary roots.
+
+- Run bundled YARD scripts through Ruby on Windows and accept absolute Windows RUBOCOP_LTS_LOCAL paths.
 
 ## [3.1.1] - 2026-09-14
 
