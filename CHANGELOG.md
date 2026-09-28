@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Recheck registry gem availability after release lockfile resolution instead of reusing stale negative probes.
-
 ### Security
+
+## [3.1.5] - 2026-09-28
+
+- TAG: [v3.1.5][3.1.5t]
+- COVERAGE: 91.43% -- 6170/6748 lines in 49 files
+- BRANCH COVERAGE: 75.89% -- 2348/3094 branches in 49 files
+- 51.34% documented
+
+### Fixed
+
+- Recheck registry gem availability after release lockfile resolution instead of reusing stale negative probes.
 
 ## [3.1.4] - 2026-09-28
 
@@ -3929,7 +3938,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.4...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.5...HEAD
+[3.1.5]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.4...v3.1.5
+[3.1.5t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.5
 [3.1.4]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.3...v3.1.4
 [3.1.4t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.4
 [3.1.3]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.2...v3.1.3
