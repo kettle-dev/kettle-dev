@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Recheck registry gem availability after release lockfile resolution instead of reusing stale negative probes.
+
 ### Security
 
 ## [3.1.4] - 2026-09-28

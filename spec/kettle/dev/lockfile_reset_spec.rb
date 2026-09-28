@@ -506,6 +506,28 @@ RSpec.describe Kettle::Dev::LockfileReset do
     expect(diagnostics.join("\n")).to include("locks local workspace gem #{never_released_workspace_gem} #{unreleased_workspace_version} as a registry gem")
   end
 
+  it "rechecks registry availability after resolving release lockfiles" do
+    lockfile_reset = described_class.new(root: @root, command_runner: ->(_command) {})
+    path = File.join(@root, "Gemfile.lock")
+    File.write(File.join(@root, "Gemfile"), "source \"https://rubygems.org\"\n")
+    File.write(path, <<~LOCK)
+      GEM
+        remote: https://rubygems.org/
+        specs:
+          #{never_released_workspace_gem} (#{unreleased_workspace_version})
+
+      CHECKSUMS
+        #{never_released_workspace_gem} (#{unreleased_workspace_version}) sha256=localonly
+    LOCK
+    allow(lockfile_reset).to receive(:local_workspace_gem_names).and_return(Set[never_released_workspace_gem])
+    allow(lockfile_reset).to receive(:locally_installed?).with(never_released_workspace_gem, unreleased_workspace_version).and_return(true)
+    expect(lockfile_reset).to receive(:gem_source_version_available?)
+      .with(never_released_workspace_gem, unreleased_workspace_version, ["https://rubygems.org/"])
+      .and_return(false, true, true)
+
+    lockfile_reset.public_send(:reset, "release-lockfiles")
+  end
+
   it "targets unreleased workspace registry gems even when checksums are present" do
     reset = described_class.new(root: @root, command_runner: ->(_command) {})
     File.write(File.join(@root, "Gemfile"), "source \"https://rubygems.org\"\n")

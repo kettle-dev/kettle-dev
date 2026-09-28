@@ -124,6 +124,7 @@ module Kettle
 
       def reset(target, skip_changelog_dependency: false)
         BundlerEnvGuard.warn_unexpected_env!
+        clear_gem_source_version_availability_cache!
         paths = lockfile_paths_for(target)
         release_lockfiles = release_lockfiles_target?(target)
         # The selected graph governs both tracked release locks and disposable
@@ -188,6 +189,7 @@ module Kettle
           else
             command_runner.call(command)
           end
+          clear_gem_source_version_availability_cache!
         end
       end
 
@@ -788,6 +790,10 @@ module Kettle
         return @gem_source_version_available[cache_key] if @gem_source_version_available.key?(cache_key)
 
         @gem_source_version_available[cache_key] = GemSourceProbe.new(source_url: source_url).available?(name, version)
+      end
+
+      def clear_gem_source_version_availability_cache!
+        @gem_source_version_available = {}
       end
 
       def source_urls_for_lockfiles(paths)
