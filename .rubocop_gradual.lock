@@ -177,17 +177,17 @@
     [72, 13, 2, "Lint/LtsRuby/UnavailableMethod: Method/Proc#<< is unavailable before Ruby 2.6.", 5859461],
     [97, 13, 4, "Lint/LtsRuby/UnavailableMethod: Symbol#name is unavailable before Ruby 3.0.", 2087876002]
   ],
-  "lib/kettle/dev.rb:943583148": [
-    [108, 14, 4, "Lint/LtsRuby/UnavailableMethod: Set#to_s is unavailable before Ruby 2.5.", 2087961426],
-    [114, 14, 4, "Lint/LtsRuby/UnavailableMethod: Set#to_s is unavailable before Ruby 2.5.", 2087961426],
-    [136, 33, 4, "Lint/LtsRuby/UnavailableMethod: Set#to_s is unavailable before Ruby 2.5.", 2087961426],
-    [138, 33, 9, "Lint/LtsRuby/UnavailableMethod: Fiber#backtrace is unavailable before Ruby 3.0.", 2410411503],
-    [138, 53, 4, "Lint/LtsRuby/UnavailableMethod: Set#join is unavailable before Ruby 3.0.", 2088000679],
-    [138, 120, 9, "Lint/LtsRuby/UnavailableMethod: Fiber#backtrace is unavailable before Ruby 3.0.", 2410411503],
-    [150, 33, 4, "Lint/LtsRuby/UnavailableMethod: Set#to_s is unavailable before Ruby 2.5.", 2087961426],
-    [176, 31, 4, "Lint/LtsRuby/UnavailableMethod: Set#to_s is unavailable before Ruby 2.5.", 2087961426],
-    [178, 33, 1, "Lint/LtsRuby/UnavailableMethod: Enumerator#+ is unavailable before Ruby 2.6.", 177550],
-    [191, 37, 4, "Lint/LtsRuby/UnavailableMethod: Set#to_s is unavailable before Ruby 2.5.", 2087961426]
+  "lib/kettle/dev.rb:3279920009": [
+    [109, 14, 4, "Lint/LtsRuby/UnavailableMethod: Set#to_s is unavailable before Ruby 2.5.", 2087961426],
+    [115, 14, 4, "Lint/LtsRuby/UnavailableMethod: Set#to_s is unavailable before Ruby 2.5.", 2087961426],
+    [137, 33, 4, "Lint/LtsRuby/UnavailableMethod: Set#to_s is unavailable before Ruby 2.5.", 2087961426],
+    [139, 33, 9, "Lint/LtsRuby/UnavailableMethod: Fiber#backtrace is unavailable before Ruby 3.0.", 2410411503],
+    [139, 53, 4, "Lint/LtsRuby/UnavailableMethod: Set#join is unavailable before Ruby 3.0.", 2088000679],
+    [139, 120, 9, "Lint/LtsRuby/UnavailableMethod: Fiber#backtrace is unavailable before Ruby 3.0.", 2410411503],
+    [151, 33, 4, "Lint/LtsRuby/UnavailableMethod: Set#to_s is unavailable before Ruby 2.5.", 2087961426],
+    [177, 31, 4, "Lint/LtsRuby/UnavailableMethod: Set#to_s is unavailable before Ruby 2.5.", 2087961426],
+    [179, 33, 1, "Lint/LtsRuby/UnavailableMethod: Enumerator#+ is unavailable before Ruby 2.6.", 177550],
+    [192, 37, 4, "Lint/LtsRuby/UnavailableMethod: Set#to_s is unavailable before Ruby 2.5.", 2087961426]
   ],
   "lib/kettle/dev/bump_cli.rb:3071771964": [
     [18, 29, 5, "Lint/LtsRuby/UnavailableMethod: Thread#fetch is unavailable before Ruby 2.5.", 171106201],
