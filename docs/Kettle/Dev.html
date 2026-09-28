@@ -81,7 +81,7 @@
   <dl>
     <dt>Defined in:</dt>
     <dd>lib/kettle/dev.rb<span class="defines">,<br>
-  lib/kettle/dev/version.rb,<br> lib/kettle/dev/bump_cli.rb,<br> lib/kettle/dev/dvcs_cli.rb,<br> lib/kettle/dev/reset_cli.rb,<br> lib/kettle/dev/ci_helpers.rb,<br> lib/kettle/dev/ci_monitor.rb,<br> lib/kettle/dev/commit_msg.rb,<br> lib/kettle/dev/versioning.rb,<br> lib/kettle/dev/git_adapter.rb,<br> lib/kettle/dev/release_cli.rb,<br> lib/kettle/dev/exit_adapter.rb,<br> lib/kettle/dev/version_bump.rb,<br> lib/kettle/dev/changelog_cli.rb,<br> lib/kettle/dev/input_adapter.rb,<br> lib/kettle/dev/tasks/ci_task.rb,<br> lib/kettle/dev/cache_progress.rb,<br> lib/kettle/dev/lockfile_reset.rb,<br> lib/kettle/dev/readme_backers.rb,<br> lib/kettle/dev/gem_spec_reader.rb,<br> lib/kettle/dev/pre_release_cli.rb,<br> lib/kettle/dev/release_secrets.rb,<br> lib/kettle/dev/gem_source_probe.rb,<br> lib/kettle/dev/gha_sha_pins_cli.rb,<br> lib/kettle/dev/release_notifier.rb,<br> lib/kettle/dev/bundler_env_guard.rb,<br> lib/kettle/dev/git_commit_footer.rb,<br> lib/kettle/dev/executable_version.rb,<br> lib/kettle/dev/ruby_gems_versions.rb,<br> lib/kettle/dev/changelog_entry_adder.rb,<br> lib/kettle/dev/open_collective_config.rb,<br> lib/kettle/dev/release_graph_contract.rb,<br> lib/kettle/dev/release_secrets_doctor.rb,<br> lib/kettle/dev/interactive_release_command.rb,<br> lib/kettle/dev/markdown_reference_validator.rb</span>
+  lib/kettle/dev/paths.rb,<br> lib/kettle/dev/version.rb,<br> lib/kettle/dev/bump_cli.rb,<br> lib/kettle/dev/dvcs_cli.rb,<br> lib/kettle/dev/reset_cli.rb,<br> lib/kettle/dev/ci_helpers.rb,<br> lib/kettle/dev/ci_monitor.rb,<br> lib/kettle/dev/commit_msg.rb,<br> lib/kettle/dev/versioning.rb,<br> lib/kettle/dev/git_adapter.rb,<br> lib/kettle/dev/release_cli.rb,<br> lib/kettle/dev/exit_adapter.rb,<br> lib/kettle/dev/version_bump.rb,<br> lib/kettle/dev/changelog_cli.rb,<br> lib/kettle/dev/input_adapter.rb,<br> lib/kettle/dev/tasks/ci_task.rb,<br> lib/kettle/dev/cache_progress.rb,<br> lib/kettle/dev/lockfile_reset.rb,<br> lib/kettle/dev/readme_backers.rb,<br> lib/kettle/dev/gem_spec_reader.rb,<br> lib/kettle/dev/pre_release_cli.rb,<br> lib/kettle/dev/release_secrets.rb,<br> lib/kettle/dev/gem_source_probe.rb,<br> lib/kettle/dev/gha_sha_pins_cli.rb,<br> lib/kettle/dev/release_notifier.rb,<br> lib/kettle/dev/bundler_env_guard.rb,<br> lib/kettle/dev/git_commit_footer.rb,<br> lib/kettle/dev/executable_version.rb,<br> lib/kettle/dev/ruby_gems_versions.rb,<br> lib/kettle/dev/changelog_entry_adder.rb,<br> lib/kettle/dev/open_collective_config.rb,<br> lib/kettle/dev/release_graph_contract.rb,<br> lib/kettle/dev/release_secrets_doctor.rb,<br> lib/kettle/dev/interactive_release_command.rb,<br> lib/kettle/dev/markdown_reference_validator.rb</span>
 
 </dd>
   </dl>
@@ -92,7 +92,7 @@
 <p class="children">
   
     
-      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Dev/BundlerEnvGuard.html" title="Kettle::Dev::BundlerEnvGuard (module)">BundlerEnvGuard</a></span>, <span class='object_link'><a href="Dev/CIHelpers.html" title="Kettle::Dev::CIHelpers (module)">CIHelpers</a></span>, <span class='object_link'><a href="Dev/CIMonitor.html" title="Kettle::Dev::CIMonitor (module)">CIMonitor</a></span>, <span class='object_link'><a href="Dev/CommitMsg.html" title="Kettle::Dev::CommitMsg (module)">CommitMsg</a></span>, <span class='object_link'><a href="Dev/ExecutableVersion.html" title="Kettle::Dev::ExecutableVersion (module)">ExecutableVersion</a></span>, <span class='object_link'><a href="Dev/ExitAdapter.html" title="Kettle::Dev::ExitAdapter (module)">ExitAdapter</a></span>, <span class='object_link'><a href="Dev/InputAdapter.html" title="Kettle::Dev::InputAdapter (module)">InputAdapter</a></span>, <span class='object_link'><a href="Dev/OpenCollectiveConfig.html" title="Kettle::Dev::OpenCollectiveConfig (module)">OpenCollectiveConfig</a></span>, <span class='object_link'><a href="Dev/ReleaseNotifier.html" title="Kettle::Dev::ReleaseNotifier (module)">ReleaseNotifier</a></span>, <span class='object_link'><a href="Dev/ReleaseSecrets.html" title="Kettle::Dev::ReleaseSecrets (module)">ReleaseSecrets</a></span>, <span class='object_link'><a href="Dev/RubyGemsVersions.html" title="Kettle::Dev::RubyGemsVersions (module)">RubyGemsVersions</a></span>, <span class='object_link'><a href="Dev/Tasks.html" title="Kettle::Dev::Tasks (module)">Tasks</a></span>, <span class='object_link'><a href="Dev/Version.html" title="Kettle::Dev::Version (module)">Version</a></span>, <span class='object_link'><a href="Dev/Versioning.html" title="Kettle::Dev::Versioning (module)">Versioning</a></span>
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Dev/BundlerEnvGuard.html" title="Kettle::Dev::BundlerEnvGuard (module)">BundlerEnvGuard</a></span>, <span class='object_link'><a href="Dev/CIHelpers.html" title="Kettle::Dev::CIHelpers (module)">CIHelpers</a></span>, <span class='object_link'><a href="Dev/CIMonitor.html" title="Kettle::Dev::CIMonitor (module)">CIMonitor</a></span>, <span class='object_link'><a href="Dev/CommitMsg.html" title="Kettle::Dev::CommitMsg (module)">CommitMsg</a></span>, <span class='object_link'><a href="Dev/ExecutableVersion.html" title="Kettle::Dev::ExecutableVersion (module)">ExecutableVersion</a></span>, <span class='object_link'><a href="Dev/ExitAdapter.html" title="Kettle::Dev::ExitAdapter (module)">ExitAdapter</a></span>, <span class='object_link'><a href="Dev/InputAdapter.html" title="Kettle::Dev::InputAdapter (module)">InputAdapter</a></span>, <span class='object_link'><a href="Dev/OpenCollectiveConfig.html" title="Kettle::Dev::OpenCollectiveConfig (module)">OpenCollectiveConfig</a></span>, <span class='object_link'><a href="Dev/Paths.html" title="Kettle::Dev::Paths (module)">Paths</a></span>, <span class='object_link'><a href="Dev/ReleaseNotifier.html" title="Kettle::Dev::ReleaseNotifier (module)">ReleaseNotifier</a></span>, <span class='object_link'><a href="Dev/ReleaseSecrets.html" title="Kettle::Dev::ReleaseSecrets (module)">ReleaseSecrets</a></span>, <span class='object_link'><a href="Dev/RubyGemsVersions.html" title="Kettle::Dev::RubyGemsVersions (module)">RubyGemsVersions</a></span>, <span class='object_link'><a href="Dev/Tasks.html" title="Kettle::Dev::Tasks (module)">Tasks</a></span>, <span class='object_link'><a href="Dev/Version.html" title="Kettle::Dev::Version (module)">Version</a></span>, <span class='object_link'><a href="Dev/Versioning.html" title="Kettle::Dev::Versioning (module)">Versioning</a></span>
     
   
     
@@ -665,12 +665,12 @@ Accepts false, n, no, 0 (any case).</p>
       <pre class="lines">
 
 
-169
 170
-171</pre>
+171
+172</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 169</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 170</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_defaults'>defaults</span>
   <span class='ivar'>@defaults</span>
@@ -762,7 +762,6 @@ Controlled by KETTLE_DEV_DEBUG=true.</p>
       <pre class="lines">
 
 
-133
 134
 135
 136
@@ -770,10 +769,11 @@ Controlled by KETTLE_DEV_DEBUG=true.</p>
 138
 139
 140
-141</pre>
+141
+142</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 133</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 134</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_debug_error'>debug_error</span><span class='lparen'>(</span><span class='id identifier rubyid_error'>error</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>backtrace:</span> <span class='kw'>true</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>unless</span> <span class='const'><span class='object_link'><a href="#DEBUGGING-constant" title="Kettle::Dev::DEBUGGING (constant)">DEBUGGING</a></span></span>
@@ -830,17 +830,17 @@ Controlled by KETTLE_DEV_DEBUG=true.</p>
       <pre class="lines">
 
 
-147
 148
 149
 150
 151
 152
 153
-154</pre>
+154
+155</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 147</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 148</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_debug_log'>debug_log</span><span class='lparen'>(</span><span class='id identifier rubyid_msg'>msg</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>unless</span> <span class='const'><span class='object_link'><a href="#DEBUGGING-constant" title="Kettle::Dev::DEBUGGING (constant)">DEBUGGING</a></span></span>
@@ -893,12 +893,12 @@ Controlled by KETTLE_DEV_DEBUG=true.</p>
       <pre class="lines">
 
 
-190
 191
-192</pre>
+192
+193</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 190</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 191</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_registered?'>default_registered?</span><span class='lparen'>(</span><span class='id identifier rubyid_task_name'>task_name</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_defaults'>defaults</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_task_name'>task_name</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span>
@@ -923,14 +923,14 @@ Controlled by KETTLE_DEV_DEBUG=true.</p>
       <pre class="lines">
 
 
-105
 106
 107
 108
-109</pre>
+109
+110</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 105</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 106</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_display_path'>display_path</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='id identifier rubyid_path'>path</span> <span class='kw'>if</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
@@ -957,14 +957,14 @@ Controlled by KETTLE_DEV_DEBUG=true.</p>
       <pre class="lines">
 
 
-111
 112
 113
 114
-115</pre>
+115
+116</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 111</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 112</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_display_text'>display_text</span><span class='lparen'>(</span><span class='id identifier rubyid_text'>text</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='id identifier rubyid_text'>text</span> <span class='kw'>if</span> <span class='id identifier rubyid_text'>text</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
@@ -1004,14 +1004,14 @@ gem-shipped rakelib directory so host projects get tasks from this gem.</p>
       <pre class="lines">
 
 
-161
 162
 163
 164
-165</pre>
+165
+166</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 161</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 162</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_install_tasks'>install_tasks</span>
   <span class='id identifier rubyid_linting_tasks'>linting_tasks</span>
@@ -1081,7 +1081,6 @@ Also enhances the :default task immediately if it exists.</p>
       <pre class="lines">
 
 
-175
 176
 177
 178
@@ -1094,10 +1093,11 @@ Also enhances the :default task immediately if it exists.</p>
 185
 186
 187
-188</pre>
+188
+189</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 175</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 176</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_register_default'>register_default</span><span class='lparen'>(</span><span class='id identifier rubyid_task_name'>task_name</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_task_name'>task_name</span> <span class='op'>=</span> <span class='id identifier rubyid_task_name'>task_name</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span>
@@ -1133,14 +1133,14 @@ Also enhances the :default task immediately if it exists.</p>
       <pre class="lines">
 
 
-117
 118
 119
 120
-121</pre>
+121
+122</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 117</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 118</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_safe_load_yaml'>safe_load_yaml</span><span class='lparen'>(</span><span class='id identifier rubyid_content'>content</span><span class='rparen'>)</span>
   <span class='const'>YAML</span><span class='period'>.</span><span class='id identifier rubyid_safe_load'>safe_load</span><span class='lparen'>(</span><span class='id identifier rubyid_content'>content</span><span class='comma'>,</span> <span class='label'>permitted_classes:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>aliases:</span> <span class='kw'>false</span><span class='rparen'>)</span>
@@ -1167,12 +1167,12 @@ Also enhances the :default task immediately if it exists.</p>
       <pre class="lines">
 
 
-123
 124
-125</pre>
+125
+126</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 123</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 124</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_safe_load_yaml_file'>safe_load_yaml_file</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_safe_load_yaml'>safe_load_yaml</span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span><span class='rparen'>)</span>
@@ -1220,12 +1220,12 @@ Also enhances the :default task immediately if it exists.</p>
       <pre class="lines">
 
 
-194
 195
-196</pre>
+196
+197</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 194</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev.rb', line 195</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_skip_test_tasks?'>skip_test_tasks?</span>
   <span class='const'><span class='object_link'><a href="#ENV_TRUE_RE-constant" title="Kettle::Dev::ENV_TRUE_RE (constant)">ENV_TRUE_RE</a></span></span><span class='period'>.</span><span class='id identifier rubyid_match?'>match?</span><span class='lparen'>(</span><span class='const'>ENV</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>KETTLE_DEV_SKIP_TESTS</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='rparen'>)</span>

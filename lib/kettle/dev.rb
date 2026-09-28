@@ -47,6 +47,7 @@ module Kettle
     autoload :MarkdownReferenceValidator, "kettle/dev/markdown_reference_validator"
     autoload :ReadmeBackers, "kettle/dev/readme_backers"
     autoload :OpenCollectiveConfig, "kettle/dev/open_collective_config"
+    autoload :Paths, "kettle/dev/paths"
     autoload :ReleaseNotifier, "kettle/dev/release_notifier"
     autoload :ReleaseCLI, "kettle/dev/release_cli"
     autoload :ReleaseGraphContract, "kettle/dev/release_graph_contract"

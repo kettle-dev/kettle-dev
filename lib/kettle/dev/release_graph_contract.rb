@@ -30,7 +30,7 @@ module Kettle
 
       def initialize(name:, root:, ci_root:, local_path_roots: [], selector_env: {})
         @name = String(name)
-        @root = File.realpath(root)
+        @root = Paths.canonical(root)
         @ci_root = canonical_path(ci_root)
         @local_path_roots = Array(local_path_roots).map { |path| canonical_path(path) }.uniq.freeze
         @selector_env = selector_env.to_h.map { |key, value| [String(key), String(value)] }.to_h.freeze
@@ -86,25 +86,11 @@ module Kettle
       end
 
       def canonical_path(path)
-        expanded = File.expand_path(path, @root)
-        candidate = expanded
-        suffix = []
-
-        until File.exist?(candidate) || File.symlink?(candidate)
-          parent = File.dirname(candidate)
-          return expanded if parent == candidate
-
-          suffix.unshift(File.basename(candidate))
-          candidate = parent
-        end
-
-        suffix.reduce(File.realpath(candidate)) { |base, component| File.join(base, component) }
-      rescue Errno::ENOENT
-        expanded
+        Paths.canonical(path, base: @root)
       end
 
       def path_within_root?(path, root)
-        path == root || (path[0, root.length] == root && path[root.length] == "/")
+        Paths.within?(path, root)
       end
     end
   end

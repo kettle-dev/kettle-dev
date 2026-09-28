@@ -30,6 +30,17 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Security
 
+## [3.1.4] - 2026-09-28
+
+- TAG: [v3.1.4][3.1.4t]
+- COVERAGE: 91.89% -- 6197/6744 lines in 49 files
+- BRANCH COVERAGE: 76.24% -- 2359/3094 branches in 49 files
+- 51.34% documented
+
+### Fixed
+
+- Centralize canonical path and component-aware containment checks for Kettle tools.
+
 ## [3.1.3] - 2026-09-27
 
 - TAG: [v3.1.3][3.1.3t]
@@ -3916,7 +3927,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.3...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.4...HEAD
+[3.1.4]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.3...v3.1.4
+[3.1.4t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.4
 [3.1.3]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.2...v3.1.3
 [3.1.3t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.3
 [3.1.2]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.1...v3.1.2
