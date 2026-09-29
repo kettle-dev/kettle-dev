@@ -119,7 +119,7 @@ RSpec.describe Kettle::Dev::GhaShaPinsCLI do
 
       paths = cli.send(:discover_workflow_files, workflow_root, Set.new)
       expect(paths.length).to eq(1)
-      expect(File.identical?(paths.first, workflow_path)).to be(true)
+      expect(Kettle::Dev::Paths.same?(paths.first, workflow_path)).to be(true)
     end
 
     it "accepts a workflow directory as the analysis root" do
@@ -128,7 +128,7 @@ RSpec.describe Kettle::Dev::GhaShaPinsCLI do
 
       paths = cli.send(:discover_workflow_files, workflow_dir, Set.new)
       expect(paths.length).to eq(1)
-      expect(File.identical?(paths.first, workflow_path)).to be(true)
+      expect(Kettle::Dev::Paths.same?(paths.first, workflow_path)).to be(true)
     end
   end
 
@@ -712,7 +712,7 @@ RSpec.describe Kettle::Dev::GhaShaPinsCLI do
           "reason" => described_class::UPGRADE_REASON
         )
       )
-      expect(File.identical?(outdated_pins.first.fetch("path"), workflow_path)).to be(true)
+      expect(Kettle::Dev::Paths.same?(outdated_pins.first.fetch("path"), workflow_path)).to be(true)
       expect(payload.fetch("planned_changes").first["old_version"]).to eq("1.2.0")
       expect(payload["planned_changes"].first["new_version"]).to eq("1.3.0")
     end

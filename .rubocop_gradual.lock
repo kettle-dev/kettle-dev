@@ -1390,7 +1390,7 @@
     [13, 74, 5, "Lint/LtsRuby/UnavailableMethod: Matrix/Vector#[]= is unavailable before Ruby 2.6.", 240418772],
     [46, 74, 4, "Lint/LtsRuby/UnavailableMethod: StringScanner#size is unavailable before Ruby 2.5.", 2088346912]
   ],
-  "spec/kettle/dev/changelog_cli_spec.rb:4052940834": [
+  "spec/kettle/dev/changelog_cli_spec.rb:1979143106": [
     [41, 94, 4, "Lint/LtsRuby/UnavailableMethod: Set#join is unavailable before Ruby 3.0.", 2088000679],
     [542, 48, 4, "Lint/LtsRuby/UnavailableMethod: StringScanner#size is unavailable before Ruby 2.5.", 2088346912],
     [587, 48, 4, "Lint/LtsRuby/UnavailableMethod: StringScanner#size is unavailable before Ruby 2.5.", 2088346912],
@@ -1398,8 +1398,8 @@
     [713, 48, 4, "Lint/LtsRuby/UnavailableMethod: StringScanner#size is unavailable before Ruby 2.5.", 2088346912],
     [776, 53, 4, "Lint/LtsRuby/UnavailableMethod: StringScanner#size is unavailable before Ruby 2.5.", 2088346912],
     [829, 48, 4, "Lint/LtsRuby/UnavailableMethod: StringScanner#size is unavailable before Ruby 2.5.", 2088346912],
-    [1253, 41, 5, "Lint/LtsRuby/UnavailableMethod: Thread#fetch is unavailable before Ruby 2.5.", 171106201],
-    [1254, 41, 5, "Lint/LtsRuby/UnavailableMethod: Thread#fetch is unavailable before Ruby 2.5.", 171106201],
+    [1253, 50, 5, "Lint/LtsRuby/UnavailableMethod: Thread#fetch is unavailable before Ruby 2.5.", 171106201],
+    [1254, 50, 5, "Lint/LtsRuby/UnavailableMethod: Thread#fetch is unavailable before Ruby 2.5.", 171106201],
     [1255, 25, 5, "Lint/LtsRuby/UnavailableMethod: Thread#fetch is unavailable before Ruby 2.5.", 171106201],
     [1526, 50, 11, "Lint/LtsRuby/UnavailableMethod: Symbol#start_with? is unavailable before Ruby 2.7.", 1795111591],
     [1536, 41, 2, "Lint/LtsRuby/UnavailableMethod: Method/Proc#<< is unavailable before Ruby 2.6.", 5859461],
@@ -1425,15 +1425,15 @@
   "spec/kettle/dev/dvcs_cli_spec.rb:2631696935": [
     [245, 38, 9, "Lint/LtsRuby/UnavailableMethod: Matrix/Vector#[]= is unavailable before Ruby 2.6.", 3059176877]
   ],
-  "spec/kettle/dev/gem_spec_reader_spec.rb:1176215743": [
+  "spec/kettle/dev/gem_spec_reader_spec.rb:379128280": [
     [75, 43, 4, "Lint/LtsRuby/UnavailableMethod: Set#to_s is unavailable before Ruby 2.5.", 2087961426],
     [245, 18, 2, "Lint/LtsRuby/UnavailableMethod: Method/Proc#<< is unavailable before Ruby 2.6.", 5859461],
     [251, 63, 4, "Lint/LtsRuby/UnavailableMethod: StringScanner#size is unavailable before Ruby 2.5.", 2088346912]
   ],
-  "spec/kettle/dev/gha_sha_pins_cli_spec.rb:17696764": [
+  "spec/kettle/dev/gha_sha_pins_cli_spec.rb:1008157947": [
     [534, 21, 5, "Lint/LtsRuby/UnavailableMethod: Thread#fetch is unavailable before Ruby 2.5.", 171106201],
     [702, 31, 5, "Lint/LtsRuby/UnavailableMethod: Thread#fetch is unavailable before Ruby 2.5.", 171106201],
-    [715, 50, 5, "Lint/LtsRuby/UnavailableMethod: Thread#fetch is unavailable before Ruby 2.5.", 171106201],
+    [715, 59, 5, "Lint/LtsRuby/UnavailableMethod: Thread#fetch is unavailable before Ruby 2.5.", 171106201],
     [716, 22, 5, "Lint/LtsRuby/UnavailableMethod: Thread#fetch is unavailable before Ruby 2.5.", 171106201]
   ],
   "spec/kettle/dev/git_adapter_spec.rb:3859014414": [
@@ -1559,7 +1559,7 @@
   "spec/kettle/dev/tasks/ci_task_spec.rb:2485931704": [
     [433, 41, 9, "Lint/LtsRuby/UnavailableMethod: UnboundMethod#bind_call is unavailable before Ruby 2.7.", 1080920377]
   ],
-  "spec/kettle/dev/version_bump_spec.rb:694727905": [
+  "spec/kettle/dev/version_bump_spec.rb:3478962785": [
     [36, 50, 5, "Lint/LtsRuby/UnavailableMethod: Thread#fetch is unavailable before Ruby 2.5.", 171106201]
   ],
   "spec/kettle/emoji_regex_spec.rb:358575307": [

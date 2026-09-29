@@ -61,7 +61,7 @@ RSpec.describe Kettle::Dev::GemSpecReader do
 
     it "extracts expected fields" do
       info = load_info
-      expect(File.identical?(info[:gemspec_path], gemspec_path)).to be(true)
+      expect(Kettle::Dev::Paths.same?(info[:gemspec_path], gemspec_path)).to be(true)
       expect(info[:gem_name]).to eq("demo-gem")
       expect(info[:namespace]).to eq("Demo::Gem")
       expect(info[:namespace_shield]).to eq("Demo%3A%3AGem")
@@ -247,7 +247,7 @@ RSpec.describe Kettle::Dev::GemSpecReader do
 
       3.times { load_info }
 
-      expect(Gem::Specification).to have_received(:load).with(satisfy { |path| File.identical?(path, gemspec_path) }).once
+      expect(Gem::Specification).to have_received(:load).with(satisfy { |path| Kettle::Dev::Paths.same?(path, gemspec_path) }).once
       expect(warnings.grep(/Could not determine funding org/).size).to eq(1)
     end
   end
@@ -318,7 +318,7 @@ RSpec.describe Kettle::Dev::GemSpecReader do
       info = load_info
 
       expect(Kettle::Dev).to have_received(:debug_error).with(load_error, :load)
-      expect(File.identical?(info[:gemspec_path], gemspec_path)).to be(true)
+      expect(Kettle::Dev::Paths.same?(info[:gemspec_path], gemspec_path)).to be(true)
       expect(info[:gem_name]).to eq("") # falls back when spec could not be loaded
       expect(Kernel).to have_received(:warn).with(/Could not derive gem name/)
     end

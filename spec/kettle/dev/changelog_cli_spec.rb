@@ -1250,8 +1250,8 @@ RSpec.describe Kettle::Dev::ChangelogCLI, :check_output do
         expect(snapshot).to include(
           "argv" => %w[exec kettle-test]
         )
-        expect(File.identical?(snapshot.fetch("cwd"), coverage_root)).to be(true)
-        expect(File.identical?(snapshot.fetch("bundle_gemfile"), File.join(coverage_root, "Gemfile"))).to be(true)
+        expect(Kettle::Dev::Paths.same?(snapshot.fetch("cwd"), coverage_root)).to be(true)
+        expect(Kettle::Dev::Paths.same?(snapshot.fetch("bundle_gemfile"), File.join(coverage_root, "Gemfile"))).to be(true)
         expect(snapshot.fetch("bundle_bin_path")).to be_nil.or eq("")
         expect(snapshot["bundler_setup"]).to be_nil.or eq("")
         expect(snapshot["rubyopt"]).to be_nil.or eq("")
