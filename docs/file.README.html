@@ -204,7 +204,7 @@ out to <code>kettle-release</code> for each member that needs publishing.</p>
     <tr>
       <td>Source</td>
       <td>
-<a href="https://gitlab.com/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/GitLab-FBA326?style=for-the-badge&amp;logo=Gitlab&amp;logoColor=orange" alt="Source on GitLab.com"></a> <a href="https://codeberg.org/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/CodeBerg-4893CC?style=for-the-badge&amp;logo=CodeBerg&amp;logoColor=blue" alt="Source on CodeBerg.org"></a> <a href="https://github.com/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/GitHub-238636?style=for-the-badge&amp;logo=GitHub&amp;logoColor=green" alt="Source on GitHub.com"></a> <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"><img src="https://img.shields.io/badge/KLOC-6.748-FFDD67.svg?style=for-the-badge&amp;logo=YouTube&amp;logoColor=blue" alt="The best SHA: dQw4w9WgXcQ!"></a>
+<a href="https://gitlab.com/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/GitLab-FBA326?style=for-the-badge&amp;logo=Gitlab&amp;logoColor=orange" alt="Source on GitLab.com"></a> <a href="https://codeberg.org/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/CodeBerg-4893CC?style=for-the-badge&amp;logo=CodeBerg&amp;logoColor=blue" alt="Source on CodeBerg.org"></a> <a href="https://github.com/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/GitHub-238636?style=for-the-badge&amp;logo=GitHub&amp;logoColor=green" alt="Source on GitHub.com"></a> <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"><img src="https://img.shields.io/badge/KLOC-6.774-FFDD67.svg?style=for-the-badge&amp;logo=YouTube&amp;logoColor=blue" alt="The best SHA: dQw4w9WgXcQ!"></a>
 </td>
     </tr>
     <tr>
@@ -725,7 +725,8 @@ Markdown fixtures under <code>spec/</code> and <code>test/</code>, along with <c
           <li>On failure, the release prep commit is soft-rolled-back (<code>git reset --soft HEAD^</code>) and the process aborts.</li>
         </ul>
       </li>
-      <li>Ensures trunk sync and rebases feature as needed, pushes, monitors GitHub Actions with a progress bar, and merges feature to trunk on success.</li>
+      <li>Ensures trunk sync and rebases feature branches as needed, pushes, monitors GitHub Actions with a progress bar, and merges feature to trunk on success.</li>
+      <li>For release branches listed in <code>.kettle-family.yml</code> branch-stack targets, it intentionally does not pull/rebase from trunk or merge the leaf branch into trunk. Instead, it starts the selected GitHub Actions workflows directly on the pushed release branch; each selected workflow must declare <code>workflow_dispatch</code>. This validates the exact branch-stack commit without requiring an often-conflicting PR to trunk.</li>
       <li>Exports <code>SOURCE_DATE_EPOCH</code>, builds (optionally signed), creates gem checksums, and runs <code>bundle exec rake release</code> (prompts for signing key + RubyGems MFA OTP as needed).</li>
     </ul>
   </li>
@@ -743,11 +744,11 @@ Markdown fixtures under <code>spec/</code> and <code>test/</code>, along with <c
 (or appraisal:update with –appraisal-update)</li>
           <li>Ensure git user configured; commit release prep</li>
           <li>Optional local CI with <code>act</code> (controlled by <code>K_RELEASE_LOCAL_CI</code>)</li>
-          <li>Ensure trunk in sync across remotes; rebase feature as needed</li>
+          <li>Ensure trunk in sync across remotes; rebase feature as needed (skipped for configured branch-stack release targets)</li>
           <li>Push current branch to remotes (or ‘all’ remote)</li>
-          <li>Monitor CI after push; abort on failures</li>
-          <li>Merge feature into trunk and push</li>
-          <li>Checkout trunk and pull latest</li>
+          <li>Monitor CI after push; configured branch-stack releases dispatch each selected workflow directly on the release branch</li>
+          <li>Merge feature into trunk and push (skipped for branch-stack release targets)</li>
+          <li>Checkout trunk and pull latest (skipped for branch-stack release targets)</li>
           <li>Gem signing checks/guidance (skip with <code>SKIP_GEM_SIGNING=true</code>)</li>
           <li>Build gem (bundle exec rake build)</li>
           <li>Release gem (bundle exec rake release)</li>
