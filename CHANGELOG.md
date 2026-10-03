@@ -20,8 +20,6 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
-- kettle-release warns when the current branch is not among the release branches its family declares, naming the declaring config and the declared branches, instead of silently treating it as a feature branch destined for trunk.
-
 ### Changed
 
 ### Deprecated
@@ -30,11 +28,24 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+### Security
+
+## [3.1.7] - 2026-10-03
+
+- TAG: [v3.1.7][3.1.7t]
+- COVERAGE: 91.73% -- 6257/6821 lines in 49 files
+- BRANCH COVERAGE: 76.03% -- 2385/3137 branches in 49 files
+- 51.34% documented
+
+### Added
+
+- kettle-release warns when the current branch is not among the release branches its family declares, naming the declaring config and the declared branches, instead of silently treating it as a feature branch destined for trunk.
+
+### Fixed
+
 - Branch-stack release detection now also reads `release.member_target_branches.<gem>` from the family root config, so a member whose templated local `.kettle-family.yml` is absent (a fresh branch, or a linked worktree) no longer degrades silently into a trunk pull request and a merge into trunk.
 
 - Branch-stack release detection no longer uses block-level `rescue` or `Array#filter_map`, which are Ruby 2.6+ and 2.7+ constructs; the gem supports Ruby 2.4. YAML loading is isolated in `safe_load_kettle_family_config` with a method-level rescue, restoring the explicit `begin`/`end` contract the surrounding code relies on.
-
-### Security
 
 ## [3.1.6] - 2026-10-02
 
@@ -3959,7 +3970,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.6...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.7...HEAD
+[3.1.7]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.6...v3.1.7
+[3.1.7t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.7
 [3.1.6]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.5...v3.1.6
 [3.1.6t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.6
 [3.1.5]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.4...v3.1.5
