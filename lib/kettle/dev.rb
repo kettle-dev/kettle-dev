@@ -116,8 +116,10 @@ module Kettle
       end
 
       def safe_load_yaml(content, aliases: false)
-        YAML.safe_load(content, permitted_classes: [], aliases: aliases)
-      rescue ArgumentError
+        safe_load_parameters = YAML.method(:safe_load).parameters
+        supports_keyword_options = safe_load_parameters.any? { |type, _name| %i[key keyreq keyrest].include?(type) }
+        return YAML.safe_load(content, permitted_classes: [], aliases: aliases) if supports_keyword_options
+
         YAML.safe_load(content, [], [], aliases)
       end
 
