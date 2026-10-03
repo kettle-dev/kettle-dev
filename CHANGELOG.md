@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- YAML loading now selects the supported Psych API by version, including Ruby 2.5 environments that report misleading keyword parameters.
+
 ### Security
 
 ## [3.1.6] - 2026-10-02

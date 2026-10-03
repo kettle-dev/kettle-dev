@@ -21,9 +21,7 @@ RSpec.describe Kettle::Dev do
 
     it "uses the positional Psych API when keyword options are unsupported" do
       content = "branch: main\n"
-      allow(YAML).to receive(:method).with(:safe_load).and_return(
-        double(parameters: [[:req, :yaml], [:opt, :whitelist_classes], [:opt, :whitelist_symbols], [:opt, :aliases]])
-      )
+      stub_const("Psych::VERSION", "3.3.0")
       allow(YAML).to receive(:safe_load).with(content, [], [], true).and_return("branch" => "main")
 
       expect(described_class.safe_load_yaml(content, aliases: true)).to eq("branch" => "main")

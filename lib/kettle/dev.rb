@@ -116,8 +116,7 @@ module Kettle
       end
 
       def safe_load_yaml(content, aliases: false)
-        safe_load_parameters = YAML.method(:safe_load).parameters
-        supports_keyword_options = safe_load_parameters.any? { |type, _name| %i[key keyreq keyrest].include?(type) }
+        supports_keyword_options = Gem::Version.new(Psych::VERSION) >= Gem::Version.new("4.0")
         return YAML.safe_load(content, permitted_classes: [], aliases: aliases) if supports_keyword_options
 
         YAML.safe_load(content, [], [], aliases)
