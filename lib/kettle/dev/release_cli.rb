@@ -2928,23 +2928,102 @@ module Kettle
         return false if branch.to_s.empty?
         return false if trunk && branch == trunk
 
-        local_kettle_family_release_target_branches.include?(branch)
+        targets = local_kettle_family_release_target_branches
+        return true if targets.include?(branch)
+
+        warn_undeclared_branch_stack_release(branch, targets)
+        false
       end
 
+      # A member whose family declares a branch stack, releasing a branch that
+      # is not in that list, gets merged into trunk and validated by a trunk
+      # PR. That is almost always a wrong-branch release, not a feature
+      # branch, so say so loudly instead of silently degrading.
+      def warn_undeclared_branch_stack_release(branch, targets)
+        declaring_root = family_declared_branch_stack_roots.first
+        return unless declaring_root
+        return if Array(@warned_undeclared_stack_branches).include?(branch)
+
+        @warned_undeclared_stack_branches = Array(@warned_undeclared_stack_branches) + [branch]
+        warn(
+          "[kettle-release] #{branch} is not a declared release branch for #{family_stack_gem_name.inspect} " \
+          "in #{Kettle::Dev.display_path(declaring_root)}; it will be treated as a feature branch and merged into trunk. " \
+          "Declared release branches: #{targets.join(", ")}"
+        )
+      end
+
+      # The member-local `.kettle-family.yml` is a templated copy that can be
+      # absent on a fresh branch or in a worktree. The family root is the
+      # authoritative declaration (`release.member_target_branches.<gem>`), so
+      # consult it too and union the two. Silently returning [] when a family
+      # config *does* declare a stack for this gem is what produced
+      # PR-against-trunk releases and trunk merges for branch-stack members.
       def local_kettle_family_release_target_branches
+        branches = []
         local_kettle_family_config_paths.each do |path|
           next unless File.file?(path)
 
           begin
             data = Kettle::Dev.safe_load_yaml_file(path) || {}
-            branches = Array(dig_string_keys(data, "release", "target_branches")) +
+            branches.concat(
+              Array(dig_string_keys(data, "release", "target_branches")),
               Array(dig_string_keys(data, "branches", "release_targets"))
-            return branches.map(&:to_s).reject(&:empty?) unless branches.empty?
+            )
           rescue Psych::Exception => e
             warn("Ignoring invalid kettle-family config #{Kettle::Dev.display_path(path)}: #{e.message}")
           end
         end
-        []
+        branches.concat(family_root_release_target_branches)
+        branches.map(&:to_s).reject(&:empty?).uniq
+      end
+
+      def family_root_release_target_branches
+        family_declared_branch_stack_roots.flat_map do |path|
+          data = Kettle::Dev.safe_load_yaml_file(path) || {}
+          Array(dig_string_keys(data, "release", "member_target_branches", family_stack_gem_name))
+        rescue Psych::Exception => e
+          warn("Ignoring invalid kettle-family config #{Kettle::Dev.display_path(path)}: #{e.message}")
+          nil
+        end
+      end
+
+      # Family-root configs that declare a non-empty branch stack for this gem.
+      def family_declared_branch_stack_roots
+        gem_name = family_stack_gem_name
+        return [] unless gem_name
+
+        family_root_config_paths.select do |path|
+          data = Kettle::Dev.safe_load_yaml_file(path) || {}
+          Array(dig_string_keys(data, "release", "member_target_branches", gem_name)).map(&:to_s).reject(&:empty?).any?
+        rescue Psych::Exception => e
+          warn("Ignoring invalid kettle-family config #{Kettle::Dev.display_path(path)}: #{e.message}")
+          false
+        end
+      end
+
+      # Only treat a parent directory as the family root when its config
+      # actually lists this checkout as a member root.
+      def family_root_config_paths
+        [File.expand_path("..", @root)].filter_map do |candidate|
+          path = File.join(candidate, ".kettle-family.yml")
+          next unless File.file?(path)
+
+          data = Kettle::Dev.safe_load_yaml_file(path) || {}
+          roots = Array(dig_string_keys(data, "members", "roots")).map(&:to_s)
+          path if roots.include?(File.basename(@root))
+        end
+      end
+
+      def family_stack_gem_name
+        @family_stack_gem_name ||= begin
+          name = ENV.fetch("K_CHANGELOG_GEM_NAME", "").to_s.strip
+          name = begin
+            gemspecs = Dir[File.join(@root, "*.gemspec")]
+            content = gemspecs.min && File.read(gemspecs.min)
+            content&.match(/spec\.name\s*=\s*(["'])([^"']+)\1/)&.captures&.at(1).to_s
+          end
+          name.empty? ? nil : name
+        end
       end
 
       def local_kettle_family_config_paths
