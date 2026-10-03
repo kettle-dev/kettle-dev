@@ -2963,15 +2963,13 @@ module Kettle
         local_kettle_family_config_paths.each do |path|
           next unless File.file?(path)
 
-          begin
-            data = Kettle::Dev.safe_load_yaml_file(path) || {}
-            branches.concat(
-              Array(dig_string_keys(data, "release", "target_branches")),
-              Array(dig_string_keys(data, "branches", "release_targets"))
-            )
-          rescue Psych::Exception => e
-            warn("Ignoring invalid kettle-family config #{Kettle::Dev.display_path(path)}: #{e.message}")
-          end
+          data = safe_load_kettle_family_config(path)
+          next unless data
+
+          branches.concat(
+            Array(dig_string_keys(data, "release", "target_branches")),
+            Array(dig_string_keys(data, "branches", "release_targets"))
+          )
         end
         branches.concat(family_root_release_target_branches)
         branches.map(&:to_s).reject(&:empty?).uniq
@@ -2979,11 +2977,8 @@ module Kettle
 
       def family_root_release_target_branches
         family_declared_branch_stack_roots.flat_map do |path|
-          data = Kettle::Dev.safe_load_yaml_file(path) || {}
+          data = safe_load_kettle_family_config(path) || {}
           Array(dig_string_keys(data, "release", "member_target_branches", family_stack_gem_name))
-        rescue Psych::Exception => e
-          warn("Ignoring invalid kettle-family config #{Kettle::Dev.display_path(path)}: #{e.message}")
-          nil
         end
       end
 
@@ -2993,37 +2988,57 @@ module Kettle
         return [] unless gem_name
 
         family_root_config_paths.select do |path|
-          data = Kettle::Dev.safe_load_yaml_file(path) || {}
-          Array(dig_string_keys(data, "release", "member_target_branches", gem_name)).map(&:to_s).reject(&:empty?).any?
-        rescue Psych::Exception => e
-          warn("Ignoring invalid kettle-family config #{Kettle::Dev.display_path(path)}: #{e.message}")
-          false
+          data = safe_load_kettle_family_config(path)
+          next false unless data
+
+          declared_stack_branches(data, gem_name).any?
         end
       end
 
       # Only treat a parent directory as the family root when its config
       # actually lists this checkout as a member root.
       def family_root_config_paths
-        [File.expand_path("..", @root)].filter_map do |candidate|
+        [File.expand_path("..", @root)].map do |candidate|
           path = File.join(candidate, ".kettle-family.yml")
-          next unless File.file?(path)
+          next nil unless File.file?(path)
 
-          data = Kettle::Dev.safe_load_yaml_file(path) || {}
+          data = safe_load_kettle_family_config(path)
+          next nil unless data
+
           roots = Array(dig_string_keys(data, "members", "roots")).map(&:to_s)
           path if roots.include?(File.basename(@root))
-        end
+        end.compact
+      end
+
+      def declared_stack_branches(data, gem_name)
+        Array(dig_string_keys(data, "release", "member_target_branches", gem_name)).map(&:to_s).reject(&:empty?)
+      end
+
+      # YAML loading is isolated in a method body so a malformed config is
+      # reported once instead of raising inside a block. Block-level `rescue`
+      # is a Ruby 2.6+ construct and this gem supports Ruby 2.4.
+      def safe_load_kettle_family_config(path)
+        Kettle::Dev.safe_load_yaml_file(path) || {}
+      rescue Psych::Exception => e
+        warn("Ignoring invalid kettle-family config #{Kettle::Dev.display_path(path)}: #{e.message}")
+        nil
       end
 
       def family_stack_gem_name
         @family_stack_gem_name ||= begin
           name = ENV.fetch("K_CHANGELOG_GEM_NAME", "").to_s.strip
-          name = begin
-            gemspecs = Dir[File.join(@root, "*.gemspec")]
-            content = gemspecs.min && File.read(gemspecs.min)
-            content&.match(/spec\.name\s*=\s*(["'])([^"']+)\1/)&.captures&.at(1).to_s
-          end
+          name = detect_family_stack_gem_name_from_gemspec if name.empty?
           name.empty? ? nil : name
         end
+      end
+
+      def detect_family_stack_gem_name_from_gemspec
+        gemspecs = Dir[File.join(@root, "*.gemspec")]
+        path = gemspecs.min
+        return "" unless path
+
+        match = File.read(path).match(/spec\.name\s*=\s*(["'])([^"']+)\1/)
+        match ? match[2].to_s : ""
       end
 
       def local_kettle_family_config_paths
