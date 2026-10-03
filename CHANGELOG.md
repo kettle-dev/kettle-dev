@@ -28,20 +28,20 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Branch-stack release workflow validation now supports the older Psych API bundled with Ruby 2.4.
-
 ### Security
 
 ## [3.1.6] - 2026-10-02
 
 - TAG: [v3.1.6][3.1.6t]
-- COVERAGE: 91.69% -- 6211/6774 lines in 49 files
-- BRANCH COVERAGE: 76.15% -- 2369/3111 branches in 49 files
+- COVERAGE: 91.46% -- 6197/6776 lines in 49 files
+- BRANCH COVERAGE: 75.84% -- 2361/3113 branches in 49 files
 - 51.34% documented
 
 ### Fixed
 
 - Branch-stack releases now dispatch selected GitHub Actions workflows directly on the release branch instead of relying on a possibly conflicted validation PR.
+
+- Branch-stack release workflow validation now supports the older Psych API bundled with Ruby 2.4.
 
 ## [3.1.5] - 2026-09-28
 
