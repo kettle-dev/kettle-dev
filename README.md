@@ -420,7 +420,8 @@ What it does:
         - Enable with env: `K_RELEASE_LOCAL_CI="true"` (run automatically) or `K_RELEASE_LOCAL_CI="ask"` (prompt \[Y/n\]).
         - Select workflow with `K_RELEASE_LOCAL_CI_WORKFLOW` (with or without .yml/.yaml). Defaults to `locked_deps.yml` if present; otherwise the first workflow discovered.
         - On failure, the release prep commit is soft-rolled-back (`git reset --soft HEAD^`) and the process aborts.
-    - Ensures trunk sync and rebases feature as needed, pushes, monitors GitHub Actions with a progress bar, and merges feature to trunk on success.
+    - Ensures trunk sync and rebases feature branches as needed, pushes, monitors GitHub Actions with a progress bar, and merges feature to trunk on success.
+    - For release branches listed in `.kettle-family.yml` branch-stack targets, it intentionally does not pull/rebase from trunk or merge the leaf branch into trunk. Instead, it starts the selected GitHub Actions workflows directly on the pushed release branch; each selected workflow must declare `workflow_dispatch`. This validates the exact branch-stack commit without requiring an often-conflicting PR to trunk.
     - Exports `SOURCE_DATE_EPOCH`, builds (optionally signed), creates gem checksums, and runs `bundle exec rake release` (prompts for signing key + RubyGems MFA OTP as needed).
 - Options:
     - `start_step` map (skip directly to a phase):
@@ -433,11 +434,11 @@ What it does:
             (or appraisal:update with --appraisal-update)
         6.  Ensure git user configured; commit release prep
         7.  Optional local CI with `act` (controlled by `K_RELEASE_LOCAL_CI`)
-        8.  Ensure trunk in sync across remotes; rebase feature as needed
+        8.  Ensure trunk in sync across remotes; rebase feature as needed (skipped for configured branch-stack release targets)
         9.  Push current branch to remotes (or 'all' remote)
-        10. Monitor CI after push; abort on failures
-        11. Merge feature into trunk and push
-        12. Checkout trunk and pull latest
+        10. Monitor CI after push; configured branch-stack releases dispatch each selected workflow directly on the release branch
+        11. Merge feature into trunk and push (skipped for branch-stack release targets)
+        12. Checkout trunk and pull latest (skipped for branch-stack release targets)
         13. Gem signing checks/guidance (skip with `SKIP_GEM_SIGNING=true`)
         14. Build gem (bundle exec rake build)
         15. Release gem (bundle exec rake release)

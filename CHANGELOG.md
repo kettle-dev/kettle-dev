@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Branch-stack releases now dispatch selected GitHub Actions workflows directly on the release branch instead of relying on a possibly conflicted validation PR.
+
 ### Security
 
 ## [3.1.5] - 2026-09-28

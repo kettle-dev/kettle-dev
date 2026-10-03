@@ -1103,7 +1103,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         allow(cli).to receive(:detect_trunk_branch).and_return("main")
         expect(cli).not_to receive(:github_pull_request_for_branch)
 
-        cli.send(:ensure_github_pull_request_for_ci!)
+        cli.send(:ensure_ci_trigger_for_release_branch!)
       end
 
       it "reuses an open GitHub pull request before CI monitoring", :check_output do
@@ -1119,7 +1119,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         ).and_return({"number" => 42, "url" => "https://github.com/me/repo/pull/42"})
         expect(cli).not_to receive(:create_github_pull_request!)
 
-        cli.send(:ensure_github_pull_request_for_ci!)
+        cli.send(:ensure_ci_trigger_for_release_branch!)
       end
 
       it "creates a GitHub pull request before CI monitoring when none is open" do
@@ -1136,23 +1136,56 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           base: "main"
         )
 
-        cli.send(:ensure_github_pull_request_for_ci!)
+        cli.send(:ensure_ci_trigger_for_release_branch!)
       end
 
-      it "records a generated validation PR for branch-stack cleanup" do
+      it "dispatches workflows instead of creating a validation PR for branch-stack releases" do
         allow(cli).to receive(:current_branch).and_return("r1_8-even-v0")
         allow(cli).to receive(:detect_trunk_branch).and_return("main")
         allow(cli).to receive(:preferred_github_remote).and_return("origin")
         allow(cli).to receive(:remote_url).with("origin").and_return("git@github.com:me/repo.git")
-        allow(cli).to receive(:github_pull_request_for_branch).and_return(nil)
-        allow(cli).to receive(:create_github_pull_request!).and_return("42")
         allow(cli).to receive(:branch_stack_release_branch?).with("r1_8-even-v0", "main").and_return(true)
+        expect(cli).to receive(:dispatch_github_workflows!).with(branch: "r1_8-even-v0")
+        expect(cli).not_to receive(:github_pull_request_for_branch)
 
-        cli.send(:ensure_github_pull_request_for_ci!)
+        cli.send(:ensure_ci_trigger_for_release_branch!)
 
-        expect(cli.instance_variable_get(:@release_ci_pull_request)).to include(
-          owner: "me", repo: "repo", number: "42", cleanup: true
-        )
+        expect(cli.instance_variable_get(:@release_ci_pull_request)).to be_nil
+      end
+
+      it "dispatches every selected workflow after validating all support workflow_dispatch" do
+        Dir.mktmpdir do |root|
+          workflows_dir = File.join(root, ".github", "workflows")
+          FileUtils.mkdir_p(workflows_dir)
+          File.write(File.join(workflows_dir, "current.yml"), "on:\n  workflow_dispatch:\n")
+          File.write(File.join(workflows_dir, "style.yml"), "on:\n  workflow_dispatch:\n")
+          local_cli = described_class.new(ci_workflows: %w[current.yml style.yml])
+          allow(ci_helpers).to receive(:ci_project_root).and_return(root)
+          allow(local_cli).to receive(:preferred_github_remote).and_return("origin")
+          allow(local_cli).to receive(:remote_url).with("origin").and_return("git@github.com:me/repo.git")
+
+          expect(local_cli).to receive(:gh_output!).with("workflow", "run", "current.yml", "--repo", "me/repo", "--ref", "r1_8-even-v0").ordered
+          expect(local_cli).to receive(:gh_output!).with("workflow", "run", "style.yml", "--repo", "me/repo", "--ref", "r1_8-even-v0").ordered
+
+          local_cli.send(:dispatch_github_workflows!, branch: "r1_8-even-v0")
+        end
+      end
+
+      it "rejects a selected workflow without workflow_dispatch before dispatching any" do
+        Dir.mktmpdir do |root|
+          workflows_dir = File.join(root, ".github", "workflows")
+          FileUtils.mkdir_p(workflows_dir)
+          File.write(File.join(workflows_dir, "current.yml"), "on:\n  workflow_dispatch:\n")
+          File.write(File.join(workflows_dir, "style.yml"), "on:\n  push:\n")
+          local_cli = described_class.new(ci_workflows: %w[current.yml style.yml])
+          allow(ci_helpers).to receive(:ci_project_root).and_return(root)
+          allow(local_cli).to receive(:preferred_github_remote).and_return("origin")
+          allow(local_cli).to receive(:remote_url).with("origin").and_return("git@github.com:me/repo.git")
+          expect(local_cli).not_to receive(:gh_output!)
+
+          expect { local_cli.send(:dispatch_github_workflows!, branch: "r1_8-even-v0") }
+            .to raise_error(MockSystemExit, /requires workflow_dispatch.*style.yml/)
+        end
       end
 
       it "does not close an ordinary feature pull request" do
@@ -1552,7 +1585,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
 
     describe "#monitor_workflows_after_push!" do
       before do
-        allow(cli).to receive(:ensure_github_pull_request_for_ci!)
+        allow(cli).to receive(:ensure_ci_trigger_for_release_branch!)
         allow(ci_helpers).to receive(:project_root).and_return(Dir.pwd)
         allow(ci_helpers).to receive(:current_branch).and_return("feat")
         allow(Kettle::Dev::CIMonitor).to receive(:preferred_github_remote).and_return("origin")
@@ -1575,12 +1608,12 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         allow(ci_helpers).to receive(:latest_run).with(owner: "me", repo: "repo", workflow_file: "lint.yml", branch: "feat", require_head: true, head_sha: "abc123").and_return(run2)
         allow(ci_helpers).to receive(:success?).and_return(true)
         expect { cli.send(:monitor_workflows_after_push!) }.not_to raise_error
-        expect(cli).to have_received(:ensure_github_pull_request_for_ci!)
+        expect(cli).to have_received(:ensure_ci_trigger_for_release_branch!)
       end
 
       it "passes an explicit normalized workflow subset to the CI monitor" do
         release_cli = described_class.new(ci_workflows: "current,style.yml")
-        allow(release_cli).to receive(:ensure_github_pull_request_for_ci!)
+        allow(release_cli).to receive(:ensure_ci_trigger_for_release_branch!)
         allow(Kettle::Dev::CIMonitor).to receive(:monitor_all!) do |event_recorder:, **_kwargs|
           Kettle::Ndjson.emit_event(
             event_recorder,
@@ -1608,7 +1641,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         io = StringIO.new
         event_stream = Kettle::Ndjson.event_stream(io, types: "ci_monitor")
         release_cli = described_class.new(ci_workflows: "current", event_stream: event_stream)
-        allow(release_cli).to receive(:ensure_github_pull_request_for_ci!)
+        allow(release_cli).to receive(:ensure_ci_trigger_for_release_branch!)
         allow(Kettle::Dev::CIMonitor).to receive(:monitor_all!) do |event_recorder:, **_kwargs|
           Kettle::Ndjson.emit_event(
             event_recorder,
@@ -1656,7 +1689,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         io = StringIO.new
         event_stream = Kettle::Ndjson.event_stream(io, types: "ci_monitor")
         release_cli = described_class.new(event_stream: event_stream)
-        allow(release_cli).to receive(:ensure_github_pull_request_for_ci!)
+        allow(release_cli).to receive(:ensure_ci_trigger_for_release_branch!)
         allow(Kettle::Dev::CIMonitor).to receive(:monitor_all!).and_raise(MockSystemExit, "Workflow failed: ci.yml")
 
         expect { release_cli.send(:monitor_workflows_after_push!) }.to raise_error(MockSystemExit, /Workflow failed/)
@@ -1670,7 +1703,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
       it "uses K_RELEASE_CI_WORKFLOWS when no explicit workflow subset is passed" do
         stub_env("K_RELEASE_CI_WORKFLOWS" => "current,style.yml")
         release_cli = described_class.new
-        allow(release_cli).to receive(:ensure_github_pull_request_for_ci!)
+        allow(release_cli).to receive(:ensure_ci_trigger_for_release_branch!)
         allow(Kettle::Dev::CIMonitor).to receive(:monitor_all!)
 
         release_cli.send(:monitor_workflows_after_push!)
@@ -1688,7 +1721,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         release_cli = described_class.new(secrets_provider: provider)
         allow(provider).to receive(:keepalive_required?).and_return(true)
         allow(provider).to receive(:keepalive!).with(elapsed: nil).and_return(true)
-        allow(release_cli).to receive(:ensure_github_pull_request_for_ci!)
+        allow(release_cli).to receive(:ensure_ci_trigger_for_release_branch!)
         allow(Kettle::Dev::CIMonitor).to receive(:monitor_all!)
 
         release_cli.send(:monitor_workflows_after_push!)
@@ -1750,7 +1783,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         io = StringIO.new
         event_stream = Kettle::Ndjson.event_stream(io, types: "ci_monitor")
         release_cli = described_class.new(event_stream: event_stream)
-        allow(release_cli).to receive(:ensure_github_pull_request_for_ci!)
+        allow(release_cli).to receive(:ensure_ci_trigger_for_release_branch!)
         allow(Kettle::Dev::CIMonitor).to receive(:monitor_all!).and_return(false)
 
         expect { release_cli.send(:monitor_workflows_after_push!) }.not_to raise_error
@@ -3273,7 +3306,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         allow(ci_helpers).to receive(:gitlab_latest_pipeline).and_return(nil, {"web_url" => "http://gitlab/pipeline"})
         allow(ci_helpers).to receive(:gitlab_success?).and_return(true)
         allow(ci_helpers).to receive(:gitlab_failed?).and_return(false)
-        allow(cli).to receive(:ensure_github_pull_request_for_ci!)
+        allow(cli).to receive(:ensure_ci_trigger_for_release_branch!)
         expect { cli.send(:monitor_workflows_after_push!) }.not_to raise_error
       end
     end

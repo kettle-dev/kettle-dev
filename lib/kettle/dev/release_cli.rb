@@ -1419,7 +1419,7 @@ module Kettle
       end
 
       def monitor_workflows_after_push!
-        ensure_github_pull_request_for_ci!
+        ensure_ci_trigger_for_release_branch!
         keep_release_secrets_alive!("CI monitoring")
         restart_hint = "bundle exec kettle-release --start-step 10"
         emit_ci_monitor_event(action: "start", status: "started", workflows: @ci_workflows, restart_hint: restart_hint)
@@ -1452,12 +1452,17 @@ module Kettle
         end
       end
 
-      def ensure_github_pull_request_for_ci!
+      def ensure_ci_trigger_for_release_branch!
         branch = current_branch
         return if branch.to_s.empty?
 
         trunk = detect_trunk_branch
         return if branch == trunk
+
+        if branch_stack_release_branch?(branch, trunk)
+          dispatch_github_workflows!(branch: branch)
+          return
+        end
 
         gh_remote = preferred_github_remote
         return unless gh_remote
@@ -1485,6 +1490,44 @@ module Kettle
           number: number,
           cleanup: true
         }
+      end
+
+      def dispatch_github_workflows!(branch:)
+        gh_remote = preferred_github_remote
+        return unless gh_remote
+
+        owner, repo = parse_github_owner_repo(remote_url(gh_remote))
+        return unless owner && repo
+
+        root = Kettle::Dev::CIHelpers.ci_project_root
+        workflows = @ci_workflows.empty? ? Kettle::Dev::CIHelpers.workflows_list(root) : @ci_workflows
+        unsupported = workflows.reject { |workflow| workflow_dispatch_configured?(root, workflow) }
+        unless unsupported.empty?
+          abort("Branch-stack release CI requires workflow_dispatch in every selected workflow; unsupported: #{unsupported.join(", ")}")
+        end
+
+        workflows.each do |workflow|
+          gh_output!("workflow", "run", workflow, "--repo", "#{owner}/#{repo}", "--ref", branch)
+          puts "Dispatched GitHub Actions workflow #{workflow} on branch #{branch}."
+        end
+      end
+
+      def workflow_dispatch_configured?(root, workflow)
+        path = File.join(root, ".github", "workflows", workflow)
+        return false unless File.file?(path)
+
+        document = YAML.safe_load_file(path, permitted_classes: [], aliases: true)
+        triggers = document.is_a?(Hash) ? (document["on"] || document[true]) : nil
+        case triggers
+        when Hash
+          triggers.key?("workflow_dispatch") || triggers.key?(:workflow_dispatch)
+        when Array
+          triggers.any? { |trigger| trigger.to_s == "workflow_dispatch" }
+        else
+          false
+        end
+      rescue Psych::Exception
+        false
       end
 
       def github_pull_request_for_branch(owner:, repo:, branch:, base:)
@@ -1561,9 +1604,9 @@ module Kettle
 
         exit_code = status.respond_to?(:exitstatus) ? status.exitstatus : 1
         diag = stderr_str.to_s.empty? ? "" : "\n--- STDERR ---\n#{stderr_str}".rstrip
-        abort("GitHub pull request setup failed: gh #{args.join(" ")} (exit #{exit_code})#{diag}")
+        abort("GitHub CLI command failed: gh #{args.join(" ")} (exit #{exit_code})#{diag}")
       rescue Errno::ENOENT
-        abort("GitHub pull request setup failed: gh CLI is required to create or find the release PR.")
+        abort("GitHub CLI command failed: gh CLI is required for release CI setup.")
       end
 
       def run_cmd!(cmd, resume_step: @release_resume_step)
