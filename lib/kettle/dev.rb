@@ -115,10 +115,10 @@ module Kettle
         text.to_s.gsub(VAR_HOME_TEXT, "/home")
       end
 
-      def safe_load_yaml(content)
-        YAML.safe_load(content, permitted_classes: [], aliases: false)
+      def safe_load_yaml(content, aliases: false)
+        YAML.safe_load(content, permitted_classes: [], aliases: aliases)
       rescue ArgumentError
-        YAML.safe_load(content, [], [], false)
+        YAML.safe_load(content, [], [], aliases)
       end
 
       def safe_load_yaml_file(path)

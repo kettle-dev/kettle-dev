@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Branch-stack release workflow validation now supports the older Psych API bundled with Ruby 2.4.
+
 ### Security
 
 ## [3.1.6] - 2026-10-02

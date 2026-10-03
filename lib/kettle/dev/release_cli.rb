@@ -1516,7 +1516,7 @@ module Kettle
         path = File.join(root, ".github", "workflows", workflow)
         return false unless File.file?(path)
 
-        document = YAML.safe_load_file(path, permitted_classes: [], aliases: true)
+        document = Kettle::Dev.safe_load_yaml(File.read(path), aliases: true)
         triggers = document.is_a?(Hash) ? (document["on"] || document[true]) : nil
         case triggers
         when Hash

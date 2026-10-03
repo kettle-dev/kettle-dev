@@ -9,6 +9,26 @@ RSpec.describe Kettle::Dev do
     end
   end
 
+  describe "::safe_load_yaml" do
+    it "can load aliases when requested" do
+      content = "defaults: &defaults\n  branch: main\ncopy: *defaults\n"
+
+      expect(described_class.safe_load_yaml(content, aliases: true)).to eq(
+        "defaults" => {"branch" => "main"},
+        "copy" => {"branch" => "main"}
+      )
+    end
+
+    it "uses the positional Psych API when keyword options are unsupported" do
+      content = "branch: main\n"
+      allow(YAML).to receive(:safe_load).with(content, permitted_classes: [], aliases: true).and_raise(ArgumentError)
+      allow(YAML).to receive(:safe_load).with(content, [], [], true).and_return("branch" => "main")
+
+      expect(described_class.safe_load_yaml(content, aliases: true)).to eq("branch" => "main")
+      expect(YAML).to have_received(:safe_load).with(content, [], [], true)
+    end
+  end
+
   describe "::debug_error" do
     let(:error) do
       RuntimeError.new("boom").tap do |e|
