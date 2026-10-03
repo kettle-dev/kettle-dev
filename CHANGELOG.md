@@ -20,6 +20,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
+- kettle-release warns when the current branch is not among the release branches its family declares, naming the declaring config and the declared branches, instead of silently treating it as a feature branch destined for trunk.
+
 ### Changed
 
 ### Deprecated
@@ -27,6 +29,8 @@ Please file a bug if you notice a violation of semantic versioning.
 ### Removed
 
 ### Fixed
+
+- Branch-stack release detection now also reads `release.member_target_branches.<gem>` from the family root config, so a member whose templated local `.kettle-family.yml` is absent (a fresh branch, or a linked worktree) no longer degrades silently into a trunk pull request and a merge into trunk.
 
 ### Security
 
