@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- The templating self-test appraisal now always includes `tree_sitter_language_pack`, ensuring the tree-sitter JSON parser is available for json-merge when the selftest runs in CI. Previously it was conditionally included only when `STRUCTUREDMERGE_DEV` was set, which is never true in CI.
+
 ### Security
 
 ## [3.1.7] - 2026-10-03

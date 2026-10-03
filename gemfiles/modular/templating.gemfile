@@ -5,16 +5,14 @@ kettle_remote = ENV.fetch("KETTLE_DEV_DEV", "false").casecmp("false").zero?
 
 tslp_dev = ENV.fetch("TSLP_DEV", nil).to_s
 tslp_dev = nil if tslp_dev.empty? || %w[false 0 no off].include?(tslp_dev.downcase)
-if structuredmerge_remote || !tslp_dev.to_s.empty?
-  # Keep one Bundler declaration so the local debugging override cannot be
-  # mistaken for a second dependency declaration.
-  tslp_requirements = if tslp_dev.to_s.empty?
-    ["~> 1.16", ">= 1.16.2"]
-  else
-    [{path: tslp_dev}]
-  end
-  gem "tree_sitter_language_pack", *tslp_requirements
+# The templating self-test needs a JSON parser (tree-sitter) for json-merge.
+# Always include tree_sitter_language_pack in the templating appraisal.
+tslp_requirements = if tslp_dev.to_s.empty?
+  ["~> 1.16", ">= 1.16.2"]
+else
+  [{path: tslp_dev}]
 end
+gem "tree_sitter_language_pack", *tslp_requirements
 
 if structuredmerge_remote
   # Keep the released floor when templating with local StructuredMerge paths;
