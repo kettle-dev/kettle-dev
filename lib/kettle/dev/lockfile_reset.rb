@@ -201,6 +201,13 @@ module Kettle
           "BUNDLE_GEMFILE" => gemfile,
           "BUNDLE_LOCKFILE" => path
         )
+        if update_bundler
+          # Bundler's `update --bundler` restarts itself using its original
+          # environment. Preserve this reset's selected bundle across that
+          # restart instead of falling back to the member's default Gemfile.
+          env["BUNDLER_ORIG_BUNDLE_GEMFILE"] = gemfile
+          env["BUNDLER_ORIG_BUNDLE_LOCKFILE"] = path
+        end
         env["KETTLE_DEV_SKIP_CHANGELOG_DEPENDENCY"] = "true" if skip_changelog_dependency
         if isolated_gem_home
           env["GEM_HOME"] = isolated_gem_home

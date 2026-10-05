@@ -38,6 +38,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Preserve the selected Gemfile and lockfile when Bundler restarts during release lockfile reset.
+
 ### Security
 
 ## [3.1.7] - 2026-10-03

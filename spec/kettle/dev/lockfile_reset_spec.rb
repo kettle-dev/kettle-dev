@@ -125,6 +125,8 @@ RSpec.describe Kettle::Dev::LockfileReset do
     reset.reset("release-lockfiles")
 
     expect(commands.first).to include("bundle update --bundler=#{Bundler::VERSION}")
+    expect(commands.first).to include("BUNDLER_ORIG_BUNDLE_GEMFILE=#{File.join(@root, "Gemfile")}")
+    expect(commands.first).to include("BUNDLER_ORIG_BUNDLE_LOCKFILE=#{path}")
     expect(commands.first).to include("bundle lock --add-checksums")
   end
 
