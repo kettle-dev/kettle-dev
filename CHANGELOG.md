@@ -22,31 +22,19 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
-- [kc] kettle-jem/prepare: updated 13 project files:
-  - dependencies (13)
-
-- [kc] kettle-jem/template: updated 7 project files:
-  - code and tests (2)
-  - dependencies (1)
-  - documentation (1)
-  - other (2)
-  - workflows (1)
-
 ### Deprecated
 
 ### Removed
 
 ### Fixed
 
-- Preserve the selected Gemfile and lockfile when Bundler restarts during release lockfile reset.
-
 ### Security
 
-## [3.1.7] - 2026-10-03
+## [3.1.7] - 2026-10-04
 
 - TAG: [v3.1.7][3.1.7t]
-- COVERAGE: 91.73% -- 6257/6821 lines in 49 files
-- BRANCH COVERAGE: 76.03% -- 2385/3137 branches in 49 files
+- COVERAGE: 91.75% -- 6261/6824 lines in 49 files
+- BRANCH COVERAGE: 76.08% -- 2388/3139 branches in 49 files
 - 51.34% documented
 
 ### Added
@@ -58,6 +46,20 @@ Please file a bug if you notice a violation of semantic versioning.
 - Branch-stack release detection now also reads `release.member_target_branches.<gem>` from the family root config, so a member whose templated local `.kettle-family.yml` is absent (a fresh branch, or a linked worktree) no longer degrades silently into a trunk pull request and a merge into trunk.
 
 - Branch-stack release detection no longer uses block-level `rescue` or `Array#filter_map`, which are Ruby 2.6+ and 2.7+ constructs; the gem supports Ruby 2.4. YAML loading is isolated in `safe_load_kettle_family_config` with a method-level rescue, restoring the explicit `begin`/`end` contract the surrounding code relies on.
+
+- Preserve the selected Gemfile and lockfile when Bundler restarts during release lockfile reset.
+
+### Changed
+
+- [kc] kettle-jem/prepare: updated 13 project files:
+  - dependencies (13)
+
+- [kc] kettle-jem/template: updated 7 project files:
+  - code and tests (2)
+  - dependencies (1)
+  - documentation (1)
+  - other (2)
+  - workflows (1)
 
 ## [3.1.6] - 2026-10-02
 
