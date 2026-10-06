@@ -173,7 +173,8 @@ RSpec.describe Kettle::Dev::RubyGemsVersions do
     hosts = []
     allow(Net::HTTP).to receive(:start) do |host, _port, **_opts, &block|
       hosts << host
-      block.call(instance_double(Net::HTTP, request: (host == "gem.coop" ? coop_response : rubygems_response)))
+      response = (host == "gem.coop") ? coop_response : rubygems_response
+      block.call(instance_double(Net::HTTP, request: response))
     end
 
     expect(described_class.fetch("demo", source: "https://gem.coop")).to eq([{"number" => "1.0.0"}])
@@ -212,7 +213,7 @@ RSpec.describe Kettle::Dev::RubyGemsVersions do
     response = Net::HTTPNotFound.new("1.1", "404", "Not Found")
     allow(Net::HTTP).to receive(:start).and_yield(instance_double(Net::HTTP, request: response))
 
-    expect(described_class.published_version_numbers("never-published", source: "https://gem.coop")).to eq([])
+    expect(described_class.published_version_numbers("never-published", source: "https://gem.coop")).to be_empty
   end
 
   def write_marker(gem_name, version, released_at)
