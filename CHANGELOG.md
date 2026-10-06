@@ -20,6 +20,12 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
+- `Kettle::Dev::RubyGemsVersions.fetch` accepts a `source:` keyword so callers can query a RubyGems-compatible private registry such as gem.coop instead of only rubygems.org. The version cache is now namespaced by source host, so a private registry lagging rubygems.org cannot serve stale answers for the other. The default source keeps the historical bare gem-name cache key, so existing caches remain valid.
+
+- `Kettle::Dev::RubyGemsVersions.published_version_numbers(gem_name, source:)` returns the version numbers a registry serves for a gem, or nil when the registry could not be consulted. Callers must treat nil as "unknown" rather than "unpublished" so an offline run is not blocked; an empty list, by contrast, means the registry was reached and serves no versions.
+
+- [kc] lockfile-registry-specs: `Kettle::Dev::LockfileReset.registry_gem_specs_from_source` returns GEM-section specs as `{remote:, name:, version:}` so a caller can attribute each pinned version to the registry it was resolved from, which is what makes it possible to detect a locally built and installed gem leaking into a lockfile: bundler resolves against the local gem dir, so an ordinary `bundle install` can pin a version no registry serves, and the resulting entry is a normal GEM-section line carrying a valid checksum taken from the installed spec, so nothing in the lockfile text distinguishes it and "is this version published?" can only be answered against the remote that section recorded. `gem_specs_from_source` is now a thin wrapper over it and keeps returning `[[name, version]]` unchanged.
+
 ### Changed
 
 ### Deprecated

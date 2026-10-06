@@ -75,19 +75,42 @@ module Kettle
         end
 
         def gem_specs_from_source(lockfile_source)
+          registry_gem_specs_from_source(lockfile_source).map { |spec| [spec.fetch(:name), spec.fetch(:version)] }.uniq
+        end
+
+        # Like gem_specs_from_source, but attributes each spec to the registry
+        # remote of the GEM section it appeared in.
+        #
+        # Remote attribution matters for detecting locally installed but
+        # unpublished versions: a lockfile can carry several GEM sections with
+        # different remotes, and "is this version published?" can only be
+        # answered against the source that was actually used. Bundler resolves
+        # a locally installed spec during an ordinary `bundle install`, so the
+        # pinned entry looks exactly like a published one — same GEM section,
+        # valid checksum — and only a registry query for that remote reveals
+        # the version does not exist there.
+        #
+        # @return [Array<Hash>] entries of {remote:, name:, version:}
+        def registry_gem_specs_from_source(lockfile_source)
           in_gem = false
           in_specs = false
+          remote = nil
           specs = []
           lockfile_source.each_line do |line|
             stripped = line.chomp
             if stripped == "GEM"
               in_gem = true
               in_specs = false
+              remote = nil
               next
             end
             next unless in_gem
             break if !stripped.empty? && stripped == stripped.upcase && !stripped.start_with?(" ")
 
+            if stripped.start_with?("  remote:")
+              remote = stripped.delete_prefix("  remote:").strip
+              next
+            end
             if stripped == "  specs:"
               in_specs = true
               next
@@ -96,7 +119,9 @@ module Kettle
             next unless line.start_with?("    ") && !line.start_with?("      ")
 
             parsed = parse_lockfile_spec_line(stripped)
-            specs << [parsed.fetch(:name), parsed.fetch(:version)] if parsed
+            next unless parsed
+
+            specs << {remote: remote, name: parsed.fetch(:name), version: parsed.fetch(:version)}
           end
           specs.uniq
         end

@@ -16,19 +16,27 @@ module Kettle
       VERSION_CACHE_TTL_SECONDS = 30 * 24 * 60 * 60
       HTTP_OPEN_TIMEOUT_SECONDS = 5
       HTTP_READ_TIMEOUT_SECONDS = 10
+      DEFAULT_SOURCE = "https://rubygems.org"
       ENV_REFRESH = "KETTLE_RUBYGEMS_REFRESH"
       ENV_MARKER_PATH = "KETTLE_RUBYGEMS_CACHE_BUST_PATH"
       ENV_VERSION_CACHE_PATH = "KETTLE_RUBYGEMS_VERSION_CACHE_PATH"
       ENV_LEGACY_VERSION_CACHE_PATH = "KETTLE_JEM_DEPS_FLOOR_CACHE"
 
       class << self
-        def fetch(gem_name, version_hint: nil, refresh: false)
+        # Query a RubyGems-compatible versions API.
+        #
+        # +source+ selects which registry to ask, because a private registry
+        # such as gem.coop can lag rubygems.org: a version present on one may
+        # be absent from the other. Cache entries are keyed by source for the
+        # same reason, so the two registries cannot poison each other.
+        def fetch(gem_name, version_hint: nil, refresh: false, source: DEFAULT_SOURCE)
           name = gem_name.to_s
-          cached = cached_versions(name)
+          key = cache_key(name, source)
+          cached = cached_versions(key)
           cache_bust = refresh || env_refresh? || fresh_release_marker?(name, version_hint) || cached_behind_version?(cached, version_hint)
           return cached if cached && !cache_bust
 
-          uri = versions_uri(gem_name, cache_bust: cache_bust)
+          uri = versions_uri(gem_name, source: source, cache_bust: cache_bust)
           request = Net::HTTP::Get.new(uri)
           if cache_bust
             request["Cache-Control"] = "no-cache"
@@ -44,18 +52,33 @@ module Kettle
             http.request(request)
           end
           if response.code.to_i == 404
-            write_versions(name, [])
+            write_versions(key, [])
             return []
           end
           return cached unless response.is_a?(Net::HTTPSuccess)
 
           data = JSON.parse(response.body)
-          write_versions(name, data) if data.is_a?(Array)
+          write_versions(key, data) if data.is_a?(Array)
           data
         rescue => error
           return cached if cached
 
           raise error
+        end
+
+        # Published version numbers for a gem on one registry, or nil when the
+        # registry could not be consulted (caller must treat that as "unknown",
+        # never as "unpublished", so offline runs are not blocked).
+        #
+        # +source+ is matched against the remote a lockfile actually recorded,
+        # since a private registry such as gem.coop can lag rubygems.org.
+        def published_version_numbers(gem_name, source: DEFAULT_SOURCE)
+          versions = fetch(gem_name, source: normalize_source(source))
+          return nil if versions.nil?
+
+          versions.filter_map { |entry| entry["number"] if entry.is_a?(Hash) }
+        rescue
+          nil
         end
 
         def mark_released(gem_name, version)
@@ -99,8 +122,25 @@ module Kettle
 
         private
 
-        def versions_uri(gem_name, cache_bust:)
-          uri = URI("https://rubygems.org/api/v1/versions/#{gem_name}.json")
+        # Cache entries are namespaced by source host so a version list fetched
+        # from a private registry cannot be served for rubygems.org, or vice
+        # versa. The default source keeps the historical bare gem name as its
+        # key so existing caches remain valid.
+        def cache_key(gem_name, source)
+          normalized = normalize_source(source)
+          return gem_name.to_s if normalized == DEFAULT_SOURCE
+
+          "#{URI(normalized).host}:#{gem_name}"
+        rescue URI::InvalidURIError
+          "#{normalized}:#{gem_name}"
+        end
+
+        def normalize_source(source)
+          source.to_s.sub(%r{/+\z}, "")
+        end
+
+        def versions_uri(gem_name, source:, cache_bust:)
+          uri = URI("#{normalize_source(source)}/api/v1/versions/#{gem_name}.json")
           uri.query = "_kettle_cache_bust=#{Time.now.to_i}" if cache_bust
           uri
         end
@@ -145,31 +185,31 @@ module Kettle
           ENV.fetch(ENV_REFRESH, "").match?(Kettle::Dev::ENV_TRUE_RE)
         end
 
-        def cached_versions(gem_name)
+        def cached_versions(cache_key)
           path = version_cache_path
           return nil if path.empty?
 
-          entry = read_version_cache(path).fetch("versions", {})[gem_name]
+          entry = read_version_cache(path).fetch("versions", {})[cache_key]
           return nil unless entry.is_a?(Hash)
           return nil unless fresh_version_cache_entry?(entry)
 
           Array(entry["entries"])
         end
 
-        def write_versions(gem_name, entries)
+        def write_versions(cache_key, entries)
           path = version_cache_path
           return if path.empty?
 
           data = read_version_cache(path)
           data["versions"] ||= {}
-          data["versions"][gem_name] = {
+          data["versions"][cache_key] = {
             "cached_at" => Time.now.utc.iso8601,
             "entries" => entries
           }
           FileUtils.mkdir_p(File.dirname(path))
           File.write(path, JSON.pretty_generate(data) << "\n")
         rescue => error
-          warn("[kettle-dev] could not update RubyGems.org version cache: #{error.class}: #{error.message}") if Kettle::Dev::DEBUGGING
+          warn("[kettle-dev] could not update RubyGems version cache: #{error.class}: #{error.message}") if Kettle::Dev::DEBUGGING
         end
 
         def read_version_cache(path)
