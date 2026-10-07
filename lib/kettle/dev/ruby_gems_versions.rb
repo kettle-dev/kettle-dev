@@ -72,13 +72,32 @@ module Kettle
         #
         # +source+ is matched against the remote a lockfile actually recorded,
         # since a private registry such as gem.coop can lag rubygems.org.
-        def published_version_numbers(gem_name, source: DEFAULT_SOURCE)
-          versions = fetch(gem_name, source: normalize_source(source))
+        #
+        # +version+ is the version the caller is asking about, forwarded as
+        # fetch's version_hint. That makes cache-busting precise: the on-disk
+        # release marker written by kettle-release busts the cache only for the
+        # exact gem+version just published, instead of for every gem released
+        # within the marker TTL. Without it a caller cannot tell "this version
+        # was published moments ago in this very run" from "this gem was
+        # released at some point in the last month".
+        def published_version_numbers(gem_name, source: DEFAULT_SOURCE, version: nil)
+          versions = fetch(gem_name, version_hint: version, source: normalize_source(source))
           return nil if versions.nil?
 
           versions.filter_map { |entry| entry["number"] if entry.is_a?(Hash) }
         rescue
           nil
+        end
+
+        # Whether kettle-release's on-disk marker says this exact gem+version
+        # was published recently enough that cached registry data must not be
+        # trusted for it.
+        #
+        # The marker file is the authority on what this machine just published,
+        # so any process-local cache layered on top of the registry must consult
+        # it rather than serve a pre-publish answer.
+        def recently_released?(gem_name, version = nil)
+          fresh_release_marker?(gem_name.to_s, version&.to_s)
         end
 
         def mark_released(gem_name, version)

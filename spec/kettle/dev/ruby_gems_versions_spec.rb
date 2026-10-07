@@ -216,6 +216,46 @@ RSpec.describe Kettle::Dev::RubyGemsVersions do
     expect(described_class.published_version_numbers("never-published", source: "https://gem.coop")).to be_empty
   end
 
+  # The version the caller is asking about must reach fetch's version_hint, so
+  # the on-disk release marker can bust the cache for exactly that gem+version.
+  # Without it a caller cannot distinguish "published moments ago in this run"
+  # from "released sometime in the last month".
+  it "forwards the version to fetch as a cache-bust hint from published_version_numbers" do
+    allow(described_class).to receive(:fetch).and_return([{"number" => "1.2.3"}])
+
+    described_class.published_version_numbers("demo", source: "https://gem.coop", version: "1.2.3")
+
+    expect(described_class).to have_received(:fetch).with("demo", version_hint: "1.2.3", source: "https://gem.coop")
+  end
+
+  it "reports recently_released? true for a version the marker records within TTL", freeze: Time.utc(2026, 7, 21, 12, 0, 0) do
+    write_marker("demo", "1.2.3", "2026-07-21T11:59:00Z")
+
+    expect(described_class.recently_released?("demo", "1.2.3")).to be(true)
+  end
+
+  it "reports recently_released? false when the marker version differs" do
+    write_marker("demo", "1.2.2", "2026-07-21T11:59:00Z")
+
+    expect(described_class.recently_released?("demo", "1.2.3")).to be(false)
+  end
+
+  it "reports recently_released? false when the marker is older than the TTL", freeze: Time.utc(2026, 9, 1, 12, 0, 0) do
+    write_marker("demo", "1.2.3", "2026-07-01T12:00:00Z")
+
+    expect(described_class.recently_released?("demo", "1.2.3")).to be(false)
+  end
+
+  it "reports recently_released? false when there is no marker for the gem" do
+    expect(described_class.recently_released?("demo", "1.2.3")).to be(false)
+  end
+
+  it "treats a corrupt marker as not recently released rather than raising" do
+    File.write(@cache_bust_path, "{not json")
+
+    expect(described_class.recently_released?("demo", "1.2.3")).to be(false)
+  end
+
   def write_marker(gem_name, version, released_at)
     File.write(
       @cache_bust_path,

@@ -26,6 +26,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - [kc] lockfile-registry-specs: `Kettle::Dev::LockfileReset.registry_gem_specs_from_source` returns GEM-section specs as `{remote:, name:, version:}` so a caller can attribute each pinned version to the registry it was resolved from, which is what makes it possible to detect a locally built and installed gem leaking into a lockfile: bundler resolves against the local gem dir, so an ordinary `bundle install` can pin a version no registry serves, and the resulting entry is a normal GEM-section line carrying a valid checksum taken from the installed spec, so nothing in the lockfile text distinguishes it and "is this version published?" can only be answered against the remote that section recorded. `gem_specs_from_source` is now a thin wrapper over it and keeps returning `[[name, version]]` unchanged.
 
+- `Kettle::Dev::RubyGemsVersions.published_version_numbers` accepts a `version:` keyword and forwards it to `fetch` as a cache-bust hint, so the on-disk release marker that `kettle-release` writes after publishing busts the cache for exactly that gem and version instead of for every gem released within the marker TTL. Without it a caller cannot distinguish "published moments ago in this very run" from "released sometime in the last month". Also adds `RubyGemsVersions.recently_released?(gem_name, version)`, which reports whether the marker records that exact gem and version as published within the TTL, treating a missing or corrupt marker as false rather than raising.
+
 ### Changed
 
 ### Deprecated
