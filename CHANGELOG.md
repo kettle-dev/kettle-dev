@@ -20,14 +20,6 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
-- `Kettle::Dev::RubyGemsVersions.fetch` accepts a `source:` keyword so callers can query a RubyGems-compatible private registry such as gem.coop instead of only rubygems.org. The version cache is now namespaced by source host, so a private registry lagging rubygems.org cannot serve stale answers for the other. The default source keeps the historical bare gem-name cache key, so existing caches remain valid.
-
-- `Kettle::Dev::RubyGemsVersions.published_version_numbers(gem_name, source:)` returns the version numbers a registry serves for a gem, or nil when the registry could not be consulted. Callers must treat nil as "unknown" rather than "unpublished" so an offline run is not blocked; an empty list, by contrast, means the registry was reached and serves no versions.
-
-- [kc] lockfile-registry-specs: `Kettle::Dev::LockfileReset.registry_gem_specs_from_source` returns GEM-section specs as `{remote:, name:, version:}` so a caller can attribute each pinned version to the registry it was resolved from, which is what makes it possible to detect a locally built and installed gem leaking into a lockfile: bundler resolves against the local gem dir, so an ordinary `bundle install` can pin a version no registry serves, and the resulting entry is a normal GEM-section line carrying a valid checksum taken from the installed spec, so nothing in the lockfile text distinguishes it and "is this version published?" can only be answered against the remote that section recorded. `gem_specs_from_source` is now a thin wrapper over it and keeps returning `[[name, version]]` unchanged.
-
-- `Kettle::Dev::RubyGemsVersions.published_version_numbers` accepts a `version:` keyword and forwards it to `fetch` as a cache-bust hint, so the on-disk release marker that `kettle-release` writes after publishing busts the cache for exactly that gem and version instead of for every gem released within the marker TTL. Without it a caller cannot distinguish "published moments ago in this very run" from "released sometime in the last month". Also adds `RubyGemsVersions.recently_released?(gem_name, version)`, which reports whether the marker records that exact gem and version as published within the TTL, treating a missing or corrupt marker as false rather than raising.
-
 ### Changed
 
 ### Deprecated
@@ -37,6 +29,23 @@ Please file a bug if you notice a violation of semantic versioning.
 ### Fixed
 
 ### Security
+
+## [3.1.8] - 2026-10-07
+
+- TAG: [v3.1.8][3.1.8t]
+- COVERAGE: 91.65% -- 6276/6848 lines in 49 files
+- BRANCH COVERAGE: 75.90% -- 2390/3149 branches in 49 files
+- 51.77% documented
+
+### Added
+
+- `Kettle::Dev::RubyGemsVersions.fetch` accepts a `source:` keyword so callers can query a RubyGems-compatible private registry such as gem.coop instead of only rubygems.org. The version cache is now namespaced by source host, so a private registry lagging rubygems.org cannot serve stale answers for the other. The default source keeps the historical bare gem-name cache key, so existing caches remain valid.
+
+- `Kettle::Dev::RubyGemsVersions.published_version_numbers(gem_name, source:)` returns the version numbers a registry serves for a gem, or nil when the registry could not be consulted. Callers must treat nil as "unknown" rather than "unpublished" so an offline run is not blocked; an empty list, by contrast, means the registry was reached and serves no versions.
+
+- [kc] lockfile-registry-specs: `Kettle::Dev::LockfileReset.registry_gem_specs_from_source` returns GEM-section specs as `{remote:, name:, version:}` so a caller can attribute each pinned version to the registry it was resolved from, which is what makes it possible to detect a locally built and installed gem leaking into a lockfile: bundler resolves against the local gem dir, so an ordinary `bundle install` can pin a version no registry serves, and the resulting entry is a normal GEM-section line carrying a valid checksum taken from the installed spec, so nothing in the lockfile text distinguishes it and "is this version published?" can only be answered against the remote that section recorded. `gem_specs_from_source` is now a thin wrapper over it and keeps returning `[[name, version]]` unchanged.
+
+- `Kettle::Dev::RubyGemsVersions.published_version_numbers` accepts a `version:` keyword and forwards it to `fetch` as a cache-bust hint, so the on-disk release marker that `kettle-release` writes after publishing busts the cache for exactly that gem and version instead of for every gem released within the marker TTL. Without it a caller cannot distinguish "published moments ago in this very run" from "released sometime in the last month". Also adds `RubyGemsVersions.recently_released?(gem_name, version)`, which reports whether the marker records that exact gem and version as published within the TTL, treating a missing or corrupt marker as false rather than raising.
 
 ## [3.1.7] - 2026-10-04
 
@@ -3992,7 +4001,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.7...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.8...HEAD
+[3.1.8]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.7...v3.1.8
+[3.1.8t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.8
 [3.1.7]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.6...v3.1.7
 [3.1.7t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.7
 [3.1.6]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.5...v3.1.6
