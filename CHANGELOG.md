@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- [kc] bundler-pin-no-prerelease: Release step 1 (`update_bundler_and_commit!`) and `appraisal:update` pin the Bundler version when running `bundle update --bundler` instead of leaving it bare. A bare `--bundler` resolves to whatever RubyGems reports as bundler's "latest", which includes prereleases: bundler published `4.1.0.beta1` as latest, so a bare update installed the beta and rewrote `BUNDLED WITH` to it. That beta vendors its own copy of rubygems' URI constants, and loading it against rubygems' copy emits a wall of `already initialized constant Gem::URI::...` warnings on stderr, which broke any spec shelling out to an executable and asserting clean stderr — failing a later release at its coverage step. Pinning matches `LockfileReset#lockfile_command`, which already documents this hazard.
+
 ### Security
 
 ## [3.1.8] - 2026-10-07

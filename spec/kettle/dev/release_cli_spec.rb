@@ -162,7 +162,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
       local_cli = described_class.new
 
       names = [
-        "env -u BUNDLE_GEMFILE bundle update --bundler",
+        "env -u BUNDLE_GEMFILE bundle update --bundler=#{Bundler::VERSION}",
         "env -u BUNDLE_GEMFILE BUNDLE_GEMFILE=/repo/Gemfile bundle lock --update --add-checksums",
         "KETTLE_DEV_SKIP_TESTS=true bin/rake",
         "bin/rake appraisal:generate",
@@ -201,7 +201,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
       local_cli = described_class.new
 
       summaries = [
-        "BUNDLE_GEMFILE=/repo/Appraisal.root.gemfile BUNDLE_LOCKFILE=/repo/Appraisal.root.gemfile.lock bundle update --bundler",
+        "BUNDLE_GEMFILE=/repo/Appraisal.root.gemfile BUNDLE_LOCKFILE=/repo/Appraisal.root.gemfile.lock bundle update --bundler=#{Bundler::VERSION}",
         "env -u BUNDLE_GEMFILE BUNDLE_GEMFILE=/repo/Gemfile bundle lock --update --add-checksums",
         "KETTLE_DEV_SKIP_TESTS=true bin/rake",
         "bin/rake appraisal:generate",
@@ -782,10 +782,10 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
 
           allow(local_cli).to receive(:release_project_command) { |command| "release #{command}" }
           allow(local_cli).to receive(:changed_bundle_lockfile_paths).and_return(paths)
-          expect(local_cli).to receive(:run_cmd!).with("release bundle update --bundler").ordered
+          expect(local_cli).to receive(:run_cmd!).with("release bundle update --bundler=#{Bundler::VERSION}").ordered
           expect(local_cli).to receive(:run_cmd!).with(
             "release BUNDLE_GEMFILE=#{Shellwords.escape(File.join(root, "Appraisal.root.gemfile"))} " \
-              "BUNDLE_LOCKFILE=#{Shellwords.escape(File.join(root, "Appraisal.root.gemfile.lock"))} bundle update --bundler"
+              "BUNDLE_LOCKFILE=#{Shellwords.escape(File.join(root, "Appraisal.root.gemfile.lock"))} bundle update --bundler=#{Bundler::VERSION}"
           ).ordered
           expect(local_cli).to receive(:run_cmd!).with("release bundle exec rake appraisal:reset").ordered
           expect(git).to receive(:add_repository_paths).with(paths).and_return(true)

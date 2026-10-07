@@ -162,7 +162,7 @@ RSpec.describe "appraisal rake tasks" do # rubocop:disable RSpec/DescribeClass
 
       expect_system_calls(
         bundle_install_call,
-        [appraisal_env, "bundle", "update", "--bundler"],
+        [appraisal_env, "bundle", "update", "--bundler=#{Bundler::VERSION}"],
         bundle_install_call,
         appraisal_update_call
       )
@@ -176,7 +176,7 @@ RSpec.describe "appraisal rake tasks" do # rubocop:disable RSpec/DescribeClass
 
         expect_system_calls(
           bundle_install_call,
-          [appraisal_env, "bundle", "update", "--bundler"],
+          [appraisal_env, "bundle", "update", "--bundler=#{Bundler::VERSION}"],
           bundle_install_call,
           appraisal_update_call,
           bundle_install_call,

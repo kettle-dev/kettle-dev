@@ -6,6 +6,16 @@ begin
   require "kettle/dev/lockfile_reset"
 
   bundle = "bundle"
+  # The exact Bundler running this rake, so `bundle update --bundler=VERSION`
+  # records it instead of resolving to RubyGems' "latest" bundler, which can be
+  # a prerelease. Falls back to the bare flag only if no version is
+  # determinable, preserving prior behaviour rather than failing.
+  bundler_version = if defined?(Bundler) && Bundler::VERSION
+    Bundler::VERSION
+  elsif (bundler_spec = Gem.loaded_specs["bundler"])
+    bundler_spec.version.to_s
+  end
+  bundler_version_arg = bundler_version ? "--bundler=#{bundler_version}" : "--bundler"
   unbundled_env = Kettle::Dev::LockfileReset::UNBUNDLED_ENV_KEYS.each_with_object({}) do |key, env|
     env[key] = nil
   end
@@ -144,13 +154,20 @@ begin
             "--quiet"
           )
 
-          # 2) BUNDLE_GEMFILE=Appraisal.root.gemfile bundle update --bundler
+          # 2) BUNDLE_GEMFILE=Appraisal.root.gemfile bundle update --bundler=<version>
+          #
+          # Pinned to the executing Bundler. A bare `--bundler` resolves to
+          # whatever RubyGems reports as bundler's "latest", which includes
+          # prereleases, so it can install a beta and record it in BUNDLED WITH;
+          # that beta's vendored URI then collides with rubygems' copy and
+          # spams stderr. See ReleaseCLI#update_bundler_and_commit! and
+          # LockfileReset#lockfile_command for the same hazard.
           run_command.call(
             "appraisal:update failed: BUNDLE_GEMFILE=Appraisal.root.gemfile bundle update --bundler",
             appraisal_env,
             bundle,
             "update",
-            "--bundler"
+            bundler_version_arg
           )
 
           # 3) BUNDLE_GEMFILE=Appraisal.root.gemfile bundle install

@@ -1864,14 +1864,26 @@ module Kettle
       # Keep Bundler maintenance separate from the release metadata commit.
       # The project lockfiles are shared development state, so the update must
       # be real and committed rather than hidden behind a temporary lockfile.
+      #
+      # The version is pinned to the Bundler actually executing rather than left
+      # bare. `bundle update --bundler` resolves to whatever RubyGems reports as
+      # bundler's "latest", which includes prereleases: bundler published
+      # 4.1.0.beta1 as latest, so a bare update installed the beta and rewrote
+      # BUNDLED WITH to it. That beta vendors its own copy of rubygems' URI
+      # constants, and loading it against rubygems' copy emits a wall of
+      # "already initialized constant Gem::URI::..." warnings on stderr, which
+      # broke any spec shelling out to the executable and asserting clean stderr
+      # — failing a later release at its coverage step. Pinning matches
+      # LockfileReset#lockfile_command, which already documents this hazard.
       def update_bundler_and_commit!
-        run_cmd!(release_project_command("bundle update --bundler"))
+        bundler_version = Shellwords.escape(Bundler::VERSION)
+        run_cmd!(release_project_command("bundle update --bundler=#{bundler_version}"))
 
         appraisal_gemfile = File.join(@root, "Appraisal.root.gemfile")
         if File.file?(appraisal_gemfile)
           appraisal_lockfile = File.join(@root, "Appraisal.root.gemfile.lock")
           appraisal_command = "BUNDLE_GEMFILE=#{Shellwords.escape(appraisal_gemfile)} " \
-            "BUNDLE_LOCKFILE=#{Shellwords.escape(appraisal_lockfile)} bundle update --bundler"
+            "BUNDLE_LOCKFILE=#{Shellwords.escape(appraisal_lockfile)} bundle update --bundler=#{bundler_version}"
           run_cmd!(release_project_command(appraisal_command))
           run_cmd!(release_project_command("bundle exec rake appraisal:reset"))
         end
