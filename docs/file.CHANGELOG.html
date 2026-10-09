@@ -76,11 +76,29 @@ Please file a bug if you notice a violation of semantic versioning.</p>
 
 <h3 id="changed">Changed</h3>
 
+<ul>
+  <li>[kc] kettle-jem/prepare: updated 5 project files:
+    <ul>
+      <li>dependencies (5)</li>
+    </ul>
+  </li>
+  <li>[kc] kettle-jem/template: updated 3 project files:
+    <ul>
+      <li>code and tests (2)</li>
+      <li>other (1)</li>
+    </ul>
+  </li>
+</ul>
+
 <h3 id="deprecated">Deprecated</h3>
 
 <h3 id="removed">Removed</h3>
 
 <h3 id="fixed">Fixed</h3>
+
+<ul>
+  <li>[kc] bundler-pin-no-prerelease: Release step 1 (<code>update_bundler_and_commit!</code>) and <code>appraisal:update</code> pin the Bundler version when running <code>bundle update --bundler</code> instead of leaving it bare. A bare <code>--bundler</code> resolves to whatever RubyGems reports as bundler’s “latest”, which includes prereleases: bundler published <code>4.1.0.beta1</code> as latest, so a bare update installed the beta and rewrote <code>BUNDLED WITH</code> to it. That beta vendors its own copy of rubygems’ URI constants, and loading it against rubygems’ copy emits a wall of <code>already initialized constant Gem::URI::...</code> warnings on stderr, which broke any spec shelling out to an executable and asserting clean stderr — failing a later release at its coverage step. Pinning matches <code>LockfileReset#lockfile_command</code>, which already documents this hazard.</li>
+</ul>
 
 <h3 id="security">Security</h3>
 

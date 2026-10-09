@@ -22,6 +22,23 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [3.1.9] - 2026-10-09
+
+- TAG: [v3.1.9][3.1.9t]
+- COVERAGE: 91.79% -- 6291/6854 lines in 49 files
+- BRANCH COVERAGE: 75.97% -- 2397/3155 branches in 49 files
+- 51.77% documented
+
+### Changed
+
 - [kc] kettle-jem/prepare: updated 5 project files:
   - dependencies (5)
 
@@ -29,15 +46,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - code and tests (2)
   - other (1)
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 
 - [kc] bundler-pin-no-prerelease: Release step 1 (`update_bundler_and_commit!`) and `appraisal:update` pin the Bundler version when running `bundle update --bundler` instead of leaving it bare. A bare `--bundler` resolves to whatever RubyGems reports as bundler's "latest", which includes prereleases: bundler published `4.1.0.beta1` as latest, so a bare update installed the beta and rewrote `BUNDLED WITH` to it. That beta vendors its own copy of rubygems' URI constants, and loading it against rubygems' copy emits a wall of `already initialized constant Gem::URI::...` warnings on stderr, which broke any spec shelling out to an executable and asserting clean stderr — failing a later release at its coverage step. Pinning matches `LockfileReset#lockfile_command`, which already documents this hazard.
-
-### Security
 
 ## [3.1.8] - 2026-10-07
 
@@ -4010,7 +4021,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.8...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.9...HEAD
+[3.1.9]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.8...v3.1.9
+[3.1.9t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.9
 [3.1.8]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.7...v3.1.8
 [3.1.8t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.8
 [3.1.7]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.6...v3.1.7
