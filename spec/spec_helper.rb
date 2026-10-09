@@ -98,6 +98,10 @@ require "kettle-dev"
 # Dog food autoload setup and ensure ExitAdapter constant is available for potential stubbing
 # Dog food autoload setup and ensure InputAdapter constant is available for stubbing
 
+# Dog food autoload setup and ensure GitAdapter constant is available for global stubbing
+# Dog food autoload setup and ensure ExitAdapter constant is available for potential stubbing
+# Dog food autoload setup and ensure InputAdapter constant is available for stubbing
+
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = ".rspec_status"
