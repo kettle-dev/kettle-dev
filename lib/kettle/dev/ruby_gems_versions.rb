@@ -12,6 +12,47 @@ module Kettle
     ENV_TRUE_RE = /\A(1|true|y|yes)\z/i unless const_defined?(:ENV_TRUE_RE, false)
 
     module RubyGemsVersions
+      # ---------------------------------------------------------------------------
+      # Registry answer caches: which one to build on
+      # ---------------------------------------------------------------------------
+      #
+      # Registry answers are cached at three layers. Each has a distinct scope
+      # and purpose; pick by the question your tool asks, not by proximity.
+      #
+      # 1. THE PERSISTENT CACHE — this module (disk, ~30-day TTL, keyed
+      #    [name, source]). The only cross-process layer. Use it, via
+      #    #published_version_numbers / #fetch, whenever your tool needs
+      #    "what versions exist on this registry" and can tolerate the TTL
+      #    window. Source-keyed because gem.coop can lag rubygems.org — a
+      #    version present on one can be absent from the other, so the two
+      #    registries must never share entries.
+      #    Built on by: kettle-jem deps-floor, kettle-family bup pre-clean.
+      #
+      # 2. THE SNAPSHOT MEMO — kettle-family PublishedVersionCheck::REGISTRY_MEMO
+      #    (process-local, keyed [name, remote, version]). NOT a performance
+      #    layer. Exists for snapshot consistency: one command run must see one
+      #    registry snapshot, so a gem landing mid-run cannot be reported
+      #    unpublished for early members and published for later ones. It also
+      #    owns the just-released bypass: the disk cache can hold a pre-publish
+      #    answer, and only this layer knows which exact pinned version the
+      #    caller cares about, so only here can kettle-release's on-disk
+      #    release marker override the disk cache for that gem+version.
+      #    Built on by: kettle-family bup/release lockfile validation.
+      #
+      # 3. THE RUN-LEVEL MEMO — kettle-family ReleasePreClean@published
+      #    (per-command-instance, keyed name). Fail-open sentinel: registry
+      #    answers memoized as nil mean "unreachable — remove nothing", which
+      #    is this command's safety rule. Also collapses repeated per-member
+      #    lookups of the same name into one answer within the run.
+      #    Built on by: kettle-family release-mode bup pre-clean.
+      #
+      # Rule of thumb: persistence goes at layer 1, correctness-scoping
+      # (snapshot/bypass) at layer 2, command-local safety policy at layer 3.
+      # A future tool that needs "is this version published" should call
+      # layer 1, and add a higher layer ONLY if it needs snapshot
+      # consistency or its own failure policy.
+      #
+      # -------------------------------------------------------------------------
       CACHE_BUST_TTL_SECONDS = 30 * 24 * 60 * 60
       VERSION_CACHE_TTL_SECONDS = 30 * 24 * 60 * 60
       HTTP_OPEN_TIMEOUT_SECONDS = 5
