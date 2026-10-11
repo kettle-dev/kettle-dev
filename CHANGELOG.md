@@ -30,6 +30,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - CI monitor aborts on the first failed GitHub Actions job instead of waiting for run-level completion: a large matrix keeps the run in_progress for minutes after a red job, so releases burned dead time a re-run must spend anyway; the abort names the job and links it
 
+- InteractiveReleaseCommand answers prompts hidden in the secret-scrubber holdback: prompt detection now runs on a scrubbed-but-untruncated view while emitted output keeps the holdback, fixing a deadlock where gem push printed the RubyGems OTP prompt as its final output and blocked forever on stdin; the 3.1.10 section documents the scrubber but omitted this follow-up correction
+
 ### Security
 
 ## [3.1.10] - 2026-10-11
