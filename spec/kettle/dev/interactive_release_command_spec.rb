@@ -101,7 +101,7 @@ RSpec.describe Kettle::Dev::InteractiveReleaseCommand do
       "-rrubygems",
       "-rrubygems/user_interaction",
       "-e",
-      'ui = Gem::StreamUI.new($stdin, $stdout, $stderr, true); ' \
+      "ui = Gem::StreamUI.new($stdin, $stdout, $stderr, true); " \
         'pw = ui.ask_for_password("Enter PEM pass phrase:  "); ' \
         '$stdout.puts("LEN=#{pw.nil? ? "nil" : pw.length}")'
     ]

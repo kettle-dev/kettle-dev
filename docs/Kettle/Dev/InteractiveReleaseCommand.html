@@ -228,7 +228,15 @@
 14
 15
 16
-17</pre>
+17
+18
+19
+20
+21
+22
+23
+24
+25</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/kettle/dev/interactive_release_command.rb', line 9</span>
@@ -241,6 +249,14 @@
   <span class='ivar'>@secret_event_handler</span> <span class='op'>=</span> <span class='id identifier rubyid_secret_event_handler'>secret_event_handler</span>
   <span class='ivar'>@forward_stdin</span> <span class='op'>=</span> <span class='id identifier rubyid_forward_stdin'>forward_stdin</span>
   <span class='ivar'>@gem_signing_passphrase</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='comment'># Secrets are written to the PTY master to answer child prompts. A PTY
+</span>  <span class='comment'># slave still echoes what is typed while the child has not yet disabled
+</span>  <span class='comment'># terminal echo (RubyGems&#39; ask_for_password only wraps gets in noecho),
+</span>  <span class='comment'># so the secret bytes can bounce back into the PTY output stream and —
+</span>  <span class='comment'># without filtering — land in release logs. Track every secret written
+</span>  <span class='comment'># and scrub it from all child output before it is printed or captured.
+</span>  <span class='ivar'>@written_secrets</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@secret_scrub_carryover</span> <span class='op'>=</span> <span class='op'>+</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -269,12 +285,12 @@
       <pre class="lines">
 
 
-19
-20
-21</pre>
+27
+28
+29</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/interactive_release_command.rb', line 19</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/interactive_release_command.rb', line 27</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_env'>env</span><span class='comma'>,</span> <span class='id identifier rubyid_cmd'>cmd</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_call_argv'>call_argv</span><span class='lparen'>(</span><span class='id identifier rubyid_env'>env</span><span class='comma'>,</span> <span class='const'>Shellwords</span><span class='period'>.</span><span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='id identifier rubyid_cmd'>cmd</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span><span class='rparen'>)</span>
@@ -299,14 +315,14 @@
       <pre class="lines">
 
 
-23
-24
-25
-26
-27</pre>
+31
+32
+33
+34
+35</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/interactive_release_command.rb', line 23</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/interactive_release_command.rb', line 31</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_call_argv'>call_argv</span><span class='lparen'>(</span><span class='id identifier rubyid_env'>env</span><span class='comma'>,</span> <span class='id identifier rubyid_argv'>argv</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='id identifier rubyid_call_with_pty'>call_with_pty</span><span class='lparen'>(</span><span class='id identifier rubyid_env'>env</span><span class='comma'>,</span> <span class='id identifier rubyid_argv'>argv</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_pty_available?'>pty_available?</span>
