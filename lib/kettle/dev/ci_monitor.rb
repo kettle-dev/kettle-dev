@@ -404,9 +404,31 @@ module Kettle
                     total: total
                   )
                 end
-              elsif Kettle::Dev::CIHelpers.failed?(run) && !passed[wf] && !failed[wf]
+              elsif !failed[wf]
+                # Detect a failure at the JOB level while the run is still
+                # in_progress: a large matrix keeps the run-level status
+                # pending for many minutes after its first job has already
+                # concluded failure, but an operator watching the Actions UI
+                # sees the red job immediately. Abort as soon as any job is
+                # definitively red so the release stops burning minutes that
+                # a re-run will have to spend anyway.
+                run_failed = Kettle::Dev::CIHelpers.failed?(run)
+                failed_job = nil
+                if !passed[wf] && !run_failed && run["status"] != "completed"
+                  # Run still in flight: poll its jobs so a single red job in
+                  # a large matrix aborts immediately instead of waiting for
+                  # the whole workflow to conclude.
+                  jobs = Kettle::Dev::CIHelpers.run_jobs(owner: owner, repo: repo, run_id: run["id"])
+                  failed_job = jobs.find do |job|
+                    job["status"] == "completed" && job["conclusion"] && job["conclusion"] != "success" && job["conclusion"] != "skipped"
+                  end
+                end
+                next unless run_failed || failed_job
+
                 puts
                 wf_url = run["html_url"] || "https://github.com/#{owner}/#{repo}/actions/workflows/#{wf}"
+                failed_job_note = failed_job ? " (job: #{failed_job["name"]})" : ""
+                wf_url = failed_job["html_url"] if failed_job && failed_job["html_url"]
                 emit_ci_monitor_event(
                   event_recorder,
                   action: "github_workflow",
@@ -416,12 +438,13 @@ module Kettle
                   url: wf_url,
                   run_status: run["status"],
                   conclusion: run["conclusion"],
+                  failed_job: failed_job && failed_job["name"],
                   completed: passed.size,
                   total: total,
-                  reason: "Workflow failed"
+                  reason: "Workflow failed#{failed_job_note}"
                 )
                 unless continue_ci_failures?
-                  abort("Workflow failed: #{wf} -> #{wf_url} Fix the workflow, then restart this tool from CI validation with: #{restart_hint}")
+                  abort("Workflow failed#{failed_job_note}: #{wf} -> #{wf_url} Fix the workflow, then restart this tool from CI validation with: #{restart_hint}")
                 end
 
                 failed[wf] = true

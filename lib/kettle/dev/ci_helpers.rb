@@ -188,6 +188,38 @@ module Kettle
         run && run["status"] == "completed" && run["conclusion"] && run["conclusion"] != "success"
       end
 
+      # Jobs of a workflow run. Used to detect a failed job BEFORE the
+      # workflow-level status completes: a large matrix keeps the run
+      # in_progress for many minutes after its first job has already
+      # concluded failure, while an operator watching the Actions UI sees
+      # the red job immediately.
+      # @param owner [String]
+      # @param repo [String]
+      # @param run_id [Integer, String]
+      # @param token [String, nil]
+      # @return [Array<Hash>] job summaries: name, status, conclusion, html_url
+      def run_jobs(owner:, repo:, run_id:, token: default_token)
+        return [] unless owner && repo && run_id
+
+        data = github_get_json(
+          "https://api.github.com/repos/#{owner}/#{repo}/actions/runs/#{run_id}/jobs?per_page=100",
+          token: token
+        )
+        return [] unless data
+
+        Array(data["jobs"]).map do |job|
+          {
+            "name" => job["name"],
+            "status" => job["status"],
+            "conclusion" => job["conclusion"],
+            "html_url" => job["html_url"]
+          }
+        end
+      rescue => e
+        Kettle::Dev.debug_error(e, __method__)
+        []
+      end
+
       # Default GitHub token sourced from environment.
       # @return [String, nil]
       def default_token

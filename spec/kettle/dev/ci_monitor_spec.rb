@@ -307,6 +307,68 @@ RSpec.describe Kettle::Dev::CIMonitor do
       )
     end
 
+    it "aborts naming the failed job while the run is still in progress", :check_output do
+      io = StringIO.new
+      event_recorder = Kettle::Ndjson.event_stream(io, types: "ci_monitor")
+      allow(helpers).to receive_messages(
+        project_root: Dir.pwd,
+        current_branch: "main",
+        current_head_sha: "abc123"
+      )
+      allow(described_class).to receive_messages(
+        preferred_github_remote: "origin",
+        remote_url: "https://github.com/me/repo.git"
+      )
+      run = {"status" => "in_progress", "conclusion" => nil, "html_url" => "https://github.com/me/repo/actions/runs/9", "id" => 9, "head_sha" => "abc123"}
+      allow(helpers).to receive(:latest_run).with(owner: "me", repo: "repo", workflow_file: "current.yml", branch: "main", require_head: true, head_sha: "abc123").and_return(run)
+      allow(helpers).to receive(:success?) { |candidate| candidate && candidate["status"] == "completed" && candidate["conclusion"] == "success" }
+      allow(helpers).to receive(:failed?) { |candidate| candidate && candidate["status"] == "completed" && candidate["conclusion"] && candidate["conclusion"] != "success" }
+      allow(helpers).to receive(:run_jobs).with(owner: "me", repo: "repo", run_id: 9).and_return(
+        [
+          {"name" => "Deps @ HEAD (gems/ast-merge-git)", "status" => "completed", "conclusion" => "failure", "html_url" => "https://github.com/me/repo/actions/runs/9/job/1"},
+          {"name" => "Other job", "status" => "in_progress", "conclusion" => nil, "html_url" => "https://github.com/me/repo/actions/runs/9/job/2"}
+        ]
+      )
+      stub_env("K_RELEASE_CI_INITIAL_SLEEP" => "0")
+      allow(described_class).to receive(:sleep)
+
+      expect { described_class.monitor_all!(restart_hint: "hint", workflows: ["current.yml"], event_recorder: event_recorder) }.to raise_error(MockSystemExit, /Workflow failed \(job: Deps @ HEAD \(gems\/ast-merge-git\)\)/)
+
+      events = io.string.lines.map { |line| JSON.parse(line) }
+      expect(events).to include(
+        include("type" => "ci_monitor", "action" => "github_workflow", "status" => "failed", "provider" => "github", "workflow" => "current.yml", "failed_job" => "Deps @ HEAD (gems/ast-merge-git)", "mark" => "!")
+      )
+    end
+
+    it "keeps waiting while an in-progress run has no failed jobs" do
+      allow(helpers).to receive_messages(
+        project_root: Dir.pwd,
+        current_branch: "main",
+        current_head_sha: "abc123"
+      )
+      allow(described_class).to receive_messages(
+        preferred_github_remote: "origin",
+        remote_url: "https://github.com/me/repo.git"
+      )
+      in_progress = {"status" => "in_progress", "conclusion" => nil, "html_url" => "https://github.com/me/repo/actions/runs/10", "id" => 10, "head_sha" => "abc123"}
+      done = {"status" => "completed", "conclusion" => "success", "html_url" => "https://github.com/me/repo/actions/runs/10", "id" => 10, "head_sha" => "abc123"}
+      calls = 0
+      allow(helpers).to receive(:latest_run).with(owner: "me", repo: "repo", workflow_file: "current.yml", branch: "main", require_head: true, head_sha: "abc123") do
+        calls += 1
+        (calls <= 1) ? in_progress : done
+      end
+      allow(helpers).to receive(:success?) { |candidate| candidate && candidate["status"] == "completed" && candidate["conclusion"] == "success" }
+      allow(helpers).to receive(:failed?) { |candidate| candidate && candidate["status"] == "completed" && candidate["conclusion"] && candidate["conclusion"] != "success" }
+      allow(helpers).to receive(:run_jobs).with(owner: "me", repo: "repo", run_id: 10).and_return(
+        [{"name" => "Pending job", "status" => "in_progress", "conclusion" => nil, "html_url" => "https://github.com/me/repo/actions/runs/10/job/1"}]
+      )
+      stub_env("K_RELEASE_CI_INITIAL_SLEEP" => "0")
+      allow(described_class).to receive(:sleep)
+
+      expect { described_class.monitor_all!(restart_hint: "hint", workflows: ["current.yml"]) }.not_to raise_error
+      expect(calls).to eq(2)
+    end
+
     it "continues monitoring remaining workflows when CI failures are allowed", :check_output do
       io = StringIO.new
       event_recorder = Kettle::Ndjson.event_stream(io, types: "ci_monitor")
