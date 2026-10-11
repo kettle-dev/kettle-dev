@@ -87,6 +87,53 @@ RSpec.describe Kettle::Dev::InteractiveReleaseCommand do
     expect(provider).to have_received(:gem_signing_passphrase).once
   end
 
+  it "never leaks the passphrase through PTY echo back into captured output" do
+    provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword, gem_signing_passphrase: "supersekrit-phrase")
+    output = StringIO.new
+    command = described_class.new(secrets_provider: provider, output: output)
+    skip "PTY is unavailable on this Ruby engine" unless command.send(:pty_available?)
+
+    # The child mirrors RubyGems' signing prompt: it asks with terminal echo
+    # still on (Gem::StreamUI#ask_for_password only wraps gets in noecho), so
+    # the bytes written by the automation are echoed back through the PTY.
+    child = [
+      RbConfig.ruby,
+      "-rrubygems",
+      "-rrubygems/user_interaction",
+      "-e",
+      'ui = Gem::StreamUI.new($stdin, $stdout, $stderr, true); ' \
+        'pw = ui.ask_for_password("Enter PEM pass phrase:  "); ' \
+        '$stdout.puts("LEN=#{pw.nil? ? "nil" : pw.length}")'
+    ]
+
+    _stdout, _stderr, status = command.call({}, child.shelljoin)
+
+    expect(status).to be_success
+    expect(output.string).not_to include("supersekrit-phrase")
+    expect(output.string).to include("LEN=18")
+    expect(output.string).to include("[SECRET REMOVED]")
+  end
+
+  it "scrubs a passphrase echoed across chunk boundaries" do
+    provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword, gem_signing_passphrase: "supersekrit-phrase")
+    command = described_class.new(secrets_provider: provider, output: StringIO.new)
+    command.send(:register_secret!, "supersekrit-phrase")
+
+    first = command.send(:scrub_secrets_from_chunk, "partial-supersekrit-ph")
+    second = command.send(:scrub_secrets_from_chunk, "rase\r\n\r\n")
+    flushed = command.send(:flush_secret_scrub_carryover)
+
+    expect(first + second + flushed).not_to include("supersekrit-phrase")
+    expect(first + second + flushed).to include("partial-")
+  end
+
+  it "leaves output untouched when no secret has been written" do
+    provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword, gem_signing_passphrase: "secret")
+    command = described_class.new(secrets_provider: provider, output: StringIO.new)
+
+    expect(command.send(:scrub_secrets_from_chunk, "ordinary output")).to eq("ordinary output")
+  end
+
   it "fails closed when a configured provider returns no secret for a prompt" do
     provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword, gem_signing_passphrase: nil)
     command = described_class.new(secrets_provider: provider, output: StringIO.new)
