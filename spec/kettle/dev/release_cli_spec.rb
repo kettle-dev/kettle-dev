@@ -782,10 +782,14 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
 
           allow(local_cli).to receive(:release_project_command) { |command| "release #{command}" }
           allow(local_cli).to receive(:changed_bundle_lockfile_paths).and_return(paths)
+          appraisal_env = "BUNDLE_GEMFILE=#{Shellwords.escape(File.join(root, "Appraisal.root.gemfile"))} " \
+            "BUNDLE_LOCKFILE=#{Shellwords.escape(File.join(root, "Appraisal.root.gemfile.lock"))}"
           expect(local_cli).to receive(:run_cmd!).with("release bundle update --bundler=#{Bundler::VERSION}").ordered
           expect(local_cli).to receive(:run_cmd!).with(
-            "release BUNDLE_GEMFILE=#{Shellwords.escape(File.join(root, "Appraisal.root.gemfile"))} " \
-              "BUNDLE_LOCKFILE=#{Shellwords.escape(File.join(root, "Appraisal.root.gemfile.lock"))} bundle update --bundler=#{Bundler::VERSION}"
+            "release #{appraisal_env} bundle install"
+          ).ordered
+          expect(local_cli).to receive(:run_cmd!).with(
+            "release #{appraisal_env} bundle update --bundler=#{Bundler::VERSION}"
           ).ordered
           expect(local_cli).to receive(:run_cmd!).with("release bundle exec rake appraisal:reset").ordered
           expect(git).to receive(:add_repository_paths).with(paths).and_return(true)

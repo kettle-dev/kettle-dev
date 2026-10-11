@@ -1882,8 +1882,18 @@ module Kettle
         appraisal_gemfile = File.join(@root, "Appraisal.root.gemfile")
         if File.file?(appraisal_gemfile)
           appraisal_lockfile = File.join(@root, "Appraisal.root.gemfile.lock")
-          appraisal_command = "BUNDLE_GEMFILE=#{Shellwords.escape(appraisal_gemfile)} " \
-            "BUNDLE_LOCKFILE=#{Shellwords.escape(appraisal_lockfile)} bundle update --bundler=#{bundler_version}"
+          appraisal_env = "BUNDLE_GEMFILE=#{Shellwords.escape(appraisal_gemfile)} " \
+            "BUNDLE_LOCKFILE=#{Shellwords.escape(appraisal_lockfile)}"
+          # The appraisal root lockfile is a gitignored local artifact; the
+          # release lockfile reset restores repo state by removing untracked
+          # files, so it is frequently absent here. `bundle update` refuses to
+          # run against a missing lockfile ("This Bundle hasn't been installed
+          # yet"), so materialize the bundle first — bundle install writes the
+          # lockfile and is a no-op when everything is already installed.
+          unless File.file?(appraisal_lockfile)
+            run_cmd!(release_project_command("#{appraisal_env} bundle install"))
+          end
+          appraisal_command = "#{appraisal_env} bundle update --bundler=#{bundler_version}"
           run_cmd!(release_project_command(appraisal_command))
           run_cmd!(release_project_command("bundle exec rake appraisal:reset"))
         end
