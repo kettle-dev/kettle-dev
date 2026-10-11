@@ -30,8 +30,6 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - CI monitor aborts on the first failed GitHub Actions job instead of waiting for run-level completion: a large matrix keeps the run in_progress for minutes after a red job, so releases burned dead time a re-run must spend anyway; the abort names the job and links it
 
-- InteractiveReleaseCommand answers prompts hidden in the secret-scrubber holdback: prompt detection now runs on a scrubbed-but-untruncated view while emitted output keeps the holdback, fixing a deadlock where gem push printed the RubyGems OTP prompt as its final output and blocked forever on stdin; the 3.1.10 section documents the scrubber but omitted this follow-up correction
-
 ### Security
 
 ## [3.1.10] - 2026-10-11
@@ -47,7 +45,7 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Security
 
-- InteractiveReleaseCommand now scrubs every configured secret from child output before printing, capturing, or logging it: a PTY echoes bytes written to its input back onto the output stream while the child's terminal echo is on (e.g. before RubyGems' noecho wraps the password read), so the gem signing passphrase previously appeared in release logs; the scrubber tracks written secrets in memory, removes them from every chunk including secrets split across chunk boundaries, and clears the prompt buffer after answering so a stale prompt cannot trigger a duplicate write
+- InteractiveReleaseCommand now scrubs every configured secret from child output before printing, capturing, or logging it: a PTY echoes bytes written to its input back onto the output stream while the child's terminal echo is on (e.g. before RubyGems' noecho wraps the password read), so the gem signing passphrase previously appeared in release logs; the scrubber tracks written secrets in memory, removes them from every chunk including secrets split across chunk boundaries, and clears the prompt buffer after answering so a stale prompt cannot trigger a duplicate write. Prompt detection runs on a scrubbed-but-untruncated view of the stream while emitted output keeps the anti-leak holdback, fixing a deadlock where `gem push` printed the RubyGems OTP prompt as its final output and blocked forever on stdin with the prompt tail withheld (the fix landed mid-release and was omitted from this section's original content)
 
 - kettle-release aborts at startup under a prerelease Bundler, and LockfileReset now treats a lockfile BUNDLED WITH a prerelease Bundler as drift: Bundler auto-installs the locked version (including betas) on every bundle install, so one beta-pinned lockfile re-infects every machine that bundles against it; the reset re-locks with the currently running stable Bundler
 
