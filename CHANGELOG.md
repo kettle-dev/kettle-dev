@@ -32,6 +32,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - InteractiveReleaseCommand now scrubs every configured secret from child output before printing, capturing, or logging it: a PTY echoes bytes written to its input back onto the output stream while the child's terminal echo is on (e.g. before RubyGems' noecho wraps the password read), so the gem signing passphrase previously appeared in release logs; the scrubber tracks written secrets in memory, removes them from every chunk including secrets split across chunk boundaries, and clears the prompt buffer after answering so a stale prompt cannot trigger a duplicate write
 
+- kettle-release aborts at startup under a prerelease Bundler, and LockfileReset now treats a lockfile BUNDLED WITH a prerelease Bundler as drift: Bundler auto-installs the locked version (including betas) on every bundle install, so one beta-pinned lockfile re-infects every machine that bundles against it; the reset re-locks with the currently running stable Bundler
+
 ## [3.1.10] - 2026-10-11
 
 - TAG: [v3.1.10][3.1.10t]

@@ -1859,6 +1859,13 @@ module Kettle
         if ver < min
           abort("kettle-release requires Bundler >= 2.7.0 for reproducible builds by default. Current: #{Bundler::VERSION}. Please upgrade bundler.")
         end
+        if ver.prerelease?
+          abort(
+            "kettle-release refuses to run under a prerelease Bundler (#{Bundler::VERSION}). " \
+              "Prerelease Bundler has repeatedly introduced release-breaking behavior changes. " \
+              "Run `gem uninstall bundler -v #{Bundler::VERSION}` and install the latest stable Bundler."
+          )
+        end
       end
 
       # Keep Bundler maintenance separate from the release metadata commit.

@@ -764,6 +764,47 @@ RSpec.describe Kettle::Dev::LockfileReset do
     expect(reset.diagnostics(path)).to include(a_string_ending_with("Gemfile.lock BUNDLED WITH 4.1.0.beta1 has no matching Bundler checksum"))
   end
 
+  it "detects a prerelease BUNDLED WITH even when its checksum is present" do
+    reset = described_class.new(root: @root, command_runner: ->(_command) {})
+    path = File.join(@root, "Gemfile.lock")
+    File.write(path, <<~LOCK)
+      GEM
+        remote: https://rubygems.org/
+        specs:
+          rake (13.4.2)
+
+      CHECKSUMS
+        bundler (4.1.0.beta1) sha256=abc123
+        rake (13.4.2) sha256=def456
+
+      BUNDLED WITH
+        4.1.0.beta1
+    LOCK
+
+    expect(reset.normalization_needed?(path)).to be(true)
+    expect(reset.diagnostics(path)).to include(a_string_ending_with("Gemfile.lock BUNDLED WITH 4.1.0.beta1 is a prerelease Bundler; re-lock with a stable Bundler"))
+  end
+
+  it "accepts a stable BUNDLED WITH with a matching checksum" do
+    reset = described_class.new(root: @root, command_runner: ->(_command) {})
+    path = File.join(@root, "Gemfile.lock")
+    File.write(path, <<~LOCK)
+      GEM
+        remote: https://rubygems.org/
+        specs:
+          rake (13.4.2)
+
+      CHECKSUMS
+        bundler (4.0.22) sha256=abc123
+        rake (13.4.2) sha256=def456
+
+      BUNDLED WITH
+        4.0.22
+    LOCK
+
+    expect(reset.normalization_needed?(path)).to be(false)
+  end
+
   it "does not require registry checksums for Git-sourced specs" do
     reset = described_class.new(root: @root, command_runner: ->(_command) {})
     File.write(File.join(@root, "Gemfile.lock"), <<~LOCK)

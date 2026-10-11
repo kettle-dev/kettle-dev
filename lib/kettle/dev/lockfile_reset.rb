@@ -311,6 +311,7 @@ module Kettle
         has_local_path_remote?(path, strict: strict) ||
           !empty_registry_checksums(path).empty? ||
           !unreleased_workspace_registry_specs(path).empty? ||
+          bundled_with_prerelease?(path) ||
           bundled_with_checksum_mismatch?(path)
       end
 
@@ -324,6 +325,9 @@ module Kettle
         end
         unreleased_workspace_registry_specs(path).each do |name, version, line_number|
           diagnostics << "#{display_path(path)} locks local workspace gem #{name} #{version} as a registry gem, but that version is not resolvable from the configured gem source at line #{line_number}"
+        end
+        if bundled_with_prerelease?(path)
+          diagnostics.push("#{display_path(path)} BUNDLED WITH #{bundled_with_version(path)} is a prerelease Bundler; re-lock with a stable Bundler")
         end
         if bundled_with_checksum_mismatch?(path)
           diagnostics.push("#{display_path(path)} BUNDLED WITH #{bundled_with_version(path)} has no matching Bundler checksum")
@@ -540,6 +544,19 @@ module Kettle
           return version unless version.empty?
         end
         ""
+      end
+
+      # A lockfile pinned to a prerelease Bundler re-infects every machine that
+      # runs bundle install against it: Bundler auto-installs the locked version
+      # (including betas) before doing anything else. Treat it as drift and let
+      # the reset re-lock with the currently running stable Bundler.
+      def bundled_with_prerelease?(path)
+        version = bundled_with_version(path)
+        return false if version.empty?
+
+        Gem::Version.new(version).prerelease?
+      rescue ArgumentError
+        false
       end
 
       def path_source_gems(path)

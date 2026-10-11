@@ -768,6 +768,12 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         stub_const("Bundler::VERSION", "2.7.1")
         expect { cli.send(:ensure_bundler_2_7_plus!) }.not_to raise_error
       end
+
+      it "aborts when bundler is a prerelease" do
+        stub_const("Bundler", Class.new)
+        stub_const("Bundler::VERSION", "4.1.0.beta2")
+        expect { cli.send(:ensure_bundler_2_7_plus!) }.to raise_error(MockSystemExit, /refuses to run under a prerelease Bundler/)
+      end
     end
 
     describe "#update_bundler_and_commit!" do
