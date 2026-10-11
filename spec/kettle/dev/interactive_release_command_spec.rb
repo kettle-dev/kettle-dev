@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "shellwords"
+require "timeout"
 
 RSpec.describe Kettle::Dev::InteractiveReleaseCommand do
   it "uses a PTY to write the configured passphrase to prompt-bearing commands" do
@@ -88,6 +89,16 @@ RSpec.describe Kettle::Dev::InteractiveReleaseCommand do
   end
 
   it "never leaks the passphrase through PTY echo back into captured output" do
+    # Old Ruby PTY stacks (2.4-2.6) have unreliable noecho timing: the child
+    # reads mangled input and its gets never completes, so the parent's
+    # readpartial loop hangs and deadlocks the turbo_tests2 worker (observed
+    # hanging CI jobs on ruby-2.4.yml, ruby-2.5.yml, ruby-2.6.yml). The
+    # scrubber's security property is covered by the PTY-free unit specs
+    # below on every supported Ruby; this end-to-end check runs where the
+    # prompt path is reliable. The timeout is a hard backstop so a regression
+    # fails fast instead of hanging a CI worker for hours.
+    skip "PTY prompt e2e is unreliable on Ruby < 3.1" if RUBY_VERSION < "3.1"
+
     provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword, gem_signing_passphrase: "supersekrit-phrase")
     output = StringIO.new
     command = described_class.new(secrets_provider: provider, output: output)
@@ -106,7 +117,10 @@ RSpec.describe Kettle::Dev::InteractiveReleaseCommand do
         '$stdout.puts("LEN=#{pw.nil? ? "nil" : pw.length}")'
     ]
 
-    _stdout, _stderr, status = command.call({}, child.shelljoin)
+    _stdout = _stderr = status = nil
+    Timeout.timeout(30) do
+      _stdout, _stderr, status = command.call({}, child.shelljoin)
+    end
 
     expect(status).to be_success
     expect(output.string).not_to include("supersekrit-phrase")

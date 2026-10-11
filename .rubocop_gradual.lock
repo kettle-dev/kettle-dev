@@ -1,5 +1,5 @@
 {
-  "spec/kettle/dev/interactive_release_command_spec.rb:334072181": [
-    [106, 9, 52, "Lint/InterpolationCheck: Interpolation in single quoted string detected. Use double quoted strings if you need interpolation.", 826951352]
+  "spec/kettle/dev/interactive_release_command_spec.rb:4119468749": [
+    [117, 9, 52, "Lint/InterpolationCheck: Interpolation in single quoted string detected. Use double quoted strings if you need interpolation.", 826951352]
   ]
 }
