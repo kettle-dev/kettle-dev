@@ -54,6 +54,19 @@ begin
   end
 
   run_generate_steps = lambda do
+    # The root appraisal lockfile is a local artifact (gitignored) that drifts
+    # after dependency bumps. A stale pin makes `bundle install` fail with an
+    # opaque "locked to X ... can no longer be found" — observed when a family
+    # member's gemspec floor was raised to an unpublished sibling version.
+    # appraisal:generate's contract is to work without resolving appraisal
+    # locks, so delete the stale root lock and let Bundler resolve fresh from
+    # Appraisal.root.gemfile.
+    root_appraisal_lock = File.join("Appraisal.root.gemfile.lock")
+    if File.file?(root_appraisal_lock)
+      File.delete(root_appraisal_lock)
+      puts("[kettle-dev][appraisal:generate] deleted stale #{root_appraisal_lock}")
+    end
+
     # 1) BUNDLE_GEMFILE=Appraisal.root.gemfile bundle install
     run_command.call(
       "appraisal:generate failed: BUNDLE_GEMFILE=Appraisal.root.gemfile bundle install",

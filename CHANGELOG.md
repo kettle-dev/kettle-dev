@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- appraisal:generate now deletes a stale Appraisal.root.gemfile.lock before its bundle install. The root appraisal lockfile is a gitignored local artifact that drifts after dependency bumps; a stale pin made appraisal:generate fail with an opaque "locked to X ... can no longer be found" (observed templating kettle-jem after ast-crispr-ruby-prism's floor moved to an unpublished version). appraisal:generate's contract is to work without resolving appraisal locks, so the stale lock is removed and Bundler resolves fresh.
+
 ### Security
 
 ## [3.1.9] - 2026-10-09
