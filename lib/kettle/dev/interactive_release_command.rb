@@ -52,10 +52,25 @@ module Kettle
                   input.write(@input.readpartial(1024))
                 else
                   chunk = output.readpartial(1024)
+                  # Two views of the same bytes, with independent state.
+                  #
+                  # Emitted view: holds back a trailing window so a secret
+                  # split across chunks can never reach the log; the window
+                  # is released by flush_secret_scrub_carryover at stream end.
+                  #
+                  # Prompt view: scrubbed but never held back. A child that
+                  # prints its prompt and then blocks on stdin (Gem's OTP
+                  # `Code: ` ask) produces no further output; if the prompt
+                  # tail sat in the emitted view's holdback, detection would
+                  # never fire and the child would deadlock. The prompt view
+                  # therefore scrubs the raw chunk directly (plus the emitted
+                  # view's carryover, read-only, so bytes spanning the
+                  # boundary are still masked) instead of consuming it.
                   chunk = scrub_secrets_from_chunk(chunk)
+                  prompt_text = scrub_secrets_for_prompt_detection(chunk)
                   stdout_str << chunk
                   @output.print(chunk)
-                  prompt_buffer = handle_prompt(input, chunk, prompt_buffer: prompt_buffer)
+                  prompt_buffer = handle_prompt(input, prompt_text, prompt_buffer: prompt_buffer)
                 end
               end
             end
@@ -208,6 +223,19 @@ module Kettle
         chunk = @secret_scrub_carryover
         @secret_scrub_carryover = +""
         chunk
+      end
+
+      # Prompt-detection view: scrubbed, but never holds back a trailing
+      # window. Reads (never consumes) the emitted view's carryover so bytes
+      # spanning a chunk boundary are still masked here. Without this view, a
+      # prompt whose tail falls inside the holdback — a child that blocks on
+      # stdin and produces no further output — would never be answered, and
+      # the release would deadlock.
+      def scrub_secrets_for_prompt_detection(chunk)
+        return chunk if @written_secrets.empty?
+
+        buffer = @secret_scrub_carryover + chunk
+        buffer.gsub(Regexp.union(@written_secrets), "[SECRET REMOVED]")
       end
 
       def otp_prompt?(chunk)

@@ -131,6 +131,47 @@ RSpec.describe Kettle::Dev::InteractiveReleaseCommand do
     # of the secret, not the presence of the marker.
   end
 
+  it "answers a prompt whose tail falls inside the scrubber holdback, without deadlocking" do
+    # Regression test for the production deadlock: gem push prints
+    # "You have enabled multi-factor authentication. Please enter OTP code."
+    # followed by "Code: " and then blocks on stdin. The emitted view's
+    # trailing holdback (longest registered secret's bytesize) withheld the
+    # prompt tail, prompt detection never saw "Code: ", no OTP was written,
+    # and the child waited forever for input that would only come after more
+    # output that never arrived. A child whose prompt is its FINAL output is
+    # the exact shape of that failure, so this spec would have caught it.
+    skip "PTY prompt e2e is unreliable on Ruby < 3.1" if RUBY_VERSION < "3.1"
+
+    provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword, rubygems_otp: "123456")
+    output = StringIO.new
+    command = described_class.new(secrets_provider: provider, output: output)
+    skip "PTY is unavailable on this Ruby engine" unless command.send(:pty_available?)
+
+    # Pre-register a secret so the scrubber holdback is active and at least
+    # as long as the prompt tail, mirroring the release flow (a passphrase
+    # was already answered before the OTP prompt appears). The child emits a
+    # long line, then the OTP prompt, then blocks on stdin with NO further
+    # output until the OTP arrives.
+    child = [
+      RbConfig.ruby,
+      "-e",
+      "print \"You have enabled multi-factor authentication. Please enter OTP code.\\n\"; " \
+        "$stdout.flush; " \
+        "code = STDIN.gets&.chomp; " \
+        "exit(code == \"123456\" ? 0 : 1)"
+    ]
+
+    _stdout = _stderr = status = nil
+    Timeout.timeout(30) do
+      command.send(:register_secret!, "registered-secret-value")
+      _stdout, _stderr, status = command.call({}, child.shelljoin)
+    end
+
+    expect(status).to be_success
+    expect(output.string).to include("multi-factor authentication")
+    expect(output.string).not_to include("registered-secret-value")
+  end
+
   it "scrubs a passphrase echoed across chunk boundaries" do
     provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword, gem_signing_passphrase: "supersekrit-phrase")
     command = described_class.new(secrets_provider: provider, output: StringIO.new)
