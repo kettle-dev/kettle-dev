@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- appraisal:generate now deletes a stale Appraisal.root.gemfile.lock before its bundle install. The root appraisal lockfile is a gitignored local artifact that drifts after dependency bumps; a stale pin made appraisal:generate fail with an opaque "locked to X ... can no longer be found" (observed templating kettle-jem after ast-crispr-ruby-prism's floor moved to an unpublished version). appraisal:generate's contract is to work without resolving appraisal locks, so the stale lock is removed and Bundler resolves fresh.
-
 ### Security
+
+## [3.1.10] - 2026-10-11
+
+- TAG: [v3.1.10][3.1.10t]
+- COVERAGE: 91.75% -- 6295/6861 lines in 49 files
+- BRANCH COVERAGE: 75.97% -- 2400/3159 branches in 49 files
+- 51.99% documented
+
+### Fixed
+
+- appraisal:generate now deletes a stale Appraisal.root.gemfile.lock before its bundle install. The root appraisal lockfile is a gitignored local artifact that drifts after dependency bumps; a stale pin made appraisal:generate fail with an opaque "locked to X ... can no longer be found" (observed templating kettle-jem after ast-crispr-ruby-prism's floor moved to an unpublished version). appraisal:generate's contract is to work without resolving appraisal locks, so the stale lock is removed and Bundler resolves fresh.
 
 ## [3.1.9] - 2026-10-09
 
@@ -4023,7 +4032,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.9...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.10...HEAD
+[3.1.10]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.9...v3.1.10
+[3.1.10t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.10
 [3.1.9]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.8...v3.1.9
 [3.1.9t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.9
 [3.1.8]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.7...v3.1.8
