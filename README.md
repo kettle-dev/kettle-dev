@@ -421,6 +421,7 @@ What it does:
         - Select workflow with `K_RELEASE_LOCAL_CI_WORKFLOW` (with or without .yml/.yaml). Defaults to `locked_deps.yml` if present; otherwise the first workflow discovered.
         - On failure, the release prep commit is soft-rolled-back (`git reset --soft HEAD^`) and the process aborts.
     - Ensures trunk sync and rebases feature branches as needed, pushes, monitors GitHub Actions with a progress bar, and merges feature to trunk on success.
+    - CI monitoring aborts as soon as any single workflow job fails (not only when the whole run concludes), naming the failed job and linking to it — a large matrix can keep a run in_progress for many minutes after its first red job.
     - For release branches listed in `.kettle-family.yml` branch-stack targets, it intentionally does not pull/rebase from trunk or merge the leaf branch into trunk. Instead, it starts the selected GitHub Actions workflows directly on the pushed release branch; each selected workflow must declare `workflow_dispatch`. This validates the exact branch-stack commit without requiring an often-conflicting PR to trunk.
     - Exports `SOURCE_DATE_EPOCH`, builds (optionally signed), creates gem checksums, and runs `bundle exec rake release` (prompts for signing key + RubyGems MFA OTP as needed).
 - Options:
