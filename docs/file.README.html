@@ -204,7 +204,7 @@ out to <code>kettle-release</code> for each member that needs publishing.</p>
     <tr>
       <td>Source</td>
       <td>
-<a href="https://gitlab.com/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/GitLab-FBA326?style=for-the-badge&amp;logo=Gitlab&amp;logoColor=orange" alt="Source on GitLab.com"></a> <a href="https://codeberg.org/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/CodeBerg-4893CC?style=for-the-badge&amp;logo=CodeBerg&amp;logoColor=blue" alt="Source on CodeBerg.org"></a> <a href="https://github.com/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/GitHub-238636?style=for-the-badge&amp;logo=GitHub&amp;logoColor=green" alt="Source on GitHub.com"></a> <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"><img src="https://img.shields.io/badge/KLOC-6.926-FFDD67.svg?style=for-the-badge&amp;logo=YouTube&amp;logoColor=blue" alt="The best SHA: dQw4w9WgXcQ!"></a>
+<a href="https://gitlab.com/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/GitLab-FBA326?style=for-the-badge&amp;logo=Gitlab&amp;logoColor=orange" alt="Source on GitLab.com"></a> <a href="https://codeberg.org/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/CodeBerg-4893CC?style=for-the-badge&amp;logo=CodeBerg&amp;logoColor=blue" alt="Source on CodeBerg.org"></a> <a href="https://github.com/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/GitHub-238636?style=for-the-badge&amp;logo=GitHub&amp;logoColor=green" alt="Source on GitHub.com"></a> <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"><img src="https://img.shields.io/badge/KLOC-6.972-FFDD67.svg?style=for-the-badge&amp;logo=YouTube&amp;logoColor=blue" alt="The best SHA: dQw4w9WgXcQ!"></a>
 </td>
     </tr>
     <tr>
@@ -532,6 +532,10 @@ message explaining that setup and templating moved to kettle-jem.</p>
 <code>GITHUB_TOKEN</code> or <code>GH_TOKEN</code>: Token used by <code>ci:act</code> and release workflow checks to query GitHub Actions status at higher rate limits</li>
   <li>
 <code>GITLAB_TOKEN</code> or <code>GL_TOKEN</code>: Token used by <code>ci:act</code> and CI monitor to query GitLab pipeline status</li>
+  <li>
+<code>K_RELEASE_CI_REQUESTS_PER_MINUTE</code>: GitHub API request budget for the release CI monitor (default 90/min). Requests above the budget are spaced out; an exhausted quota parks the monitor until the reset instead of failing</li>
+  <li>
+<code>K_RELEASE_CI_JOBS_POLL_INTERVAL</code>: Minimum seconds between job-level polls of an in-flight workflow run during release CI monitoring (default 60). Job-level detection catches a failed job in a large matrix before the run concludes, without multiplying API request volume</li>
 </ul>
 
 <p>Releasing and signing</p>
