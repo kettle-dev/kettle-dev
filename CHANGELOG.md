@@ -28,20 +28,20 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- kettle-release no longer aborts at release:guard_clean when resuming at step 14/15: the process boot can silently rewrite the canonical Gemfile.lock with sibling PATH remotes (gemspec self-version bump forces re-resolution under the family local-path toggle), so canonical lockfiles are now normalized and re-validated immediately before the build and rake release children
-
 ### Security
 
 ## [3.1.12] - 2026-10-12
 
 - TAG: [v3.1.12][3.1.12t]
-- COVERAGE: 91.72% -- 6395/6972 lines in 49 files
-- BRANCH COVERAGE: 75.82% -- 2439/3217 branches in 49 files
+- COVERAGE: 91.63% -- 6393/6977 lines in 49 files
+- BRANCH COVERAGE: 75.74% -- 2438/3219 branches in 49 files
 - 52.49% documented
 
 ### Fixed
 
 - CI monitor no longer stalls silently at 0/N when GitHub API requests fail: request budget throttling (K_RELEASE_CI_REQUESTS_PER_MINUTE, default 90/min) keeps polling inside the quota; exhausted-quota 403s raise CIRateLimitError so the monitor parks until the reset (emitting a github_rate_limited event) instead of treating the wall as 'no data yet'; 401s raise CIAuthError and abort with token guidance; job-level failure polling is gated to K_RELEASE_CI_JOBS_POLL_INTERVAL (default 60s) — the jobs polling added for early failure detection had multiplied request volume past the quota on large matrices
+
+- kettle-release no longer aborts at release:guard_clean when resuming at step 14/15: the process boot can silently rewrite the canonical Gemfile.lock with sibling PATH remotes (gemspec self-version bump forces re-resolution under the family local-path toggle), so canonical lockfiles are now normalized and re-validated immediately before the build and rake release children
 
 ## [3.1.11] - 2026-10-11
 
