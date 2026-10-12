@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- CI monitor no longer stalls silently at 0/N when GitHub API requests fail: request budget throttling (K_RELEASE_CI_REQUESTS_PER_MINUTE, default 90/min) keeps polling inside the quota; exhausted-quota 403s raise CIRateLimitError so the monitor parks until the reset (emitting a github_rate_limited event) instead of treating the wall as 'no data yet'; 401s raise CIAuthError and abort with token guidance; job-level failure polling is gated to K_RELEASE_CI_JOBS_POLL_INTERVAL (default 60s) — the jobs polling added for early failure detection had multiplied request volume past the quota on large matrices
+
 ### Security
 
 ## [3.1.11] - 2026-10-11

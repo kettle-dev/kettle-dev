@@ -289,6 +289,8 @@ GitHub API and CI helpers
 
 - `GITHUB_TOKEN` or `GH_TOKEN`: Token used by `ci:act` and release workflow checks to query GitHub Actions status at higher rate limits
 - `GITLAB_TOKEN` or `GL_TOKEN`: Token used by `ci:act` and CI monitor to query GitLab pipeline status
+- `K_RELEASE_CI_REQUESTS_PER_MINUTE`: GitHub API request budget for the release CI monitor (default 90/min). Requests above the budget are spaced out; an exhausted quota parks the monitor until the reset instead of failing
+- `K_RELEASE_CI_JOBS_POLL_INTERVAL`: Minimum seconds between job-level polls of an in-flight workflow run during release CI monitoring (default 60). Job-level detection catches a failed job in a large matrix before the run concludes, without multiplying API request volume
 
 Releasing and signing
 
