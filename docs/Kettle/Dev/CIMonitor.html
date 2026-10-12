@@ -1105,32 +1105,32 @@ Results format:</p>
       <pre class="lines">
 
 
-659
-660
-661
-662
-663
-664
-665
-666
-667
-668
-669
-670
-671
-672
-673
-674
-675
-676
-677
-678
-679
-680
-681</pre>
+682
+683
+684
+685
+686
+687
+688
+689
+690
+691
+692
+693
+694
+695
+696
+697
+698
+699
+700
+701
+702
+703
+704</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 659</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 682</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_emit_ci_monitor_event'>emit_ci_monitor_event</span><span class='lparen'>(</span><span class='id identifier rubyid_event_recorder'>event_recorder</span><span class='comma'>,</span> <span class='label'>action:</span><span class='comma'>,</span> <span class='label'>status:</span><span class='comma'>,</span> <span class='label'>provider:</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_payload'>payload</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_mark'>mark</span> <span class='op'>=</span> <span class='kw'>case</span> <span class='id identifier rubyid_status'>status</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span>
@@ -1175,17 +1175,17 @@ Results format:</p>
       <pre class="lines">
 
 
-502
-503
-504
-505
-506
-507
-508
-509</pre>
+525
+526
+527
+528
+529
+530
+531
+532</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 502</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 525</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_github_poll_interval'>github_poll_interval</span>
   <span class='id identifier rubyid_seconds'>seconds</span> <span class='op'>=</span> <span class='kw'>begin</span>
@@ -1215,12 +1215,12 @@ Results format:</p>
       <pre class="lines">
 
 
-695
-696
-697</pre>
+718
+719
+720</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 695</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 718</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_github_remote_candidates'>github_remote_candidates</span>
   <span class='id identifier rubyid_remotes_with_urls'>remotes_with_urls</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_n'>n</span><span class='comma'>,</span> <span class='id identifier rubyid_u'>u</span><span class='op'>|</span> <span class='id identifier rubyid_u'>u</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>github.com</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_keys'>keys</span>
@@ -1245,17 +1245,17 @@ Results format:</p>
       <pre class="lines">
 
 
-492
-493
-494
-495
-496
-497
-498
-499</pre>
+515
+516
+517
+518
+519
+520
+521
+522</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 492</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 515</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_github_start_timeout'>github_start_timeout</span>
   <span class='id identifier rubyid_seconds'>seconds</span> <span class='op'>=</span> <span class='kw'>begin</span>
@@ -1285,12 +1285,12 @@ Results format:</p>
       <pre class="lines">
 
 
-700
-701
-702</pre>
+723
+724
+725</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 700</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 723</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_gitlab_remote_candidates'>gitlab_remote_candidates</span>
   <span class='id identifier rubyid_remotes_with_urls'>remotes_with_urls</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_n'>n</span><span class='comma'>,</span> <span class='id identifier rubyid_u'>u</span><span class='op'>|</span> <span class='id identifier rubyid_u'>u</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>gitlab.com</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_keys'>keys</span>
@@ -1315,17 +1315,17 @@ Results format:</p>
       <pre class="lines">
 
 
-527
-528
-529
-530
-531
-532
-533
-534</pre>
+550
+551
+552
+553
+554
+555
+556
+557</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 527</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 550</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_keepalive_interval'>keepalive_interval</span>
   <span class='id identifier rubyid_seconds'>seconds</span> <span class='op'>=</span> <span class='kw'>begin</span>
@@ -1355,22 +1355,22 @@ Results format:</p>
       <pre class="lines">
 
 
-512
-513
-514
-515
-516
-517
-518
-519
-520
-521
-522
-523
-524</pre>
+535
+536
+537
+538
+539
+540
+541
+542
+543
+544
+545
+546
+547</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 512</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 535</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_keepalive_timer'>keepalive_timer</span><span class='lparen'>(</span><span class='id identifier rubyid_keepalive'>keepalive</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_interval'>interval</span> <span class='op'>=</span> <span class='id identifier rubyid_keepalive_interval'>keepalive_interval</span>
@@ -1818,7 +1818,30 @@ Designed for kettle-release.</p>
 481
 482
 483
-484</pre>
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 281</span>
@@ -1949,9 +1972,31 @@ Designed for kettle-release.</p>
               <span class='label'>total:</span> <span class='id identifier rubyid_total'>total</span>
             <span class='rparen'>)</span>
           <span class='kw'>end</span>
-        <span class='kw'>elsif</span> <span class='const'><span class='object_link'><a href="../../Kettle.html" title="Kettle (module)">Kettle</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Dev.html" title="Kettle::Dev (module)">Dev</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="CIHelpers.html" title="Kettle::Dev::CIHelpers (module)">CIHelpers</a></span></span><span class='period'>.</span><span class='id identifier rubyid_failed?'><span class='object_link'><a href="CIHelpers.html#failed%3F-class_method" title="Kettle::Dev::CIHelpers.failed? (method)">failed?</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_run'>run</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_passed'>passed</span><span class='lbracket'>[</span><span class='id identifier rubyid_wf'>wf</span><span class='rbracket'>]</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_failed'>failed</span><span class='lbracket'>[</span><span class='id identifier rubyid_wf'>wf</span><span class='rbracket'>]</span>
+        <span class='kw'>elsif</span> <span class='op'>!</span><span class='id identifier rubyid_failed'>failed</span><span class='lbracket'>[</span><span class='id identifier rubyid_wf'>wf</span><span class='rbracket'>]</span>
+          <span class='comment'># Detect a failure at the JOB level while the run is still
+</span>          <span class='comment'># in_progress: a large matrix keeps the run-level status
+</span>          <span class='comment'># pending for many minutes after its first job has already
+</span>          <span class='comment'># concluded failure, but an operator watching the Actions UI
+</span>          <span class='comment'># sees the red job immediately. Abort as soon as any job is
+</span>          <span class='comment'># definitively red so the release stops burning minutes that
+</span>          <span class='comment'># a re-run will have to spend anyway.
+</span>          <span class='id identifier rubyid_run_failed'>run_failed</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Kettle.html" title="Kettle (module)">Kettle</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Dev.html" title="Kettle::Dev (module)">Dev</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="CIHelpers.html" title="Kettle::Dev::CIHelpers (module)">CIHelpers</a></span></span><span class='period'>.</span><span class='id identifier rubyid_failed?'><span class='object_link'><a href="CIHelpers.html#failed%3F-class_method" title="Kettle::Dev::CIHelpers.failed? (method)">failed?</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_run'>run</span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_failed_job'>failed_job</span> <span class='op'>=</span> <span class='kw'>nil</span>
+          <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_passed'>passed</span><span class='lbracket'>[</span><span class='id identifier rubyid_wf'>wf</span><span class='rbracket'>]</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_run_failed'>run_failed</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_run'>run</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>status</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>!=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>completed</span><span class='tstring_end'>&quot;</span></span>
+            <span class='comment'># Run still in flight: poll its jobs so a single red job in
+</span>            <span class='comment'># a large matrix aborts immediately instead of waiting for
+</span>            <span class='comment'># the whole workflow to conclude.
+</span>            <span class='id identifier rubyid_jobs'>jobs</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Kettle.html" title="Kettle (module)">Kettle</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Dev.html" title="Kettle::Dev (module)">Dev</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="CIHelpers.html" title="Kettle::Dev::CIHelpers (module)">CIHelpers</a></span></span><span class='period'>.</span><span class='id identifier rubyid_run_jobs'><span class='object_link'><a href="CIHelpers.html#run_jobs-class_method" title="Kettle::Dev::CIHelpers.run_jobs (method)">run_jobs</a></span></span><span class='lparen'>(</span><span class='label'>owner:</span> <span class='id identifier rubyid_owner'>owner</span><span class='comma'>,</span> <span class='label'>repo:</span> <span class='id identifier rubyid_repo'>repo</span><span class='comma'>,</span> <span class='label'>run_id:</span> <span class='id identifier rubyid_run'>run</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>id</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span>
+            <span class='id identifier rubyid_failed_job'>failed_job</span> <span class='op'>=</span> <span class='id identifier rubyid_jobs'>jobs</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_job'>job</span><span class='op'>|</span>
+              <span class='id identifier rubyid_job'>job</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>status</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>completed</span><span class='tstring_end'>&quot;</span></span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_job'>job</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>conclusion</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_job'>job</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>conclusion</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>!=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>success</span><span class='tstring_end'>&quot;</span></span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_job'>job</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>conclusion</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>!=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>skipped</span><span class='tstring_end'>&quot;</span></span>
+            <span class='kw'>end</span>
+          <span class='kw'>end</span>
+          <span class='kw'>next</span> <span class='kw'>unless</span> <span class='id identifier rubyid_run_failed'>run_failed</span> <span class='op'>||</span> <span class='id identifier rubyid_failed_job'>failed_job</span>
+
           <span class='id identifier rubyid_puts'>puts</span>
           <span class='id identifier rubyid_wf_url'>wf_url</span> <span class='op'>=</span> <span class='id identifier rubyid_run'>run</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>html_url</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>https://github.com/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_owner'>owner</span><span class='embexpr_end'>}</span><span class='tstring_content'>/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_repo'>repo</span><span class='embexpr_end'>}</span><span class='tstring_content'>/actions/workflows/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_wf'>wf</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+          <span class='id identifier rubyid_failed_job_note'>failed_job_note</span> <span class='op'>=</span> <span class='id identifier rubyid_failed_job'>failed_job</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> (job: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_failed_job'>failed_job</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>name</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span>
+          <span class='id identifier rubyid_wf_url'>wf_url</span> <span class='op'>=</span> <span class='id identifier rubyid_failed_job'>failed_job</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>html_url</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_failed_job'>failed_job</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_failed_job'>failed_job</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>html_url</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
           <span class='id identifier rubyid_emit_ci_monitor_event'>emit_ci_monitor_event</span><span class='lparen'>(</span>
             <span class='id identifier rubyid_event_recorder'>event_recorder</span><span class='comma'>,</span>
             <span class='label'>action:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>github_workflow</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
@@ -1961,12 +2006,13 @@ Designed for kettle-release.</p>
             <span class='label'>url:</span> <span class='id identifier rubyid_wf_url'>wf_url</span><span class='comma'>,</span>
             <span class='label'>run_status:</span> <span class='id identifier rubyid_run'>run</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>status</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='comma'>,</span>
             <span class='label'>conclusion:</span> <span class='id identifier rubyid_run'>run</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>conclusion</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='comma'>,</span>
+            <span class='label'>failed_job:</span> <span class='id identifier rubyid_failed_job'>failed_job</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_failed_job'>failed_job</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>name</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='comma'>,</span>
             <span class='label'>completed:</span> <span class='id identifier rubyid_passed'>passed</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='comma'>,</span>
             <span class='label'>total:</span> <span class='id identifier rubyid_total'>total</span><span class='comma'>,</span>
-            <span class='label'>reason:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Workflow failed</span><span class='tstring_end'>&quot;</span></span>
+            <span class='label'>reason:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Workflow failed</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_failed_job_note'>failed_job_note</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
           <span class='rparen'>)</span>
           <span class='kw'>unless</span> <span class='id identifier rubyid_continue_ci_failures?'>continue_ci_failures?</span>
-            <span class='id identifier rubyid_abort'>abort</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Workflow failed: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_wf'>wf</span><span class='embexpr_end'>}</span><span class='tstring_content'> -&gt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_wf_url'>wf_url</span><span class='embexpr_end'>}</span><span class='tstring_content'> Fix the workflow, then restart this tool from CI validation with: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_restart_hint'>restart_hint</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+            <span class='id identifier rubyid_abort'>abort</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Workflow failed</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_failed_job_note'>failed_job_note</span><span class='embexpr_end'>}</span><span class='tstring_content'>: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_wf'>wf</span><span class='embexpr_end'>}</span><span class='tstring_content'> -&gt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_wf_url'>wf_url</span><span class='embexpr_end'>}</span><span class='tstring_content'> Fix the workflow, then restart this tool from CI validation with: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_restart_hint'>restart_hint</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
           <span class='kw'>end</span>
 
           <span class='id identifier rubyid_failed'>failed</span><span class='lbracket'>[</span><span class='id identifier rubyid_wf'>wf</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>true</span>
@@ -2121,29 +2167,6 @@ Returns false when GitLab is not configured for this repo/branch.</p>
       <pre class="lines">
 
 
-537
-538
-539
-540
-541
-542
-543
-544
-545
-546
-547
-548
-549
-550
-551
-552
-553
-554
-555
-556
-557
-558
-559
 560
 561
 562
@@ -2240,10 +2263,33 @@ Returns false when GitLab is not configured for this repo/branch.</p>
 653
 654
 655
-656</pre>
+656
+657
+658
+659
+660
+661
+662
+663
+664
+665
+666
+667
+668
+669
+670
+671
+672
+673
+674
+675
+676
+677
+678
+679</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 537</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 560</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_monitor_gitlab_internal!'>monitor_gitlab_internal!</span><span class='lparen'>(</span><span class='label'>restart_hint:</span><span class='comma'>,</span> <span class='label'>keepalive:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>event_recorder:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_root'><span class='object_link'><a href="../../top-level-namespace.html" title="Top Level Namespace (root)">root</a></span></span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Kettle.html" title="Kettle (module)">Kettle</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Dev.html" title="Kettle::Dev (module)">Dev</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="CIHelpers.html" title="Kettle::Dev::CIHelpers (module)">CIHelpers</a></span></span><span class='period'>.</span><span class='id identifier rubyid_ci_project_root'><span class='object_link'><a href="CIHelpers.html#ci_project_root-class_method" title="Kettle::Dev::CIHelpers.ci_project_root (method)">ci_project_root</a></span></span>
@@ -2385,12 +2431,12 @@ Returns false when GitLab is not configured for this repo/branch.</p>
       <pre class="lines">
 
 
-487
-488
-489</pre>
+510
+511
+512</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 487</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 510</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_monotonic_time'>monotonic_time</span>
   <span class='const'>Process</span><span class='period'>.</span><span class='id identifier rubyid_clock_gettime'>clock_gettime</span><span class='lparen'>(</span><span class='const'>Process</span><span class='op'>::</span><span class='const'>CLOCK_MONOTONIC</span><span class='rparen'>)</span>
@@ -2415,12 +2461,12 @@ Returns false when GitLab is not configured for this repo/branch.</p>
       <pre class="lines">
 
 
-717
-718
-719</pre>
+740
+741
+742</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 717</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 740</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_parse_github_owner_repo'>parse_github_owner_repo</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="../../Kettle.html" title="Kettle (module)">Kettle</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Dev.html" title="Kettle::Dev (module)">Dev</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="CIHelpers.html" title="Kettle::Dev::CIHelpers (module)">CIHelpers</a></span></span><span class='period'>.</span><span class='id identifier rubyid_parse_hosted_repo'><span class='object_link'><a href="CIHelpers.html#parse_hosted_repo-class_method" title="Kettle::Dev::CIHelpers.parse_hosted_repo (method)">parse_hosted_repo</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>github.com</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='op'>||</span> <span class='lbracket'>[</span><span class='kw'>nil</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rbracket'>]</span>
@@ -2445,19 +2491,19 @@ Returns false when GitLab is not configured for this repo/branch.</p>
       <pre class="lines">
 
 
-705
-706
-707
-708
-709
-710
-711
-712
-713
-714</pre>
+728
+729
+730
+731
+732
+733
+734
+735
+736
+737</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 705</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 728</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_preferred_github_remote'>preferred_github_remote</span>
   <span class='id identifier rubyid_cands'>cands</span> <span class='op'>=</span> <span class='id identifier rubyid_github_remote_candidates'>github_remote_candidates</span>
@@ -2489,12 +2535,12 @@ Returns false when GitLab is not configured for this repo/branch.</p>
       <pre class="lines">
 
 
-690
-691
-692</pre>
+713
+714
+715</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 690</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 713</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_remote_url'>remote_url</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="../../Kettle.html" title="Kettle (module)">Kettle</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Dev.html" title="Kettle::Dev (module)">Dev</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="GitAdapter.html" title="Kettle::Dev::GitAdapter (class)">GitAdapter</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="GitAdapter.html#initialize-instance_method" title="Kettle::Dev::GitAdapter#initialize (method)">new</a></span></span><span class='period'>.</span><span class='id identifier rubyid_remote_url'>remote_url</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span>
@@ -2529,12 +2575,12 @@ Returns false when GitLab is not configured for this repo/branch.</p>
       <pre class="lines">
 
 
-685
-686
-687</pre>
+708
+709
+710</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 685</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_monitor.rb', line 708</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_remotes_with_urls'>remotes_with_urls</span>
   <span class='const'><span class='object_link'><a href="../../Kettle.html" title="Kettle (module)">Kettle</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Dev.html" title="Kettle::Dev (module)">Dev</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="GitAdapter.html" title="Kettle::Dev::GitAdapter (class)">GitAdapter</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="GitAdapter.html#initialize-instance_method" title="Kettle::Dev::GitAdapter#initialize (method)">new</a></span></span><span class='period'>.</span><span class='id identifier rubyid_remotes_with_urls'>remotes_with_urls</span>

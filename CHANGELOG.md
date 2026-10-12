@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- CI monitor aborts on the first failed GitHub Actions job instead of waiting for run-level completion: a large matrix keeps the run in_progress for minutes after a red job, so releases burned dead time a re-run must spend anyway; the abort names the job and links it
-
 ### Security
+
+## [3.1.11] - 2026-10-11
+
+- TAG: [v3.1.11][3.1.11t]
+- COVERAGE: 91.71% -- 6352/6926 lines in 49 files
+- BRANCH COVERAGE: 75.79% -- 2420/3193 branches in 49 files
+- 52.20% documented
+
+### Fixed
+
+- CI monitor aborts on the first failed GitHub Actions job instead of waiting for run-level completion: a large matrix keeps the run in_progress for minutes after a red job, so releases burned dead time a re-run must spend anyway; the abort names the job and links it
 
 ## [3.1.10] - 2026-10-11
 
@@ -4040,7 +4049,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.10...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.11...HEAD
+[3.1.11]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.10...v3.1.11
+[3.1.11t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.11
 [3.1.10]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.9...v3.1.10
 [3.1.10t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.10
 [3.1.9]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.8...v3.1.9

@@ -204,7 +204,7 @@ out to <code>kettle-release</code> for each member that needs publishing.</p>
     <tr>
       <td>Source</td>
       <td>
-<a href="https://gitlab.com/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/GitLab-FBA326?style=for-the-badge&amp;logo=Gitlab&amp;logoColor=orange" alt="Source on GitLab.com"></a> <a href="https://codeberg.org/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/CodeBerg-4893CC?style=for-the-badge&amp;logo=CodeBerg&amp;logoColor=blue" alt="Source on CodeBerg.org"></a> <a href="https://github.com/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/GitHub-238636?style=for-the-badge&amp;logo=GitHub&amp;logoColor=green" alt="Source on GitHub.com"></a> <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"><img src="https://img.shields.io/badge/KLOC-6.909-FFDD67.svg?style=for-the-badge&amp;logo=YouTube&amp;logoColor=blue" alt="The best SHA: dQw4w9WgXcQ!"></a>
+<a href="https://gitlab.com/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/GitLab-FBA326?style=for-the-badge&amp;logo=Gitlab&amp;logoColor=orange" alt="Source on GitLab.com"></a> <a href="https://codeberg.org/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/CodeBerg-4893CC?style=for-the-badge&amp;logo=CodeBerg&amp;logoColor=blue" alt="Source on CodeBerg.org"></a> <a href="https://github.com/kettle-dev/kettle-dev"><img src="https://img.shields.io/badge/GitHub-238636?style=for-the-badge&amp;logo=GitHub&amp;logoColor=green" alt="Source on GitHub.com"></a> <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"><img src="https://img.shields.io/badge/KLOC-6.926-FFDD67.svg?style=for-the-badge&amp;logo=YouTube&amp;logoColor=blue" alt="The best SHA: dQw4w9WgXcQ!"></a>
 </td>
     </tr>
     <tr>
@@ -726,6 +726,7 @@ Markdown fixtures under <code>spec/</code> and <code>test/</code>, along with <c
         </ul>
       </li>
       <li>Ensures trunk sync and rebases feature branches as needed, pushes, monitors GitHub Actions with a progress bar, and merges feature to trunk on success.</li>
+      <li>CI monitoring aborts as soon as any single workflow job fails (not only when the whole run concludes), naming the failed job and linking to it — a large matrix can keep a run in_progress for many minutes after its first red job.</li>
       <li>For release branches listed in <code>.kettle-family.yml</code> branch-stack targets, it intentionally does not pull/rebase from trunk or merge the leaf branch into trunk. Instead, it starts the selected GitHub Actions workflows directly on the pushed release branch; each selected workflow must declare <code>workflow_dispatch</code>. This validates the exact branch-stack commit without requiring an often-conflicting PR to trunk.</li>
       <li>Exports <code>SOURCE_DATE_EPOCH</code>, builds (optionally signed), creates gem checksums, and runs <code>bundle exec rake release</code> (prompts for signing key + RubyGems MFA OTP as needed).</li>
     </ul>
