@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- kettle-release no longer aborts at release:guard_clean when resuming at step 14/15: the process boot can silently rewrite the canonical Gemfile.lock with sibling PATH remotes (gemspec self-version bump forces re-resolution under the family local-path toggle), so canonical lockfiles are now normalized and re-validated immediately before the build and rake release children
+
 ### Security
 
 ## [3.1.12] - 2026-10-12
