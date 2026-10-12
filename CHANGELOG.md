@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- kettle-release lockfile normalization no longer crashes with Errno::ENOENT when a generated appraisal lockfile (Appraisal.root.gemfile.lock) vanishes between the lockfile scan and the reset in CI
+
 ### Security
 
 ## [3.1.12] - 2026-10-12
