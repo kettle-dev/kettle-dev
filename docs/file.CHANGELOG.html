@@ -90,8 +90,8 @@ Please file a bug if you notice a violation of semantic versioning.</p>
 <ul>
   <li>TAG: <a href="https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.12">v3.1.12</a>
 </li>
-  <li>COVERAGE: 91.63% – 6393/6977 lines in 49 files</li>
-  <li>BRANCH COVERAGE: 75.74% – 2438/3219 branches in 49 files</li>
+  <li>COVERAGE: 91.38% – 6378/6980 lines in 49 files</li>
+  <li>BRANCH COVERAGE: 75.57% – 2437/3225 branches in 49 files</li>
   <li>52.49% documented</li>
 </ul>
 
@@ -103,6 +103,9 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   </li>
   <li>
     <p>kettle-release no longer aborts at release:guard_clean when resuming at step 14/15: the process boot can silently rewrite the canonical Gemfile.lock with sibling PATH remotes (gemspec self-version bump forces re-resolution under the family local-path toggle), so canonical lockfiles are now normalized and re-validated immediately before the build and rake release children</p>
+  </li>
+  <li>
+    <p>kettle-release lockfile normalization no longer crashes with Errno::ENOENT when a generated appraisal lockfile (Appraisal.root.gemfile.lock) vanishes between the lockfile scan and the reset in CI</p>
   </li>
 </ul>
 
