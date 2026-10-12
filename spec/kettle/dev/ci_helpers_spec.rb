@@ -142,7 +142,18 @@ RSpec.describe Kettle::Dev::CIHelpers do
     end
 
     def http_response(body:, code: "200")
-      instance_double(Net::HTTPOK, is_a?: true, body: body, code: code)
+      if code == "200"
+        instance_double(Net::HTTPOK, is_a?: true, body: body, code: code)
+      elsif code == "401"
+        Net::HTTPUnauthorized.new("1.1", "401", "Unauthorized")
+      else
+        begin
+          r = Net::HTTPForbidden.new("1.1", "403", "Forbidden")
+          r["X-RateLimit-Remaining"] = "0"
+          r["X-RateLimit-Reset"] = (Time.now.utc + 60).to_i.to_s
+          r
+        end
+      end
     end
 
     def stub_http_capture_authorization(body:)
@@ -168,6 +179,32 @@ RSpec.describe Kettle::Dev::CIHelpers do
     it "returns nil when API returns no runs" do
       data = {"workflow_runs" => []}
       allow(Net::HTTP).to receive(:start).and_return(http_response(body: JSON.dump(data)))
+      expect(described_class.latest_run(owner: owner, repo: repo, workflow_file: workflow, branch: branch)).to be_nil
+    end
+
+    it "raises CIAuthError on 401 so the monitor aborts instead of ticking forever" do
+      allow(Net::HTTP).to receive(:start).and_return(http_response(body: "{}", code: "401"))
+      expect {
+        described_class.latest_run(owner: owner, repo: repo, workflow_file: workflow, branch: branch)
+      }.to raise_error(Kettle::Dev::CIAuthError, /invalid or revoked token/)
+    end
+
+    it "raises CIRateLimitError on 403 with exhausted quota" do
+      allow(Net::HTTP).to receive(:start).and_return(http_response(body: "{}", code: "403"))
+      expect {
+        described_class.latest_run(owner: owner, repo: repo, workflow_file: workflow, branch: branch)
+      }.to raise_error(Kettle::Dev::CIRateLimitError, /rate limit exceeded/)
+    end
+
+    it "does not raise on non-quota 403 (treats as no data)" do
+      allow(Net::HTTP).to receive(:start).and_return(
+        begin
+          r = Net::HTTPForbidden.new("1.1", "403", "Forbidden")
+          r["X-RateLimit-Remaining"] = "4999"
+          r["X-RateLimit-Reset"] = (Time.now.utc + 60).to_i.to_s
+          r
+        end
+      )
       expect(described_class.latest_run(owner: owner, repo: repo, workflow_file: workflow, branch: branch)).to be_nil
     end
 

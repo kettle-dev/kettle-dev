@@ -50,10 +50,17 @@ module Kettle
       # @param restart_hint [String] guidance command shown on failure
       # @return [Boolean] whether all configured CI providers passed
       def monitor_all!(restart_hint: "bundle exec kettle-release --start-step 10", workflows: nil, keepalive: nil, event_recorder: nil, **options)
-        results = [
-          monitor_github_internal!(restart_hint: restart_hint, workflows: workflows, keepalive: keepalive, event_recorder: event_recorder),
-          monitor_gitlab_internal!(restart_hint: restart_hint, keepalive: keepalive, event_recorder: event_recorder)
-        ]
+        # Rate limiting is recoverable: when the GitHub monitor parks for the
+        # quota reset it returns :rate_limited and we re-enter it. GitLab has
+        # no equivalent, so only the GitHub result drives the retry.
+        results = nil
+        loop do
+          results = [
+            monitor_github_internal!(restart_hint: restart_hint, workflows: workflows, keepalive: keepalive, event_recorder: event_recorder),
+            monitor_gitlab_internal!(restart_hint: restart_hint, keepalive: keepalive, event_recorder: event_recorder)
+          ]
+          break unless results.first == :rate_limited
+        end
         abort("CI configuration not detected (GitHub or GitLab). Ensure CI is configured and remotes point to the correct hosts.") if results.all?(&:nil?)
 
         results.all? { |result| result != false }
@@ -343,6 +350,18 @@ module Kettle
         start_deadline = monotonic_time + start_timeout
         keepalive_timer = keepalive_timer(keepalive)
         all_started_emitted = false
+        # Job-level failure detection polls one jobs endpoint per in-flight
+        # workflow per cycle; on big matrices that multiplies request volume.
+        # Gate it to once per K_RELEASE_CI_JOBS_POLL_INTERVAL seconds
+        # (default 60) so run-level polling carries the fast loop and jobs
+        # checks stay a bounded add-on.
+        jobs_poll_interval = begin
+          Float(ENV["K_RELEASE_CI_JOBS_POLL_INTERVAL"])
+        rescue
+          nil
+        end
+        jobs_poll_interval = (jobs_poll_interval && jobs_poll_interval >= 0) ? jobs_poll_interval : 60.0
+        last_jobs_poll = 0.0
         loop do
           keepalive_timer.call
 
@@ -414,7 +433,9 @@ module Kettle
                 # a re-run will have to spend anyway.
                 run_failed = Kettle::Dev::CIHelpers.failed?(run)
                 failed_job = nil
-                if !passed[wf] && !run_failed && run["status"] != "completed"
+                jobs_poll_due = monotonic_time - last_jobs_poll >= jobs_poll_interval
+                if !passed[wf] && !run_failed && run["status"] != "completed" && jobs_poll_due
+                  last_jobs_poll = monotonic_time
                   # Run still in flight: poll its jobs so a single red job in
                   # a large matrix aborts immediately instead of waiting for
                   # the whole workflow to conclude.
@@ -504,6 +525,25 @@ module Kettle
           puts "\nGitHub workflows completed with failures (#{passed.size}/#{total} passed); continuing because K_RELEASE_CI_CONTINUE=true."
         end
         failed.empty?
+      rescue Kettle::Dev::CIRateLimitError => error
+        # Rate limiting is recoverable: park until the quota resets, emit an
+        # event, then re-enter the same monitor (the caller wraps this method
+        # in a retry loop keyed on the :rate_limited return value).
+        pbar&.finish unless pbar&.finished?
+        reset_at = (error.respond_to?(:reset_at) && error.reset_at) ? error.reset_at : (Time.now.utc + 60)
+        wait = [(reset_at - Time.now.utc).ceil, 1].max
+        puts "\n#{error.message}; waiting #{wait}s before retrying."
+        emit_ci_monitor_event(
+          event_recorder,
+          action: "github_rate_limited",
+          status: "started",
+          provider: "github",
+          reset_at: reset_at.utc.strftime("%H:%M:%SZ"),
+          wait_seconds: wait,
+          head_sha: head_sha
+        )
+        sleep(wait)
+        :rate_limited
       end
       module_function :monitor_github_internal!
 

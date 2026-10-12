@@ -8,6 +8,19 @@ require "uri"
 
 module Kettle
   module Dev
+    # GitHub API rejected the request because the token is invalid/revoked.
+    class CIAuthError < StandardError; end
+
+    # GitHub API quota exhausted. Recoverable: retry after the reset time.
+    class CIRateLimitError < StandardError
+      attr_reader :reset_at
+
+      def initialize(message, reset_at: nil)
+        @reset_at = reset_at
+        super(message)
+      end
+    end
+
     # CI-related helper functions used by Rake tasks and release tooling.
     #
     # This module only exposes module-functions (no instance state) and is
@@ -130,6 +143,13 @@ module Kettle
           "id" => run["id"],
           "head_sha" => run["head_sha"]
         }
+      rescue Kettle::Dev::CIAuthError, Kettle::Dev::CIRateLimitError
+        # Auth failures are fatal; rate limits are recoverable but must reach
+        # the monitor (which parks until the reset) — swallowing either turns
+        # the poll into an infinite 0/N tick.
+        # fail the same way, so swallowing this turns the monitor into an
+        # infinite 0/N tick. Re-raise for the caller to abort with guidance.
+        raise
       rescue => e
         Kettle::Dev.debug_error(e, __method__)
         nil
@@ -163,15 +183,69 @@ module Kettle
         end
       end
 
+      # Process-wide rate-limit state shared by every CIHelpers caller in this
+      # process (the release runner polls many member/monitor children in one
+      # process tree, and each child gets its own copy — this throttles within
+      # a process; the budget is sized so even a fully parallel family run
+      # stays inside GitHub's per-token allowance).
+      CI_RATE_BUDGET_PER_MINUTE = (ENV["K_RELEASE_CI_REQUESTS_PER_MINUTE"] || 90).to_f
+      CI_RATE_MIN_INTERVAL = CI_RATE_BUDGET_PER_MINUTE.positive? ? 60.0 / CI_RATE_BUDGET_PER_MINUTE : 0.0
+      @ci_rate_last_request = 0.0
+      @ci_rate_lock = Mutex.new
+
+      def github_rate_limit_wait!
+        return if CI_RATE_MIN_INTERVAL.zero?
+
+        @ci_rate_lock.synchronize do
+          now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          delta = now - @ci_rate_last_request
+          if delta < CI_RATE_MIN_INTERVAL
+            sleep(CI_RATE_MIN_INTERVAL - delta)
+            now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          end
+          @ci_rate_last_request = now
+        end
+      end
+
       def github_get_json(url, token:)
+        github_rate_limit_wait!
         uri = URI(url)
         req = Net::HTTP::Get.new(uri)
         req["User-Agent"] = "kettle-dev/ci-helpers"
         req["Authorization"] = "token #{token}" if token && !token.empty?
         res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-        return unless res.is_a?(Net::HTTPSuccess)
+        # Dispatch on is_a? rather than `case`/===: verifying doubles
+        # (instance_double(Net::HTTPOK)) used in specs do not reliably match
+        # `Net::HTTPSuccess === res`, which silently degraded every stubbed
+        # response to "no data".
+        if res.is_a?(Net::HTTPSuccess)
+          JSON.parse(res.body)
+        elsif res.is_a?(Net::HTTPUnauthorized)
+          # 401 is not retryable: an invalid or revoked token fails EVERY
+          # request, so a monitor treating it as "no data yet" would tick
+          # forever at 0/N. Abort with an actionable message.
+          raise(
+            Kettle::Dev::CIAuthError,
+            "GitHub API rejected the request (401: invalid or revoked token) for #{url}. " \
+              "Check GITHUB_TOKEN / GH_TOKEN."
+          )
+        elsif res.is_a?(Net::HTTPForbidden)
+          if res["X-RateLimit-Remaining"].to_i.zero?
+            # Rate limited: recoverable. Honor the reset time, then let the
+            # caller retry the poll cycle.
+            reset_at = Time.at(res["X-RateLimit-Reset"].to_i).utc
+            raise(
+              Kettle::Dev::CIRateLimitError,
+              "GitHub API rate limit exceeded; resets at #{reset_at.strftime("%H:%M:%SZ")}"
+            )
+          end
 
-        JSON.parse(res.body)
+          # Non-quota 403 (e.g. resource permissions): treat as no data, like
+          # other transient responses.
+          nil
+        else
+          nil
+        end
       end
 
       # Whether a run has completed successfully.
@@ -215,6 +289,11 @@ module Kettle
             "html_url" => job["html_url"]
           }
         end
+      rescue Kettle::Dev::CIAuthError, Kettle::Dev::CIRateLimitError
+        # See latest_run: auth/rate-limit failures must abort or park the
+        # monitor, not degrade
+        # to "no jobs yet".
+        raise
       rescue => e
         Kettle::Dev.debug_error(e, __method__)
         []
