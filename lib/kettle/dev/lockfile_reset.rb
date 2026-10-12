@@ -161,6 +161,12 @@ module Kettle
         platforms = release_platforms_for(paths) if force_full_update
         uninstall_unreleased_local_gems(paths) if force_full_update
         paths.each do |path|
+          # Re-check existence: in CI the checkout can contain a stale
+          # appraisal lock that later steps (or a parallel worker) delete
+          # between the lockfile_paths scan and this loop; ENOENT here would
+          # abort the whole release pipeline for a file that no longer needs
+          # resetting.
+          next unless File.file?(path)
           if force_full_update || normalization_needed?(path, strict: release_lockfiles)
             reset_lockfile!(
               path,
@@ -191,6 +197,10 @@ module Kettle
       end
 
       def reset_lockfile!(path, full_update: false, platforms: nil, skip_changelog_dependency: false, update_bundler: false, strict: false)
+        # Mirrors the reset loop guard: a lockfile that vanished after the
+        # scan (CI cleanup of generated appraisal locks) has nothing to
+        # normalize; aborting the whole release for it would be wrong.
+        return unless File.file?(path)
         gemfile = gemfile_for_lockfile(path)
         unless gemfile && File.file?(gemfile)
           warn("Cannot reset #{display_path(path)} because its Gemfile was not found.")
@@ -701,6 +711,11 @@ module Kettle
 
       def lockfile_source_content(path)
         in_checksums = false
+        # A lockfile can vanish between the lockfile_paths scan and this read
+        # (CI workers clean up generated appraisal locks mid-process). Treat a
+        # missing lockfile as an empty graph: bootstrap version lookups return
+        # nil and the reset skips what no longer exists.
+        return [].freeze unless File.file?(path)
         File.readlines(path).filter_map do |line|
           stripped = line.strip
           if stripped == "CHECKSUMS"
