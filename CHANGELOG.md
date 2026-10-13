@@ -22,8 +22,6 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
-- GitHub API request budget is now enforced machine-wide through an flock'd XDG ledger (XDG_STATE_HOME/kettle-dev/ci-rate-budget.json, override with K_RELEASE_CI_RATE_STATE_FILE) instead of per-process memory: parallel family releases, wave jobs, ci:act, and kettle-release GitHub Releases calls all share one budget (default 90 req/min) matching GitHub's per-token quota; unavailable ledger degrades to in-process spacing
-
 ### Deprecated
 
 ### Removed
@@ -31,6 +29,17 @@ Please file a bug if you notice a violation of semantic versioning.
 ### Fixed
 
 ### Security
+
+## [3.1.13] - 2026-10-13
+
+- TAG: [v3.1.13][3.1.13t]
+- COVERAGE: 91.48% -- 6412/7009 lines in 49 files
+- BRANCH COVERAGE: 75.69% -- 2450/3237 branches in 49 files
+- 53.02% documented
+
+### Changed
+
+- GitHub API request budget is now enforced machine-wide through an flock'd XDG ledger (XDG_STATE_HOME/kettle-dev/ci-rate-budget.json, override with K_RELEASE_CI_RATE_STATE_FILE) instead of per-process memory: parallel family releases, wave jobs, ci:act, and kettle-release GitHub Releases calls all share one budget (default 90 req/min) matching GitHub's per-token quota; unavailable ledger degrades to in-process spacing
 
 ## [3.1.12] - 2026-10-12
 
@@ -4066,7 +4075,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.12...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.13...HEAD
+[3.1.13]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.12...v3.1.13
+[3.1.13t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.13
 [3.1.12]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.11...v3.1.12
 [3.1.12t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.12
 [3.1.11]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.10...v3.1.11
