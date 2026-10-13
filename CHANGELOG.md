@@ -22,14 +22,6 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
-- [kc] kettle-jem/template: updated 23 project files:
-  - code and tests (2)
-  - configuration (1)
-  - dependencies (9)
-  - documentation (1)
-  - other (1)
-  - workflows (9)
-
 ### Deprecated
 
 ### Removed
@@ -41,13 +33,21 @@ Please file a bug if you notice a violation of semantic versioning.
 ## [3.1.13] - 2026-10-13
 
 - TAG: [v3.1.13][3.1.13t]
-- COVERAGE: 91.48% -- 6412/7009 lines in 49 files
-- BRANCH COVERAGE: 75.69% -- 2450/3237 branches in 49 files
+- COVERAGE: 91.29% -- 6401/7012 lines in 49 files
+- BRANCH COVERAGE: 75.49% -- 2445/3239 branches in 49 files
 - 53.02% documented
 
 ### Changed
 
 - GitHub API request budget is now enforced machine-wide through an flock'd XDG ledger (XDG_STATE_HOME/kettle-dev/ci-rate-budget.json, override with K_RELEASE_CI_RATE_STATE_FILE) instead of per-process memory: parallel family releases, wave jobs, ci:act, and kettle-release GitHub Releases calls all share one budget (default 90 req/min) matching GitHub's per-token quota; unavailable ledger degrades to in-process spacing
+
+- [kc] kettle-jem/template: updated 23 project files:
+  - code and tests (2)
+  - configuration (1)
+  - dependencies (9)
+  - documentation (1)
+  - other (1)
+  - workflows (9)
 
 ## [3.1.12] - 2026-10-12
 
