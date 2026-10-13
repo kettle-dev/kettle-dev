@@ -20,7 +20,9 @@
         90,
         94,
         98,
-        102
+        102,
+        106,
+        110
       ]
     }
   ],
@@ -45,7 +47,18 @@
         89,
         93,
         97,
-        101
+        101,
+        105,
+        109
+      ]
+    }
+  ],
+  "- code and tests (2)\n- configuration (1)": [
+    {
+      "file": "CHANGELOG.md",
+      "lines": [
+        26,
+        533
       ]
     }
   ],
@@ -53,8 +66,26 @@
     {
       "file": "CHANGELOG.md",
       "lines": [
-        85,
-        462
+        158,
+        535
+      ]
+    }
+  ],
+  "- documentation (1)\n- other (1)": [
+    {
+      "file": "CHANGELOG.md",
+      "lines": [
+        29,
+        536
+      ]
+    }
+  ],
+  "- ruby: \"ruby\"\nappraisal: \"current\"": [
+    {
+      "file": ".github/workflows/current.yml",
+      "lines": [
+        40,
+        46
       ]
     }
   ],
