@@ -33,7 +33,6 @@ jobs:
       BUNDLE_GEMFILE: ${{ github.workspace }}/Appraisal.root.gemfile
       # Kill stalled test workers instead of hanging until the CI job timeout.
       TURBO_TESTS2_WATCHDOG_SECONDS: 900
-      BUNDLE_GEMFILE: ${{ github.workspace }}/Appraisal.root.gemfile
     strategy:
       matrix:
         include:
