@@ -135,7 +135,7 @@ template_state:
     bin/setup.example: 0ac35089c95a91d8973fe7a318bf9fd98b9f8e00db92c5d9ca6cd858abb8d41b
     bin/turbo_tests2.example: 0d81b72c359419a4f0146e8f0438c610211c528398b672c85325a568c9f26db2
     certs/pboling.pem.example: 18956f60643666cc181e2743b3b3691bec08c5326f514f60af54d0cdb9ebc554
-    gem.gemspec.example: 6738cfb614ff1b0c957377d7713f010480a50a31237ac1087a60464b4dc2b1ad
+    gem.gemspec.example: 401816606410ccd83a09d48582bd7a7372077cea98ff0e762e965955ef31a69b
     gemfiles/modular/benchmark/r4/v0.5.gemfile.example: 5bc3190090ae456df1a8cce28dd47a7fb293495f6d845ec7e53a7a8b50f14ae1
     gemfiles/modular/benchmark/vHEAD.gemfile.example: ca6cd52c55c3082759c6ddc97638970f12d953aec1822470823d316086aa6e25
     gemfiles/modular/cgi/r4/v0.5.gemfile.example: c2d14a39377a2435419ceaca22a3421ebd899e9cba943df8a90b576a33624870
@@ -206,7 +206,7 @@ template_state:
     shim/Gemfile.example: 04fcd55b5cb859fd0d65ccbf245d0cc2ee40b9b31b711e67fd2bc81c6693dc3f
     shim/README.md.example: 3a2f7211b7f92a1dfae5e523b8e34b051a3d8af942144b05286eca0b3c8f6fbe
     shim/Rakefile.example: 572c94da7052083b39b62a6600785419e314a109efd7a3d8c3a96eb77ad34fd1
-    shim/gem.gemspec.example: a0513200ce9d94666a11d8b005b501d8c5afb1e2d60fd1bd079ed316e257ae23
+    shim/gem.gemspec.example: 6ce8fb929744dd68fcc282f72c21250397d645d11b554d61484b3bf252514032
     shim/lib/compat_require.rb.example: 94ee85e353a3ca08c8a35c9063d4ff789214ea594c7f803f6cf09d7142f48379
     shim/lib/entrypoint.rb.example: dd57613520daca01d6f6bcaa9b83b00ff74505240dc04b84ceb686df3c0539d7
     shim/lib/version.rb.example: 15e219ac3a928b5580035f891e415551213175020f1131f6e7ca0ccd55a1b2d6
@@ -688,7 +688,7 @@ files:
   CHANGELOG.md:
     recipe: template_source_application_CHANGELOG_md
     action: write
-    dest_sha256: '0899cc7ccff44e624082eab3adaa24a6e7203925c42a548e82652c8ebacabf3e'
+    dest_sha256: 5cc70e6135bd7a13774561e9543841edb838d08a1f13d88fd3eb2a91edeca6ff
     input_fingerprint: dcc87b4340a77e07d152e63e9b7532d32c71b560bf03ac2059f9bc8813c9540c
     template_sources:
     - CHANGELOG.md.example
@@ -1165,7 +1165,7 @@ files:
     recipe: template_source_application_kettle_dev_gemspec
     action: write
     dest_sha256: 8cd546d68e29ba41d20e424db6458645402be821ef85997ca272ca8069246d6f
-    input_fingerprint: ffff2c403972c75c1c33ddf3bf6af028a4f6524d0f22e9811a7cf958dae045fa
+    input_fingerprint: 68560c38c3354ea85ce1b07cdce5904863bd9153d8260e5af0820d293e851cc8
     template_sources:
     - gem.gemspec.example
   lib/kettle/dev/version.rb:
