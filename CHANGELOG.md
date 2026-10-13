@@ -22,6 +22,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
+- GitHub API request budget is now enforced machine-wide through an flock'd XDG ledger (XDG_STATE_HOME/kettle-dev/ci-rate-budget.json, override with K_RELEASE_CI_RATE_STATE_FILE) instead of per-process memory: parallel family releases, wave jobs, ci:act, and kettle-release GitHub Releases calls all share one budget (default 90 req/min) matching GitHub's per-token quota; unavailable ledger degrades to in-process spacing
+
 ### Deprecated
 
 ### Removed
