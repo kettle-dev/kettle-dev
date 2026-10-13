@@ -295,7 +295,7 @@ module Kettle
 
       def lockfile_platforms(path)
         in_platforms = false
-        File.readlines(path).filter_map do |line|
+        safe_lockfile_lines(path).filter_map do |line|
           stripped = line.strip
           if stripped.match?(/\A[A-Z][A-Z ]*\z/)
             in_platforms = stripped == "PLATFORMS"
@@ -448,7 +448,7 @@ module Kettle
       end
 
       def local_path_remote_lines(path)
-        self.class.local_path_remote_lines_from_source(File.read(path))
+        self.class.local_path_remote_lines_from_source(safe_lockfile_lines(path).join)
       end
 
       attr_reader :release_graph_contract
@@ -460,7 +460,7 @@ module Kettle
       end
 
       def local_path_remote_at(path, line_number)
-        File.readlines(path)[line_number - 1].to_s.split("remote:", 2).last.to_s.strip
+        safe_lockfile_lines(path)[line_number - 1].to_s.split("remote:", 2).last.to_s.strip
       end
 
       def allowed_local_path?(path)
@@ -477,7 +477,7 @@ module Kettle
       def empty_registry_checksums(path)
         non_registry_gems = non_registry_source_gems(path) | path_dependency_gems(path)
         in_checksums = false
-        entries = File.readlines(path).filter_map.with_index(1) do |line, index|
+        entries = safe_lockfile_lines(path).filter_map.with_index(1) do |line, index|
           stripped = line.strip
           if stripped == "CHECKSUMS"
             in_checksums = true
@@ -517,7 +517,7 @@ module Kettle
 
       def has_any_sha_checksum?(path)
         in_checksums = false
-        File.readlines(path).any? do |line|
+        safe_lockfile_lines(path).any? do |line|
           stripped = line.strip
           if stripped == "CHECKSUMS"
             in_checksums = true
@@ -538,14 +538,14 @@ module Kettle
         version = bundled_with_version(path)
         return false if version.empty?
 
-        checksums = self.class.checksum_entries_from_source(File.read(path))
+        checksums = self.class.checksum_entries_from_source(safe_lockfile_lines(path).join)
         return false unless checksums&.keys&.any? { |name, _checksum_version| name == "bundler" }
 
         !checksums.key?(["bundler", version])
       end
 
       def bundled_with_version(path)
-        lines = File.readlines(path)
+        lines = safe_lockfile_lines(path)
         marker = lines.index { |line| line.strip == "BUNDLED WITH" }
         return "" unless marker
 
@@ -626,7 +626,8 @@ module Kettle
 
       def gemfile_bootstrap_gems(gemfile)
         gemfile_source_paths(gemfile).each_with_index.each_with_object({}) do |(path, index), gems|
-          calls = require_calls_from_ripper(Ripper.sexp(File.read(path)))
+          source = File.file?(path) ? File.read(path) : ""
+          calls = require_calls_from_ripper(Ripper.sexp(source))
           calls.filter_map { |method_name, argument| bootstrap_gem_name(method_name, argument) }.each do |name|
             gems[name] = gems.fetch(name, false) || index.zero?
           end
@@ -711,12 +712,7 @@ module Kettle
 
       def lockfile_source_content(path)
         in_checksums = false
-        # A lockfile can vanish between the lockfile_paths scan and this read
-        # (CI workers clean up generated appraisal locks mid-process). Treat a
-        # missing lockfile as an empty graph: bootstrap version lookups return
-        # nil and the reset skips what no longer exists.
-        return [].freeze unless File.file?(path)
-        File.readlines(path).filter_map do |line|
+        safe_lockfile_lines(path).filter_map do |line|
           stripped = line.strip
           if stripped == "CHECKSUMS"
             in_checksums = true
@@ -794,11 +790,22 @@ module Kettle
         registry_specs_with_lines(path).map { |name, version, _line_number| [name, version] }
       end
 
+      # Single read path for lockfile contents: a generated appraisal lock
+      # can vanish between the lockfile_paths scan and any read (CI workers
+      # create and clean up locks in the repo root mid-process). Every reader
+      # in this class goes through here and treats absence as an empty file
+      # so a deleted ghost lock degrades to "nothing to do" instead of
+      # crashing the release pipeline with Errno::ENOENT.
+      def safe_lockfile_lines(path)
+        return [].freeze unless File.file?(path)
+        File.readlines(path)
+      end
+
       def registry_specs_with_lines(path)
         specs = []
         in_gem = false
         in_specs = false
-        File.readlines(path).each.with_index(1) do |line, line_number|
+        safe_lockfile_lines(path).each.with_index(1) do |line, line_number|
           stripped = line.chomp
           if stripped == "GEM"
             in_gem = true
@@ -867,7 +874,7 @@ module Kettle
       def registry_source_urls(path)
         urls = []
         in_gem = false
-        File.readlines(path).each do |line|
+        safe_lockfile_lines(path).each do |line|
           stripped = line.strip
           if stripped == "GEM"
             in_gem = true
