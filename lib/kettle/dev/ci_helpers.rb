@@ -5,6 +5,7 @@ require "open3"
 require "net/http"
 require "json"
 require "uri"
+require "fileutils"
 
 module Kettle
   module Dev
@@ -183,29 +184,84 @@ module Kettle
         end
       end
 
-      # Process-wide rate-limit state shared by every CIHelpers caller in this
-      # process (the release runner polls many member/monitor children in one
-      # process tree, and each child gets its own copy — this throttles within
-      # a process; the budget is sized so even a fully parallel family run
-      # stays inside GitHub's per-token allowance).
+      # Rate-limit budget shared by every CIHelpers caller. The budget is
+      # enforced MACHINE-WIDE: parallel family releases (kettle-family spawns
+      # one kettle-release process per member job, and every family can run
+      # concurrently) all share one GitHub per-token quota, so the limiter
+      # coordinates through an flock'd ledger file under XDG state rather than
+      # per-process memory. kettle-dev owns the file because it makes the
+      # requests; kettle-family never calls the API itself.
       CI_RATE_BUDGET_PER_MINUTE = (ENV["K_RELEASE_CI_REQUESTS_PER_MINUTE"] || 90).to_f
       CI_RATE_MIN_INTERVAL = CI_RATE_BUDGET_PER_MINUTE.positive? ? 60.0 / CI_RATE_BUDGET_PER_MINUTE : 0.0
-      @ci_rate_last_request = 0.0
+      CI_RATE_STATE_FILE = ENV["K_RELEASE_CI_RATE_STATE_FILE"]
       @ci_rate_lock = Mutex.new
 
+      # Ledger location: XDG_STATE_HOME/kettle-dev/ci-rate-budget.json
+      # (XDG default is ~/.local/state). Overridable wholesale with
+      # K_RELEASE_CI_RATE_STATE_FILE.
+      def ci_rate_state_path
+        return CI_RATE_STATE_FILE if CI_RATE_STATE_FILE && !CI_RATE_STATE_FILE.empty?
+
+        base = ENV["XDG_STATE_HOME"]
+        base = (base && !base.empty?) ? base : File.join(Dir.home, ".local", "state")
+        File.join(base, "kettle-dev", "ci-rate-budget.json")
+      end
+
+      # Cross-process spacing: claim the next request slot under an exclusive
+      # flock on the ledger file. The in-lock sleep is intentional — claimers
+      # queue on flock and are released one interval apart, which spaces
+      # requests exactly at the budget interval regardless of how many
+      # processes are polling. The flock is released automatically if a
+      # process dies. A missing or corrupt ledger starts fresh.
       def github_rate_limit_wait!
         return if CI_RATE_MIN_INTERVAL.zero?
 
         @ci_rate_lock.synchronize do
-          now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-          delta = now - @ci_rate_last_request
-          if delta < CI_RATE_MIN_INTERVAL
-            sleep(CI_RATE_MIN_INTERVAL - delta)
-            now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          path = ci_rate_state_path
+          dir = File.dirname(path)
+          begin
+            FileUtils.mkdir_p(dir)
+          rescue SystemCallError
+            # No writable state dir: degrade to in-process throttling only.
+            return ci_rate_wait_in_process!
           end
-          @ci_rate_last_request = now
+
+          begin
+            File.open(path, File::RDWR | File::CREAT, 0o644) do |f|
+              f.flock(File::LOCK_EX)
+              last = f.size.zero? ? 0.0 : (JSON.parse(f.read)["last_request"] || 0.0)
+              now = Time.now.to_f
+              # A future timestamp (clock skew) or ancient entry starts fresh.
+              last = 0.0 if !last.is_a?(Numeric) || last > now || (now - last) > 3600
+              delta = now - last
+              sleep(CI_RATE_MIN_INTERVAL - delta) if delta < CI_RATE_MIN_INTERVAL
+              f.rewind
+              f.truncate(0)
+              f.write(JSON.generate({"last_request" => Time.now.to_f}))
+              f.flush
+            end
+          rescue SystemCallError, JSON::ParserError
+            # Ledger unusable (read-only FS, broken JSON, no flock support):
+            # degrade to in-process throttling rather than failing releases.
+            return ci_rate_wait_in_process!
+          end
         end
       end
+
+      # Fallback when no shared ledger is available. In-process spacing only,
+      # sized to the same budget.
+      # rubocop:disable ThreadSafety/ClassInstanceVariable -- callers hold @ci_rate_lock, so this state has no concurrent writers; the degradation path is intentionally module-scoped.
+      def ci_rate_wait_in_process!
+        @ci_rate_inproc_last = 0.0 unless defined?(@ci_rate_inproc_last)
+        now = Time.now.to_f
+        delta = now - @ci_rate_inproc_last
+        if delta < CI_RATE_MIN_INTERVAL
+          sleep(CI_RATE_MIN_INTERVAL - delta)
+          now = Time.now.to_f
+        end
+        @ci_rate_inproc_last = now
+      end
+      # rubocop:enable ThreadSafety/ClassInstanceVariable
 
       def github_get_json(url, token:)
         github_rate_limit_wait!

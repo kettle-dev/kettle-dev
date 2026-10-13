@@ -68,6 +68,8 @@ module Kettle
             token = Kettle::Dev::CIHelpers.default_token
             req["Authorization"] = "token #{token}" if token && !token.empty?
             begin
+              # Share the machine-wide GitHub API budget with release monitors.
+              Kettle::Dev::CIHelpers.github_rate_limit_wait!
               res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
               if res.is_a?(Net::HTTPSuccess)
                 data = JSON.parse(res.body)
@@ -299,6 +301,8 @@ module Kettle
                     req = Net::HTTP::Get.new(uri)
                     req["User-Agent"] = "ci:act rake task"
                     req["Authorization"] = "token #{tk}" if tk && !tk.empty?
+                    # Share the machine-wide GitHub API budget with release monitors.
+                    Kettle::Dev::CIHelpers.github_rate_limit_wait!
                     res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
                     if res.is_a?(Net::HTTPSuccess)
                       data = JSON.parse(res.body)

@@ -3386,6 +3386,7 @@ module Kettle
           prerelease: false
         })
 
+        Kettle::Dev::CIHelpers.github_rate_limit_wait!
         res = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
           http.request(req)
         end
@@ -3456,6 +3457,7 @@ module Kettle
         request["Accept"] = "application/vnd.github+json"
         request["Authorization"] = "token #{token}"
         request["User-Agent"] = "kettle-dev-release-cli"
+        Kettle::Dev::CIHelpers.github_rate_limit_wait!
         response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |http| http.request(request) }
         return [JSON.parse(response.body), nil] if response.is_a?(Net::HTTPSuccess)
 
@@ -3555,6 +3557,7 @@ module Kettle
         request["Authorization"] = "token #{token}"
         request["User-Agent"] = "kettle-dev-release-cli"
         request.body = JSON.dump(name: title, body: body)
+        Kettle::Dev::CIHelpers.github_rate_limit_wait!
         response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |http| http.request(request) }
         response.is_a?(Net::HTTPSuccess) ? [true, "updated"] : [false, "HTTP #{response.code}: #{response.body}"]
       rescue => e
