@@ -1093,4 +1093,28 @@ RSpec.describe Kettle::Dev::LockfileReset do
 
     expect(reset.send(:gem_source_version_available?, released_registry_gem, never_released_registry_version, ["https://gem.coop"])).to be(false)
   end
+
+  describe "#rebuild_lockfile (TOCTOU)" do
+    it "yields without backup when the lockfile vanishes before the copy" do
+      reset = described_class.new(root: @root, command_runner: ->(_command) {})
+      vanished = File.join(@root, "Appraisal.root.gemfile.lock")
+      yielded = false
+
+      expect do
+        reset.send(:rebuild_lockfile, vanished) { yielded = true }
+      end.not_to raise_error
+      expect(yielded).to be(true)
+      expect(File.file?(vanished)).to be(false)
+    end
+
+    it "does not restore a backup when the lockfile vanished before the copy and the yield raises" do
+      reset = described_class.new(root: @root, command_runner: ->(_command) {})
+      vanished = File.join(@root, "Appraisal.root.gemfile.lock")
+
+      expect do
+        reset.send(:rebuild_lockfile, vanished) { raise "boom" }
+      end.to raise_error("boom")
+      expect(File.file?(vanished)).to be(false)
+    end
+  end
 end

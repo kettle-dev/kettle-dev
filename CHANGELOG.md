@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- LockfileReset#rebuild_lockfile no longer crashes with Errno::ENOENT when a generated appraisal lockfile (e.g. Appraisal.root.gemfile.lock) vanishes between the entry guard and the backup copy (TOCTOU race with mid-process CI cleanup); the rebuild now yields without a backup and skips restore when the target was already gone
+
 ### Security
 
 ## [3.1.13] - 2026-10-14

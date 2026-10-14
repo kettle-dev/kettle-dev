@@ -742,13 +742,18 @@ module Kettle
       def rebuild_lockfile(path)
         backup = backup_path_for(path)
         FileUtils.mkdir_p(File.dirname(backup))
-        FileUtils.cp(path, backup)
+        # TOCTOU: the target can vanish between the scan/entry guard and this
+        # copy (CI cleanup of generated appraisal lockfiles mid-process).
+        # Nothing to preserve in that case — yield so the rebuild writes a
+        # fresh lockfile, and skip the backup restore entirely.
+        existed = File.file?(path)
+        FileUtils.cp(path, backup) if existed
         FileUtils.rm_f(path)
         yield
-        FileUtils.mv(backup, path, force: true) unless File.file?(path)
+        FileUtils.mv(backup, path, force: true) if existed && !File.file?(path)
         FileUtils.rm_f(backup)
       rescue
-        FileUtils.mv(backup, path, force: true) if File.file?(backup)
+        FileUtils.mv(backup, path, force: true) if existed && File.file?(backup)
         raise
       end
 
