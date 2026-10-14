@@ -2383,6 +2383,42 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         end
       end
 
+      it "normalizes release lockfiles from the step 15 entry point (step 14 skipped)" do
+        Dir.mktmpdir do |root|
+          allow(ci_helpers).to receive(:project_root).and_return(root)
+          File.write(File.join(root, "Gemfile"), "source \"https://rubygems.org\"\n")
+          File.write(File.join(root, "Gemfile.lock"), <<~LOCK)
+            GEM
+              remote: https://rubygems.org/
+              specs:
+                rake (13.4.2)
+          LOCK
+          local_cli = described_class.new(start_step: 15)
+
+          expect(local_cli).to receive(:reset_release_lockfiles!).with(stage: "before publish tasks").once
+          allow(local_cli).to receive(:validate_release_lockfiles!)
+          allow(local_cli).to receive(:prepare_release_lockfiles_for_release_tasks!)
+          allow(local_cli).to receive(:materialize_release_lockfiles_for_release_tasks!)
+
+          # The step-14 skip must not skip normalization (release:guard_clean
+          # failed exactly here on a --start-step 15 resume), and a second
+          # invocation in a full run (14 then 15) must not repeat it.
+          local_cli.send(:normalize_release_lockfiles_before_publish_tasks!)
+          local_cli.send(:normalize_release_lockfiles_before_publish_tasks!)
+        end
+      end
+
+      it "skips publish-boundary normalization when the project has no tracked lockfiles" do
+        Dir.mktmpdir do |root|
+          allow(ci_helpers).to receive(:project_root).and_return(root)
+          local_cli = described_class.new(start_step: 15)
+
+          expect(local_cli).not_to receive(:reset_release_lockfiles!)
+
+          expect { local_cli.send(:normalize_release_lockfiles_before_publish_tasks!) }.not_to raise_error
+        end
+      end
+
       it "validates lockfiles before monitoring CI on a step 10 resume" do
         local_cli = described_class.new(start_step: 10, skip_steps: "11,12,13,14,15,16,17,18,19")
         allow(local_cli).to receive(:detect_version).and_return("9.9.9")

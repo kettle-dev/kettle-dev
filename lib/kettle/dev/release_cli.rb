@@ -492,21 +492,7 @@ module Kettle
         # 14. build
         with_release_resume_step(14) do
           if run_step?(14)
-            # When resuming at step 14/15 the step 0-5 lockfile preflight is
-            # skipped, but this process's own boot (`bundle exec
-            # kettle-release` with the family launcher's local-path toggle
-            # active) can silently rewrite the canonical Gemfile.lock with
-            # sibling PATH remotes — the gemspec self-version bump makes every
-            # boot re-resolve. `rake release` aborts on the dirty worktree at
-            # release:guard_clean. Normalize at the publish boundary too.
-            # Projects without any tracked release lockfile (bare scratch
-            # specs) have nothing to normalize; LockfileReset would abort.
-            unless lockfile_reset.lockfile_paths.empty?
-              reset_release_lockfiles!(stage: "before publish tasks")
-              validate_release_lockfiles!(stage: "before publish tasks")
-              prepare_release_lockfiles_for_release_tasks!
-              materialize_release_lockfiles_for_release_tasks!
-            end
+            normalize_release_lockfiles_before_publish_tasks!
             ensure_release_secrets_ready_for_signing! if signing_enabled? && release_secrets_configured?
             if signing_enabled? && release_secrets_configured?
               puts "Running build with gem signing passphrase from configured secrets provider (#{release_secrets_provider_label})..."
@@ -520,6 +506,7 @@ module Kettle
         # 15. release and tag
         with_release_resume_step(15) do
           if run_step?(15)
+            normalize_release_lockfiles_before_publish_tasks!
             version ||= detect_version
             gem_name = detect_gem_name
             @release_candidate = build_release_candidate(gem_name, version)
@@ -776,6 +763,27 @@ module Kettle
 
       def prepare_release_lockfiles_for_release_tasks!
         reset_release_lockfiles!(stage: "before release task bundle installs")
+      end
+
+      # When resuming at step 14/15 the step 0-5 lockfile preflight is skipped,
+      # but this process's own boot (`bundle exec kettle-release` with the
+      # family launcher's local-path toggle active) can silently rewrite the
+      # canonical Gemfile.lock with sibling PATH remotes — the gemspec
+      # self-version bump makes every boot re-resolve. `rake release` aborts on
+      # the dirty worktree at release:guard_clean. Normalize at the publish
+      # boundary too: once per run, invoked from BOTH the step 14 and step 15
+      # entry points so a `--start-step 15` resume (which skips step 14) is
+      # covered as well. Projects without any tracked release lockfile (bare
+      # scratch specs) have nothing to normalize; LockfileReset would abort.
+      def normalize_release_lockfiles_before_publish_tasks!
+        return if @release_lockfiles_normalized_before_publish
+        return if lockfile_reset.lockfile_paths.empty?
+
+        reset_release_lockfiles!(stage: "before publish tasks")
+        validate_release_lockfiles!(stage: "before publish tasks")
+        prepare_release_lockfiles_for_release_tasks!
+        materialize_release_lockfiles_for_release_tasks!
+        @release_lockfiles_normalized_before_publish = true
       end
 
       # Resetting can select a platform-specific artifact that is not installed

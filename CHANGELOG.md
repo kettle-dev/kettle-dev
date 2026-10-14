@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- release:guard_clean no longer aborts a --start-step 15 resume: the publish-boundary lockfile normalization added in 3.1.13 lived only inside the step 14 block, so resuming at step 15 skipped it and the parent's own boot (family local-path toggle + gemspec self-version bump) re-dirtied the canonical Gemfile.lock with sibling PATH remotes; normalization now runs once per run from BOTH the step 14 and step 15 entry points
+
 ### Security
 
 ## [3.1.13] - 2026-10-14
