@@ -704,4 +704,115 @@ RSpec.describe Kettle::Dev::CIHelpers do
       )
     end
   end
+
+  describe ".github_rate_limit_wait! (ticket limiter)" do
+    let(:interval) { described_class::CI_RATE_MIN_INTERVAL }
+
+    around do |example|
+      Dir.mktmpdir("ci_rate_ledger_") do |dir|
+        @ledger = File.join(dir, "ledger.json")
+        example.run
+      end
+    end
+
+    before do
+      stub_env("K_RELEASE_CI_RATE_STATE_FILE" => @ledger)
+    end
+
+    def read_ledger
+      JSON.parse(File.read(@ledger))
+    end
+
+    it "points the ledger at the env override read at call time" do
+      expect(described_class.ci_rate_state_path).to eq(@ledger)
+    end
+
+    it "claims consecutive slots one interval apart" do
+      first = described_class.claim_ci_rate_slot
+      second = described_class.claim_ci_rate_slot
+
+      expect(first).to eq(0.0)
+      expect(second).to be_within(0.05).of(interval)
+      slots = read_ledger["next_slot"]
+      expect(slots).to be > Time.now.to_f # second claim reserved a future slot
+    end
+
+    it "does not hold the flock while the claimed wait is outstanding" do
+      # Regression for the in-lock sleep: seed a future slot, claim (which
+      # reserves an even later slot), and prove another process can take the
+      # exclusive flock immediately — i.e. the waiter sleeps OUTSIDE the lock.
+      future = Time.now.to_f + 30
+      File.write(@ledger, JSON.generate({"next_slot" => future}))
+
+      wait = described_class.claim_ci_rate_slot
+
+      expect(wait).to be > 25
+      File.open(@ledger, File::RDWR) do |probe|
+        expect(probe.flock(File::LOCK_EX | File::LOCK_NB)).to eq(0)
+      end
+    end
+
+    it "resets absurdly future ledger entries (clock skew)" do
+      File.write(@ledger, JSON.generate({"next_slot" => Time.now.to_f + 7200}))
+
+      expect(described_class.claim_ci_rate_slot).to eq(0.0)
+    end
+
+    it "keeps legitimately queued future slots (the ticket queue)" do
+      soon = Time.now.to_f + 0.2
+      File.write(@ledger, JSON.generate({"next_slot" => soon}))
+
+      wait = described_class.claim_ci_rate_slot
+
+      expect(wait).to be_within(0.15).of(0.2 + interval)
+    end
+
+    it "spaces every slot at least one interval apart under thread hammering" do
+      slots = []
+      threads = 8.times.map do
+        Thread.new do # rubocop:disable ThreadSafety/NewThread -- the hammering scenario is the point: concurrent claimers must serialize through the flock without wedging
+          10.times { slots << described_class.claim_ci_rate_slot }
+        end
+      end
+      threads.each(&:join)
+
+      # 80 claims against one ledger: the waits handed out must be distinct
+      # reserved offsets — 0 for the first, then one interval apart — which is
+      # only possible if every claim serialized through the flock correctly.
+      waits = slots.sort
+      expect(waits.first).to eq(0.0)
+      waits.each_cons(2) do |a, b|
+        expect(b - a).to be > interval * 0.5
+      end
+    end
+
+    it "spaces slots across separate OS processes (the production scenario)" do
+      script = <<~RUBY
+        $LOAD_PATH.unshift(File.expand_path("../../../lib", __dir__))
+        require "kettle/dev/ci_helpers"
+        20.times { Kettle::Dev::CIHelpers.claim_ci_rate_slot }
+        puts "done"
+      RUBY
+      3.times do
+        # stub_env is in-process only; the child needs the real env var.
+        `K_RELEASE_CI_RATE_STATE_FILE=#{Shellwords.escape(@ledger)} #{Gem.ruby} -e #{Shellwords.escape(script)} 2>&1`
+      end
+      # Subprocess claims must have reserved 60 strictly spaced future slots.
+      final_slot = read_ledger["next_slot"]
+      expect(final_slot - Time.now.to_f).to be > 50 * interval
+    end
+
+    it "in-process fallback reserves spaced slots" do
+      described_class.instance_variable_set(:@ci_rate_inproc_last, 0.0)
+      begin
+        first = described_class.ci_rate_claim_in_process
+        second = described_class.ci_rate_claim_in_process
+
+        expect(first).to eq(0.0)
+        expect(second).to be_within(0.05).of(interval)
+      ensure
+        described_class.instance_variable_set(:@ci_rate_inproc_last, 0.0)
+      end
+    end
+  end
 end

@@ -32,6 +32,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - Test suite no longer mutates the live repo checkout: appraisal rake task specs now run in a sandboxed CWD (the task's File.delete of the relative Appraisal.root.gemfile.lock path was really deleting the repo's lockfile mid-suite, racing parallel workers), and release_cli flow examples stub reset_release_lockfiles! instead of running real bundler resets against the live checkout — root cause of the ENOENT flake seen in ruby-3.4 CI
 
+- CI rate limiter no longer sleeps while holding the machine-wide ledger flock: claims now reserve a future slot under the lock and sleep outside it (ticket limiter), so a wedged or slow claimer can no longer deadlock every other process sharing the ledger — the observed CI hang signature (spec-run worker held the flock for minutes while peers starved past the watchdog). The ledger path override is now read at call time, and the test suite isolates itself onto a per-run tmp ledger instead of the production file
+
 ### Security
 
 ## [3.1.13] - 2026-10-14

@@ -1,5 +1,15 @@
 # frozen_string_literal: true
 
+# Isolate the machine-wide CI rate-limit ledger (Kettle::Dev::CIHelpers) from
+# the real local-production ledger: spec runs must never consume or corrupt
+# shared release state. One file per suite run, shared by the parallel workers
+# of that run (their parent is the turbo_tests2/kettle-test process), so the
+# cross-process contention path is still exercised for real.
+ENV["K_RELEASE_CI_RATE_STATE_FILE"] ||= File.expand_path(
+  "tmp/kettle-test/ci-rate-budget-#{Process.ppid}.json",
+  File.expand_path("..", __dir__)
+)
+
 # Config for development dependencies of this library
 # i.e., not configured by this library
 #

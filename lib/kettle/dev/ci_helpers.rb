@@ -193,29 +193,45 @@ module Kettle
       # requests; kettle-family never calls the API itself.
       CI_RATE_BUDGET_PER_MINUTE = (ENV["K_RELEASE_CI_REQUESTS_PER_MINUTE"] || 90).to_f
       CI_RATE_MIN_INTERVAL = CI_RATE_BUDGET_PER_MINUTE.positive? ? 60.0 / CI_RATE_BUDGET_PER_MINUTE : 0.0
-      CI_RATE_STATE_FILE = ENV["K_RELEASE_CI_RATE_STATE_FILE"]
       @ci_rate_lock = Mutex.new
 
       # Ledger location: XDG_STATE_HOME/kettle-dev/ci-rate-budget.json
       # (XDG default is ~/.local/state). Overridable wholesale with
-      # K_RELEASE_CI_RATE_STATE_FILE.
+      # K_RELEASE_CI_RATE_STATE_FILE. Read at CALL time (not frozen at load)
+      # so test suites can point the limiter at a per-run tmp ledger via
+      # stubbed_env: the shared ledger is effectively a local production
+      # system and specs must never consume or corrupt its state.
       def ci_rate_state_path
-        return CI_RATE_STATE_FILE if CI_RATE_STATE_FILE && !CI_RATE_STATE_FILE.empty?
+        override = ENV["K_RELEASE_CI_RATE_STATE_FILE"]
+        return override if override && !override.empty?
 
         base = ENV["XDG_STATE_HOME"]
         base = (base && !base.empty?) ? base : File.join(Dir.home, ".local", "state")
         File.join(base, "kettle-dev", "ci-rate-budget.json")
       end
 
-      # Cross-process spacing: claim the next request slot under an exclusive
-      # flock on the ledger file. The in-lock sleep is intentional — claimers
-      # queue on flock and are released one interval apart, which spaces
-      # requests exactly at the budget interval regardless of how many
-      # processes are polling. The flock is released automatically if a
-      # process dies. A missing or corrupt ledger starts fresh.
+      # Cross-process spacing, ticket-style: each caller claims the next
+      # request slot under an exclusive flock on the ledger file, RELEASES the
+      # lock, and only then sleeps out its wait. The critical section is a few
+      # microseconds regardless of budget, so hammering claimers queue briefly
+      # on the flock instead of each holding it for a whole interval — the old
+      # in-lock sleep serialized the whole machine behind one interval per
+      # claim, and a claimer wedged mid-sleep deadlocked every other process
+      # (observed in CI: a spec-run worker held the flock for minutes while
+      # its peers silently starved past the watchdog threshold).
+      # The flock is released automatically if a process dies. A missing or
+      # corrupt ledger starts fresh.
       def github_rate_limit_wait!
         return if CI_RATE_MIN_INTERVAL.zero?
 
+        wait = claim_ci_rate_slot
+        sleep(wait) if wait.positive?
+      end
+
+      # Returns how long the caller must wait before its request (0.0 when the
+      # budget is unspent). Never sleeps itself. Lock hold time is bounded by
+      # the file IO only.
+      def claim_ci_rate_slot
         @ci_rate_lock.synchronize do
           path = ci_rate_state_path
           dir = File.dirname(path)
@@ -223,43 +239,43 @@ module Kettle
             FileUtils.mkdir_p(dir)
           rescue SystemCallError
             # No writable state dir: degrade to in-process throttling only.
-            return ci_rate_wait_in_process!
+            return ci_rate_claim_in_process
           end
 
           begin
             File.open(path, File::RDWR | File::CREAT, 0o644) do |f|
               f.flock(File::LOCK_EX)
-              last = f.size.zero? ? 0.0 : (JSON.parse(f.read)["last_request"] || 0.0)
+              payload = f.size.zero? ? {} : JSON.parse(f.read)
+              last = payload["next_slot"] || payload["last_request"] || 0.0
               now = Time.now.to_f
-              # A future timestamp (clock skew) or ancient entry starts fresh.
-              last = 0.0 if !last.is_a?(Numeric) || last > now || (now - last) > 3600
-              delta = now - last
-              sleep(CI_RATE_MIN_INTERVAL - delta) if delta < CI_RATE_MIN_INTERVAL
+              # Absurdly future (clock skew) or ancient entries start fresh.
+              last = 0.0 if !last.is_a?(Numeric) || (last - now).abs > 3600
+              slot = [last + CI_RATE_MIN_INTERVAL, now].max
               f.rewind
               f.truncate(0)
-              f.write(JSON.generate({"last_request" => Time.now.to_f}))
+              f.write(JSON.generate({"next_slot" => slot}))
               f.flush
+              wait = slot - now
+              return wait.positive? ? wait : 0.0
             end
           rescue SystemCallError, JSON::ParserError
             # Ledger unusable (read-only FS, broken JSON, no flock support):
             # degrade to in-process throttling rather than failing releases.
-            return ci_rate_wait_in_process!
+            return ci_rate_claim_in_process
           end
         end
       end
 
-      # Fallback when no shared ledger is available. In-process spacing only,
-      # sized to the same budget.
+      # Fallback when no shared ledger is available. In-process ticket claims,
+      # sized to the same budget; the caller sleeps outside this method.
       # rubocop:disable ThreadSafety/ClassInstanceVariable -- callers hold @ci_rate_lock, so this state has no concurrent writers; the degradation path is intentionally module-scoped.
-      def ci_rate_wait_in_process!
+      def ci_rate_claim_in_process
         @ci_rate_inproc_last = 0.0 unless defined?(@ci_rate_inproc_last)
         now = Time.now.to_f
-        delta = now - @ci_rate_inproc_last
-        if delta < CI_RATE_MIN_INTERVAL
-          sleep(CI_RATE_MIN_INTERVAL - delta)
-          now = Time.now.to_f
-        end
-        @ci_rate_inproc_last = now
+        slot = [@ci_rate_inproc_last + CI_RATE_MIN_INTERVAL, now].max
+        @ci_rate_inproc_last = slot
+        wait = slot - now
+        wait.positive? ? wait : 0.0
       end
       # rubocop:enable ThreadSafety/ClassInstanceVariable
 
