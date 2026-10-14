@@ -30,6 +30,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - LockfileReset#rebuild_lockfile no longer crashes with Errno::ENOENT when a generated appraisal lockfile (e.g. Appraisal.root.gemfile.lock) vanishes between the entry guard and the backup copy (TOCTOU race with mid-process CI cleanup); the rebuild now yields without a backup and skips restore when the target was already gone
 
+- Test suite no longer mutates the live repo checkout: appraisal rake task specs now run in a sandboxed CWD (the task's File.delete of the relative Appraisal.root.gemfile.lock path was really deleting the repo's lockfile mid-suite, racing parallel workers), and release_cli flow examples stub reset_release_lockfiles! instead of running real bundler resets against the live checkout — root cause of the ENOENT flake seen in ruby-3.4 CI
+
 ### Security
 
 ## [3.1.13] - 2026-10-14

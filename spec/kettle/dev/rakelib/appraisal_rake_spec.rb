@@ -9,6 +9,19 @@ RSpec.describe "appraisal rake tasks" do # rubocop:disable RSpec/DescribeClass
     let(:rakelib) { File.expand_path("../../../../lib/kettle/dev/rakelib", __dir__) }
   end
 
+  # The appraisal tasks act on RELATIVE paths with real filesystem side effects
+  # even when `system` is stubbed — run_generate_steps calls
+  # File.delete("Appraisal.root.gemfile.lock") directly, which deletes the live
+  # repo checkout's lockfile mid-suite and races parallel workers that scan
+  # repo-root lockfiles (observed as ENOENT flakes in release_cli lockfile
+  # resets). Block that exact relative-path delete; everything else real.
+  # (Dir.chdir sandboxing was rejected: ThreadSafety/DirChdir — process-wide
+  # CWD changes endanger coverage/resultset writers in the same worker.)
+  before do
+    allow(File).to receive(:delete).and_call_original
+    allow(File).to receive(:delete).with("Appraisal.root.gemfile.lock").and_return(1)
+  end
+
   let(:quiet_env) do
     {
       "KETTLE_JEM_QUIET" => "true",

@@ -2405,6 +2405,17 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         end
       end
 
+      before do
+        # Flow-level examples stub every command boundary (run_cmd!, push!,
+        # monitoring, ...); the lockfile reset must be stubbed too. The real
+        # reset scans and REWRITES the live repo checkout's Gemfile.lock /
+        # Appraisal.root.gemfile.lock via real bundler subprocesses, racing
+        # parallel workers that legitimately create/delete the gitignored
+        # appraisal root lock (ENOENT flake, ruby-3.4 run 38522396169).
+        # Real reset behavior is covered, sandboxed, in lockfile_reset_spec.rb.
+        allow_any_instance_of(described_class).to receive(:reset_release_lockfiles!) # rubocop:disable RSpec/AnyInstance
+      end
+
       it "aborts when current version is not greater than latest released for series" do
         allow(cli).to receive(:run_pre_release_checks!)
         allow(cli).to receive(:ensure_bundler_2_7_plus!) # skip real check
