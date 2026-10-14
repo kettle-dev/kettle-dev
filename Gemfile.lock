@@ -522,7 +522,7 @@ GEM
       tty-screen (~> 0.8)
       unicode-display_width (>= 1.6, < 3.0)
     tty-screen (0.8.2)
-    turbo_tests2 (3.2.15)
+    turbo_tests2 (3.2.16)
       parallel_tests (>= 3.3.0, < 6)
       rspec (>= 3.10)
       version_gem (~> 1.1, >= 1.1.15)
@@ -611,7 +611,7 @@ DEPENDENCIES
   standard (~> 1.57, >= 1.57.0)
   stone_checksums (~> 1.0, >= 1.0.9)
   stringio (>= 3.0)
-  turbo_tests2 (~> 3.2, >= 3.2.15)
+  turbo_tests2 (~> 3.2, >= 3.2.16)
   vcr (>= 6)
   webmock (>= 3)
   webrick (~> 1.9)
@@ -794,7 +794,7 @@ CHECKSUMS
   tty-cursor (0.7.1) sha256=79534185e6a777888d88628b14b6a1fdf5154a603f285f80b1753e1908e0bf48
   tty-progressbar (0.18.3) sha256=6cbb4260e55e74a9180d502143eb6a467d2c8e51bf5f3c9509fb5cacc3d4a5f6
   tty-screen (0.8.2) sha256=c090652115beae764336c28802d633f204fb84da93c6a968aa5d8e319e819b50
-  turbo_tests2 (3.2.15) sha256=f34195dee3497fe09d19bce5c0fd064034bd81ab62a0b52c9a7abe8a34d69793
+  turbo_tests2 (3.2.16) sha256=01d827216508d54bbfb54a836e4f2e4f5427036fdd8e42ff4f0bc4455556ee79
   unicode-display_width (2.6.0) sha256=12279874bba6d5e4d2728cef814b19197dbb10d7a7837a869bab65da943b7f5a
   vcr (6.4.0) sha256=077ac92cc16efc5904eb90492a18153b5e6ca5398046d8a249a7c96a9ea24ae6
   version_gem (1.1.15) sha256=a73241587b29252e3567e0c818ded80730eb754d43b508f6ce4db22ca9ba27d0

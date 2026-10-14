@@ -10,7 +10,7 @@ env:
   TURBO_TESTS2_MAX_PROCESSES: 1
   # Serial lanes can legitimately run one long, silent test; give the stall
   # watchdog a wider berth than the 4.0 default of 900s.
-  TURBO_TESTS2_WATCHDOG_SECONDS: 1800
+  TURBO_TESTS2_WATCHDOG_SECONDS: 1500
 
 on:
   push:
