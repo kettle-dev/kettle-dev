@@ -529,7 +529,7 @@ GEM
     unicode-display_width (2.6.0)
     vcr (6.4.0)
     version_gem (1.1.15)
-    webmock (3.32.0)
+    webmock (3.34.0)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
@@ -798,7 +798,7 @@ CHECKSUMS
   unicode-display_width (2.6.0) sha256=12279874bba6d5e4d2728cef814b19197dbb10d7a7837a869bab65da943b7f5a
   vcr (6.4.0) sha256=077ac92cc16efc5904eb90492a18153b5e6ca5398046d8a249a7c96a9ea24ae6
   version_gem (1.1.15) sha256=a73241587b29252e3567e0c818ded80730eb754d43b508f6ce4db22ca9ba27d0
-  webmock (3.32.0) sha256=4a3afeff1e5fb0f13750a1204aba8baff02cf970a9f1ac262a7a1513f894c671
+  webmock (3.34.0) sha256=72eed29dc8c00148d592acaedaaa6b869e2e397de57dfc8602b84aa834f46b33
   webrick (1.9.2) sha256=beb4a15fc474defed24a3bda4ffd88a490d517c9e4e6118c3edce59e45864131
   yaml-converter (0.2.7) sha256=aa6cae4a9f41ab909c39e4185911c7c3b0a196ae33439ec721aa17631e6d1b3d
   yaml-merge (7.1.10) sha256=ee823212564479b903155b0d3dd9b9862510d425b46946e2f5668437b069e307
