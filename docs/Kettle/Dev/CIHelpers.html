@@ -135,11 +135,6 @@ requests; kettle-family never calls the API itself.</p>
         </dt>
         <dd><pre class="code"><span class='const'><span class='object_link'><a href="#CI_RATE_BUDGET_PER_MINUTE-constant" title="Kettle::Dev::CIHelpers::CI_RATE_BUDGET_PER_MINUTE (constant)">CI_RATE_BUDGET_PER_MINUTE</a></span></span><span class='period'>.</span><span class='id identifier rubyid_positive?'>positive?</span> <span class='op'>?</span> <span class='float'>60.0</span> <span class='op'>/</span> <span class='const'><span class='object_link'><a href="#CI_RATE_BUDGET_PER_MINUTE-constant" title="Kettle::Dev::CIHelpers::CI_RATE_BUDGET_PER_MINUTE (constant)">CI_RATE_BUDGET_PER_MINUTE</a></span></span> <span class='op'>:</span> <span class='float'>0.0</span></pre></dd>
       
-        <dt id="CI_RATE_STATE_FILE-constant" class="">CI_RATE_STATE_FILE =
-          
-        </dt>
-        <dd><pre class="code"></pre></dd>
-      
     </dl>
   
 
@@ -183,6 +178,29 @@ requests; kettle-family never calls the API itself.</p>
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#ci_rate_claim_in_process-class_method" title="ci_rate_claim_in_process (class method)">.<strong>ci_rate_claim_in_process</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fallback when no shared ledger is available.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#ci_rate_state_path-class_method" title="ci_rate_state_path (class method)">.<strong>ci_rate_state_path</strong>  &#x21d2; Object </a>
     
 
@@ -206,7 +224,7 @@ requests; kettle-family never calls the API itself.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#ci_rate_wait_in_process!-class_method" title="ci_rate_wait_in_process! (class method)">.<strong>ci_rate_wait_in_process!</strong>  &#x21d2; Object </a>
+      <a href="#claim_ci_rate_slot-class_method" title="claim_ci_rate_slot (class method)">.<strong>claim_ci_rate_slot</strong>  &#x21d2; Object </a>
     
 
     
@@ -220,7 +238,7 @@ requests; kettle-family never calls the API itself.</p>
   
 
   
-    <span class="summary_desc"><div class='inline'><p>Fallback when no shared ledger is available.</p>
+    <span class="summary_desc"><div class='inline'><p>Returns how long the caller must wait before its request (0.0 when the budget is unspent).</p>
 </div></span>
   
 </li>
@@ -404,7 +422,7 @@ requests; kettle-family never calls the API itself.</p>
   
 
   
-    <span class="summary_desc"><div class='inline'><p>Cross-process spacing: claim the next request slot under an exclusive flock on the ledger file.</p>
+    <span class="summary_desc"><div class='inline'><p>Cross-process spacing, ticket-style: each caller claims the next request slot under an exclusive flock on the ledger file, RELEASES the lock, and only then sleeps out its wait.</p>
 </div></span>
   
 </li>
@@ -802,59 +820,9 @@ stored at the shared repository root.</p>
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="ci_rate_state_path-class_method">
+  <h3 class="signature " id="ci_rate_claim_in_process-class_method">
   
-    .<strong>ci_rate_state_path</strong>  &#x21d2; <tt>Object</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Ledger location: XDG_STATE_HOME/kettle-dev/ci-rate-budget.json<br />
-(XDG default is ~/.local/state). Overridable wholesale with<br />
-K_RELEASE_CI_RATE_STATE_FILE.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-202
-203
-204
-205
-206
-207
-208</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 202</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_ci_rate_state_path'>ci_rate_state_path</span>
-  <span class='kw'>return</span> <span class='const'><span class='object_link'><a href="#CI_RATE_STATE_FILE-constant" title="Kettle::Dev::CIHelpers::CI_RATE_STATE_FILE (constant)">CI_RATE_STATE_FILE</a></span></span> <span class='kw'>if</span> <span class='const'><span class='object_link'><a href="#CI_RATE_STATE_FILE-constant" title="Kettle::Dev::CIHelpers::CI_RATE_STATE_FILE (constant)">CI_RATE_STATE_FILE</a></span></span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='const'><span class='object_link'><a href="#CI_RATE_STATE_FILE-constant" title="Kettle::Dev::CIHelpers::CI_RATE_STATE_FILE (constant)">CI_RATE_STATE_FILE</a></span></span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
-
-  <span class='id identifier rubyid_base'>base</span> <span class='op'>=</span> <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>XDG_STATE_HOME</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
-  <span class='id identifier rubyid_base'>base</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_base'>base</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_base'>base</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_base'>base</span> <span class='op'>:</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='const'>Dir</span><span class='period'>.</span><span class='id identifier rubyid_home'>home</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>.local</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>state</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-  <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='id identifier rubyid_base'>base</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>kettle-dev</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ci-rate-budget.json</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="ci_rate_wait_in_process!-class_method">
-  
-    .<strong>ci_rate_wait_in_process!</strong>  &#x21d2; <tt>Object</tt> 
+    .<strong>ci_rate_claim_in_process</strong>  &#x21d2; <tt>Object</tt> 
   
 
   
@@ -862,8 +830,8 @@ K_RELEASE_CI_RATE_STATE_FILE.</p>
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>Fallback when no shared ledger is available. In-process spacing only,<br />
-sized to the same budget.<br />
+    <p>Fallback when no shared ledger is available. In-process ticket claims,<br />
+sized to the same budget; the caller sleeps outside this method.<br />
 rubocop:disable ThreadSafety/ClassInstanceVariable – callers hold @ci_rate_lock, so this state has no concurrent writers; the degradation path is intentionally module-scoped.</p>
 
 
@@ -878,6 +846,133 @@ rubocop:disable ThreadSafety/ClassInstanceVariable – callers hold @ci_rate_loc
       <pre class="lines">
 
 
+272
+273
+274
+275
+276
+277
+278
+279</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 272</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_ci_rate_claim_in_process'>ci_rate_claim_in_process</span>
+  <span class='ivar'>@ci_rate_inproc_last</span> <span class='op'>=</span> <span class='float'>0.0</span> <span class='kw'>unless</span> <span class='kw'>defined?</span><span class='lparen'>(</span><span class='ivar'>@ci_rate_inproc_last</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_now'>now</span> <span class='op'>=</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span>
+  <span class='id identifier rubyid_slot'>slot</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='ivar'>@ci_rate_inproc_last</span> <span class='op'>+</span> <span class='const'><span class='object_link'><a href="#CI_RATE_MIN_INTERVAL-constant" title="Kettle::Dev::CIHelpers::CI_RATE_MIN_INTERVAL (constant)">CI_RATE_MIN_INTERVAL</a></span></span><span class='comma'>,</span> <span class='id identifier rubyid_now'>now</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_max'>max</span>
+  <span class='ivar'>@ci_rate_inproc_last</span> <span class='op'>=</span> <span class='id identifier rubyid_slot'>slot</span>
+  <span class='id identifier rubyid_wait'>wait</span> <span class='op'>=</span> <span class='id identifier rubyid_slot'>slot</span> <span class='op'>-</span> <span class='id identifier rubyid_now'>now</span>
+  <span class='id identifier rubyid_wait'>wait</span><span class='period'>.</span><span class='id identifier rubyid_positive?'>positive?</span> <span class='op'>?</span> <span class='id identifier rubyid_wait'>wait</span> <span class='op'>:</span> <span class='float'>0.0</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="ci_rate_state_path-class_method">
+  
+    .<strong>ci_rate_state_path</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Ledger location: XDG_STATE_HOME/kettle-dev/ci-rate-budget.json<br />
+(XDG default is ~/.local/state). Overridable wholesale with<br />
+K_RELEASE_CI_RATE_STATE_FILE. Read at CALL time (not frozen at load)<br />
+so test suites can point the limiter at a per-run tmp ledger via<br />
+stubbed_env: the shared ledger is effectively a local production<br />
+system and specs must never consume or corrupt its state.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+204
+205
+206
+207
+208
+209
+210
+211</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 204</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_ci_rate_state_path'>ci_rate_state_path</span>
+  <span class='id identifier rubyid_override'>override</span> <span class='op'>=</span> <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>K_RELEASE_CI_RATE_STATE_FILE</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_override'>override</span> <span class='kw'>if</span> <span class='id identifier rubyid_override'>override</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_override'>override</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+
+  <span class='id identifier rubyid_base'>base</span> <span class='op'>=</span> <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>XDG_STATE_HOME</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_base'>base</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_base'>base</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_base'>base</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_base'>base</span> <span class='op'>:</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='const'>Dir</span><span class='period'>.</span><span class='id identifier rubyid_home'>home</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>.local</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>state</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='id identifier rubyid_base'>base</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>kettle-dev</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ci-rate-budget.json</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="claim_ci_rate_slot-class_method">
+  
+    .<strong>claim_ci_rate_slot</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns how long the caller must wait before its request (0.0 when the<br />
+budget is unspent). Never sleeps itself. Lock hold time is bounded by<br />
+the file IO only.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
 254
 255
 256
@@ -887,20 +982,48 @@ rubocop:disable ThreadSafety/ClassInstanceVariable – callers hold @ci_rate_loc
 260
 261
 262
-263</pre>
+263
+264
+265
+266
+267</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 254</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 234</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_ci_rate_wait_in_process!'>ci_rate_wait_in_process!</span>
-  <span class='ivar'>@ci_rate_inproc_last</span> <span class='op'>=</span> <span class='float'>0.0</span> <span class='kw'>unless</span> <span class='kw'>defined?</span><span class='lparen'>(</span><span class='ivar'>@ci_rate_inproc_last</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_now'>now</span> <span class='op'>=</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span>
-  <span class='id identifier rubyid_delta'>delta</span> <span class='op'>=</span> <span class='id identifier rubyid_now'>now</span> <span class='op'>-</span> <span class='ivar'>@ci_rate_inproc_last</span>
-  <span class='kw'>if</span> <span class='id identifier rubyid_delta'>delta</span> <span class='op'>&lt;</span> <span class='const'><span class='object_link'><a href="#CI_RATE_MIN_INTERVAL-constant" title="Kettle::Dev::CIHelpers::CI_RATE_MIN_INTERVAL (constant)">CI_RATE_MIN_INTERVAL</a></span></span>
-    <span class='id identifier rubyid_sleep'>sleep</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#CI_RATE_MIN_INTERVAL-constant" title="Kettle::Dev::CIHelpers::CI_RATE_MIN_INTERVAL (constant)">CI_RATE_MIN_INTERVAL</a></span></span> <span class='op'>-</span> <span class='id identifier rubyid_delta'>delta</span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_now'>now</span> <span class='op'>=</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_claim_ci_rate_slot'>claim_ci_rate_slot</span>
+  <span class='ivar'>@ci_rate_lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_path'>path</span> <span class='op'>=</span> <span class='id identifier rubyid_ci_rate_state_path'>ci_rate_state_path</span>
+    <span class='id identifier rubyid_dir'>dir</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_dirname'>dirname</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
+    <span class='kw'>begin</span>
+      <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_mkdir_p'>mkdir_p</span><span class='lparen'>(</span><span class='id identifier rubyid_dir'>dir</span><span class='rparen'>)</span>
+    <span class='kw'>rescue</span> <span class='const'>SystemCallError</span>
+      <span class='comment'># No writable state dir: degrade to in-process throttling only.
+</span>      <span class='kw'>return</span> <span class='id identifier rubyid_ci_rate_claim_in_process'>ci_rate_claim_in_process</span>
+    <span class='kw'>end</span>
+
+    <span class='kw'>begin</span>
+      <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='const'>File</span><span class='op'>::</span><span class='const'>RDWR</span> <span class='op'>|</span> <span class='const'>File</span><span class='op'>::</span><span class='const'>CREAT</span><span class='comma'>,</span> <span class='int'>0o644</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span>
+        <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_flock'>flock</span><span class='lparen'>(</span><span class='const'>File</span><span class='op'>::</span><span class='const'>LOCK_EX</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_payload'>payload</span> <span class='op'>=</span> <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='period'>.</span><span class='id identifier rubyid_zero?'>zero?</span> <span class='op'>?</span> <span class='lbrace'>{</span><span class='rbrace'>}</span> <span class='op'>:</span> <span class='const'>JSON</span><span class='period'>.</span><span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_last'>last</span> <span class='op'>=</span> <span class='id identifier rubyid_payload'>payload</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>next_slot</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='id identifier rubyid_payload'>payload</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>last_request</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='float'>0.0</span>
+        <span class='id identifier rubyid_now'>now</span> <span class='op'>=</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span>
+        <span class='comment'># Absurdly future (clock skew) or ancient entries start fresh.
+</span>        <span class='id identifier rubyid_last'>last</span> <span class='op'>=</span> <span class='float'>0.0</span> <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Numeric</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='id identifier rubyid_last'>last</span> <span class='op'>-</span> <span class='id identifier rubyid_now'>now</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_abs'>abs</span> <span class='op'>&gt;</span> <span class='int'>3600</span>
+        <span class='id identifier rubyid_slot'>slot</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_last'>last</span> <span class='op'>+</span> <span class='const'><span class='object_link'><a href="#CI_RATE_MIN_INTERVAL-constant" title="Kettle::Dev::CIHelpers::CI_RATE_MIN_INTERVAL (constant)">CI_RATE_MIN_INTERVAL</a></span></span><span class='comma'>,</span> <span class='id identifier rubyid_now'>now</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_max'>max</span>
+        <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_rewind'>rewind</span>
+        <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_truncate'>truncate</span><span class='lparen'>(</span><span class='int'>0</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_write'>write</span><span class='lparen'>(</span><span class='const'>JSON</span><span class='period'>.</span><span class='id identifier rubyid_generate'>generate</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>next_slot</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_slot'>slot</span><span class='rbrace'>}</span><span class='rparen'>)</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_flush'>flush</span>
+        <span class='id identifier rubyid_wait'>wait</span> <span class='op'>=</span> <span class='id identifier rubyid_slot'>slot</span> <span class='op'>-</span> <span class='id identifier rubyid_now'>now</span>
+        <span class='kw'>return</span> <span class='id identifier rubyid_wait'>wait</span><span class='period'>.</span><span class='id identifier rubyid_positive?'>positive?</span> <span class='op'>?</span> <span class='id identifier rubyid_wait'>wait</span> <span class='op'>:</span> <span class='float'>0.0</span>
+      <span class='kw'>end</span>
+    <span class='kw'>rescue</span> <span class='const'>SystemCallError</span><span class='comma'>,</span> <span class='const'>JSON</span><span class='op'>::</span><span class='const'>ParserError</span>
+      <span class='comment'># Ledger unusable (read-only FS, broken JSON, no flock support):
+</span>      <span class='comment'># degrade to in-process throttling rather than failing releases.
+</span>      <span class='kw'>return</span> <span class='id identifier rubyid_ci_rate_claim_in_process'>ci_rate_claim_in_process</span>
+    <span class='kw'>end</span>
   <span class='kw'>end</span>
-  <span class='ivar'>@ci_rate_inproc_last</span> <span class='op'>=</span> <span class='id identifier rubyid_now'>now</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1055,12 +1178,12 @@ rubocop:disable ThreadSafety/ClassInstanceVariable – callers hold @ci_rate_loc
       <pre class="lines">
 
 
-384
-385
-386</pre>
+400
+401
+402</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 384</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 400</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_gitlab_token'>default_gitlab_token</span>
   <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GITLAB_TOKEN</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GL_TOKEN</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
@@ -1108,12 +1231,12 @@ rubocop:disable ThreadSafety/ClassInstanceVariable – callers hold @ci_rate_loc
       <pre class="lines">
 
 
-360
-361
-362</pre>
+376
+377
+378</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 360</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 376</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_token'>default_token</span>
   <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GITHUB_TOKEN</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GH_TOKEN</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
@@ -1245,12 +1368,12 @@ rubocop:disable ThreadSafety/ClassInstanceVariable – callers hold @ci_rate_loc
       <pre class="lines">
 
 
-317
-318
-319</pre>
+333
+334
+335</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 317</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 333</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_failed?'>failed?</span><span class='lparen'>(</span><span class='id identifier rubyid_run'>run</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_run'>run</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_run'>run</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>status</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>completed</span><span class='tstring_end'>&quot;</span></span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_run'>run</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>conclusion</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_run'>run</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>conclusion</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>!=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>success</span><span class='tstring_end'>&quot;</span></span>
@@ -1285,22 +1408,6 @@ rubocop:disable ThreadSafety/ClassInstanceVariable – callers hold @ci_rate_loc
       <pre class="lines">
 
 
-266
-267
-268
-269
-270
-271
-272
-273
-274
-275
-276
-277
-278
-279
-280
-281
 282
 283
 284
@@ -1324,10 +1431,26 @@ rubocop:disable ThreadSafety/ClassInstanceVariable – callers hold @ci_rate_loc
 302
 303
 304
-305</pre>
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 266</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 282</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_github_get_json'>github_get_json</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span> <span class='label'>token:</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_github_rate_limit_wait!'>github_rate_limit_wait!</span>
@@ -1385,12 +1508,17 @@ rubocop:disable ThreadSafety/ClassInstanceVariable – callers hold @ci_rate_loc
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>Cross-process spacing: claim the next request slot under an exclusive<br />
-flock on the ledger file. The in-lock sleep is intentional — claimers<br />
-queue on flock and are released one interval apart, which spaces<br />
-requests exactly at the budget interval regardless of how many<br />
-processes are polling. The flock is released automatically if a<br />
-process dies. A missing or corrupt ledger starts fresh.</p>
+    <p>Cross-process spacing, ticket-style: each caller claims the next<br />
+request slot under an exclusive flock on the ledger file, RELEASES the<br />
+lock, and only then sleeps out its wait. The critical section is a few<br />
+microseconds regardless of budget, so hammering claimers queue briefly<br />
+on the flock instead of each holding it for a whole interval — the old<br />
+in-lock sleep serialized the whole machine behind one interval per<br />
+claim, and a claimer wedged mid-sleep deadlocked every other process<br />
+(observed in CI: a spec-run worker held the flock for minutes while<br />
+its peers silently starved past the watchdog threshold).<br />
+The flock is released automatically if a process dies. A missing or<br />
+corrupt ledger starts fresh.</p>
 
 
   </div>
@@ -1404,77 +1532,21 @@ process dies. A missing or corrupt ledger starts fresh.</p>
       <pre class="lines">
 
 
-216
-217
-218
-219
-220
-221
-222
-223
 224
 225
 226
 227
 228
-229
-230
-231
-232
-233
-234
-235
-236
-237
-238
-239
-240
-241
-242
-243
-244
-245
-246
-247
-248
-249</pre>
+229</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 216</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 224</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_github_rate_limit_wait!'>github_rate_limit_wait!</span>
   <span class='kw'>return</span> <span class='kw'>if</span> <span class='const'><span class='object_link'><a href="#CI_RATE_MIN_INTERVAL-constant" title="Kettle::Dev::CIHelpers::CI_RATE_MIN_INTERVAL (constant)">CI_RATE_MIN_INTERVAL</a></span></span><span class='period'>.</span><span class='id identifier rubyid_zero?'>zero?</span>
 
-  <span class='ivar'>@ci_rate_lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
-    <span class='id identifier rubyid_path'>path</span> <span class='op'>=</span> <span class='id identifier rubyid_ci_rate_state_path'>ci_rate_state_path</span>
-    <span class='id identifier rubyid_dir'>dir</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_dirname'>dirname</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
-    <span class='kw'>begin</span>
-      <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_mkdir_p'>mkdir_p</span><span class='lparen'>(</span><span class='id identifier rubyid_dir'>dir</span><span class='rparen'>)</span>
-    <span class='kw'>rescue</span> <span class='const'>SystemCallError</span>
-      <span class='comment'># No writable state dir: degrade to in-process throttling only.
-</span>      <span class='kw'>return</span> <span class='id identifier rubyid_ci_rate_wait_in_process!'>ci_rate_wait_in_process!</span>
-    <span class='kw'>end</span>
-
-    <span class='kw'>begin</span>
-      <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='const'>File</span><span class='op'>::</span><span class='const'>RDWR</span> <span class='op'>|</span> <span class='const'>File</span><span class='op'>::</span><span class='const'>CREAT</span><span class='comma'>,</span> <span class='int'>0o644</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span>
-        <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_flock'>flock</span><span class='lparen'>(</span><span class='const'>File</span><span class='op'>::</span><span class='const'>LOCK_EX</span><span class='rparen'>)</span>
-        <span class='id identifier rubyid_last'>last</span> <span class='op'>=</span> <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='period'>.</span><span class='id identifier rubyid_zero?'>zero?</span> <span class='op'>?</span> <span class='float'>0.0</span> <span class='op'>:</span> <span class='lparen'>(</span><span class='const'>JSON</span><span class='period'>.</span><span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='rparen'>)</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>last_request</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='float'>0.0</span><span class='rparen'>)</span>
-        <span class='id identifier rubyid_now'>now</span> <span class='op'>=</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span>
-        <span class='comment'># A future timestamp (clock skew) or ancient entry starts fresh.
-</span>        <span class='id identifier rubyid_last'>last</span> <span class='op'>=</span> <span class='float'>0.0</span> <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Numeric</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_last'>last</span> <span class='op'>&gt;</span> <span class='id identifier rubyid_now'>now</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='id identifier rubyid_now'>now</span> <span class='op'>-</span> <span class='id identifier rubyid_last'>last</span><span class='rparen'>)</span> <span class='op'>&gt;</span> <span class='int'>3600</span>
-        <span class='id identifier rubyid_delta'>delta</span> <span class='op'>=</span> <span class='id identifier rubyid_now'>now</span> <span class='op'>-</span> <span class='id identifier rubyid_last'>last</span>
-        <span class='id identifier rubyid_sleep'>sleep</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#CI_RATE_MIN_INTERVAL-constant" title="Kettle::Dev::CIHelpers::CI_RATE_MIN_INTERVAL (constant)">CI_RATE_MIN_INTERVAL</a></span></span> <span class='op'>-</span> <span class='id identifier rubyid_delta'>delta</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_delta'>delta</span> <span class='op'>&lt;</span> <span class='const'><span class='object_link'><a href="#CI_RATE_MIN_INTERVAL-constant" title="Kettle::Dev::CIHelpers::CI_RATE_MIN_INTERVAL (constant)">CI_RATE_MIN_INTERVAL</a></span></span>
-        <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_rewind'>rewind</span>
-        <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_truncate'>truncate</span><span class='lparen'>(</span><span class='int'>0</span><span class='rparen'>)</span>
-        <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_write'>write</span><span class='lparen'>(</span><span class='const'>JSON</span><span class='period'>.</span><span class='id identifier rubyid_generate'>generate</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>last_request</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span><span class='rbrace'>}</span><span class='rparen'>)</span><span class='rparen'>)</span>
-        <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_flush'>flush</span>
-      <span class='kw'>end</span>
-    <span class='kw'>rescue</span> <span class='const'>SystemCallError</span><span class='comma'>,</span> <span class='const'>JSON</span><span class='op'>::</span><span class='const'>ParserError</span>
-      <span class='comment'># Ledger unusable (read-only FS, broken JSON, no flock support):
-</span>      <span class='comment'># degrade to in-process throttling rather than failing releases.
-</span>      <span class='kw'>return</span> <span class='id identifier rubyid_ci_rate_wait_in_process!'>ci_rate_wait_in_process!</span>
-    <span class='kw'>end</span>
-  <span class='kw'>end</span>
+  <span class='id identifier rubyid_wait'>wait</span> <span class='op'>=</span> <span class='id identifier rubyid_claim_ci_rate_slot'>claim_ci_rate_slot</span>
+  <span class='id identifier rubyid_sleep'>sleep</span><span class='lparen'>(</span><span class='id identifier rubyid_wait'>wait</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_wait'>wait</span><span class='period'>.</span><span class='id identifier rubyid_positive?'>positive?</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1534,12 +1606,12 @@ process dies. A missing or corrupt ledger starts fresh.</p>
       <pre class="lines">
 
 
-455
-456
-457</pre>
+471
+472
+473</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 455</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 471</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_gitlab_failed?'>gitlab_failed?</span><span class='lparen'>(</span><span class='id identifier rubyid_pipeline'>pipeline</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_pipeline'>pipeline</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_pipeline'>pipeline</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>status</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>failed</span><span class='tstring_end'>&quot;</span></span>
@@ -1652,22 +1724,6 @@ process dies. A missing or corrupt ledger starts fresh.</p>
       <pre class="lines">
 
 
-395
-396
-397
-398
-399
-400
-401
-402
-403
-404
-405
-406
-407
-408
-409
-410
 411
 412
 413
@@ -1700,10 +1756,26 @@ process dies. A missing or corrupt ledger starts fresh.</p>
 440
 441
 442
-443</pre>
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 395</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 411</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_gitlab_latest_pipeline'>gitlab_latest_pipeline</span><span class='lparen'>(</span><span class='label'>owner:</span><span class='comma'>,</span> <span class='label'>repo:</span><span class='comma'>,</span> <span class='label'>branch:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>host:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>gitlab.com</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>token:</span> <span class='id identifier rubyid_default_gitlab_token'>default_gitlab_token</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>unless</span> <span class='id identifier rubyid_owner'>owner</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_repo'>repo</span>
@@ -1812,12 +1884,12 @@ process dies. A missing or corrupt ledger starts fresh.</p>
       <pre class="lines">
 
 
-448
-449
-450</pre>
+464
+465
+466</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 448</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 464</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_gitlab_success?'>gitlab_success?</span><span class='lparen'>(</span><span class='id identifier rubyid_pipeline'>pipeline</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_pipeline'>pipeline</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_pipeline'>pipeline</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>status</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>success</span><span class='tstring_end'>&quot;</span></span>
@@ -2131,13 +2203,13 @@ process dies. A missing or corrupt ledger starts fresh.</p>
       <pre class="lines">
 
 
-368
-369
-370
-371</pre>
+384
+385
+386
+387</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 368</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 384</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_origin_url'>origin_url</span>
   <span class='id identifier rubyid_out'>out</span><span class='comma'>,</span> <span class='id identifier rubyid_status'>status</span> <span class='op'>=</span> <span class='const'>Open3</span><span class='period'>.</span><span class='id identifier rubyid_capture2'>capture2</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>git</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>config</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>--get</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>remote.origin.url</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -2212,27 +2284,27 @@ process dies. A missing or corrupt ledger starts fresh.</p>
       <pre class="lines">
 
 
-463
-464
-465
-466
-467
-468
-469
-470
-471
-472
-473
-474
-475
-476
-477
-478
 479
-480</pre>
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 463</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 479</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_parse_hosted_repo'>parse_hosted_repo</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span> <span class='id identifier rubyid_host'>host</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>unless</span> <span class='id identifier rubyid_url'>url</span>
@@ -2481,15 +2553,15 @@ Supports SSH and HTTPS remote URL forms.</p>
       <pre class="lines">
 
 
-375
-376
-377
-378
-379
-380</pre>
+391
+392
+393
+394
+395
+396</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 375</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 391</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_repo_info_gitlab'>repo_info_gitlab</span>
   <span class='id identifier rubyid_url'>url</span> <span class='op'>=</span> <span class='id identifier rubyid_origin_url'>origin_url</span>
@@ -2598,22 +2670,6 @@ the red job immediately.</p>
       <pre class="lines">
 
 
-331
-332
-333
-334
-335
-336
-337
-338
-339
-340
-341
-342
-343
-344
-345
-346
 347
 348
 349
@@ -2623,10 +2679,26 @@ the red job immediately.</p>
 353
 354
 355
-356</pre>
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 331</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 347</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_run_jobs'>run_jobs</span><span class='lparen'>(</span><span class='label'>owner:</span><span class='comma'>,</span> <span class='label'>repo:</span><span class='comma'>,</span> <span class='label'>run_id:</span><span class='comma'>,</span> <span class='label'>token:</span> <span class='id identifier rubyid_default_token'>default_token</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='kw'>unless</span> <span class='id identifier rubyid_owner'>owner</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_repo'>repo</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_run_id'>run_id</span>
@@ -2712,12 +2784,12 @@ the red job immediately.</p>
       <pre class="lines">
 
 
-310
-311
-312</pre>
+326
+327
+328</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 310</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/ci_helpers.rb', line 326</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_success?'>success?</span><span class='lparen'>(</span><span class='id identifier rubyid_run'>run</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_run'>run</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_run'>run</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>status</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>completed</span><span class='tstring_end'>&quot;</span></span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_run'>run</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>conclusion</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>success</span><span class='tstring_end'>&quot;</span></span>

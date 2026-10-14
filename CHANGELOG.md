@@ -22,15 +22,32 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
-- [kc] kettle-jem/template: updated 12 project files:
-  - code and tests (2)
-  - dependencies (3)
-  - other (1)
-  - workflows (6)
-
 ### Deprecated
 
 ### Removed
+
+### Fixed
+
+### Security
+
+## [3.1.13] - 2026-10-14
+
+- TAG: [v3.1.13][3.1.13t]
+- COVERAGE: 91.58% -- 6426/7017 lines in 49 files
+- BRANCH COVERAGE: 75.67% -- 2454/3243 branches in 49 files
+- 53.23% documented
+
+### Changed
+
+- GitHub API request budget is now enforced machine-wide through an flock'd XDG ledger (XDG_STATE_HOME/kettle-dev/ci-rate-budget.json, override with K_RELEASE_CI_RATE_STATE_FILE) instead of per-process memory: parallel family releases, wave jobs, ci:act, and kettle-release GitHub Releases calls all share one budget (default 90 req/min) matching GitHub's per-token quota; unavailable ledger degrades to in-process spacing
+
+- [kc] kettle-jem/template: updated 69 project files:
+  - code and tests (5)
+  - configuration (2)
+  - dependencies (15)
+  - documentation (1)
+  - other (3)
+  - workflows (43)
 
 ### Fixed
 
@@ -39,27 +56,6 @@ Please file a bug if you notice a violation of semantic versioning.
 - Test suite no longer mutates the live repo checkout: appraisal rake task specs now run in a sandboxed CWD (the task's File.delete of the relative Appraisal.root.gemfile.lock path was really deleting the repo's lockfile mid-suite, racing parallel workers), and release_cli flow examples stub reset_release_lockfiles! instead of running real bundler resets against the live checkout — root cause of the ENOENT flake seen in ruby-3.4 CI
 
 - CI rate limiter no longer sleeps while holding the machine-wide ledger flock: claims now reserve a future slot under the lock and sleep outside it (ticket limiter), so a wedged or slow claimer can no longer deadlock every other process sharing the ledger — the observed CI hang signature (spec-run worker held the flock for minutes while peers starved past the watchdog). The ledger path override is now read at call time, and the test suite isolates itself onto a per-run tmp ledger instead of the production file
-
-### Security
-
-## [3.1.13] - 2026-10-14
-
-- TAG: [v3.1.13][3.1.13t]
-- COVERAGE: 91.30% -- 6402/7012 lines in 49 files
-- BRANCH COVERAGE: 75.52% -- 2446/3239 branches in 49 files
-- 53.02% documented
-
-### Changed
-
-- GitHub API request budget is now enforced machine-wide through an flock'd XDG ledger (XDG_STATE_HOME/kettle-dev/ci-rate-budget.json, override with K_RELEASE_CI_RATE_STATE_FILE) instead of per-process memory: parallel family releases, wave jobs, ci:act, and kettle-release GitHub Releases calls all share one budget (default 90 req/min) matching GitHub's per-token quota; unavailable ledger degrades to in-process spacing
-
-- [kc] kettle-jem/template: updated 57 project files:
-  - code and tests (3)
-  - configuration (2)
-  - dependencies (12)
-  - documentation (1)
-  - other (2)
-  - workflows (37)
 
 ## [3.1.12] - 2026-10-12
 
