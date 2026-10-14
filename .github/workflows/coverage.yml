@@ -105,6 +105,22 @@ jobs:
           test -s coverage/lcov.info
           test -s coverage/coverage.xml
 
+      # Preserve per-worker SimpleCov resultsets when the coverage gate fails.
+      # turbo_tests2 workers write coverage/turbo_tests/<TEST_ENV_NUMBER>/.resultset.json;
+      # if a worker's recorded hits are lost before collation the failure is otherwise
+      # invisible (examples all pass; only the merged total drops).
+      - name: Upload per-worker coverage resultsets on coverage failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-resultsets-${{ matrix.ruby }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            coverage/turbo_tests/**/.resultset.json
+            coverage/.resultset.json
+            coverage/resultset.json
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Upload coverage to Coveralls
         if: ${{ !env.ACT }}
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
