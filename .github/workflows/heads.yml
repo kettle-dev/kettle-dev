@@ -76,9 +76,12 @@ jobs:
       # Effectively an automatic retry of the previous step.
       - name: "[Attempt 2] Appraisal for ${{ matrix.ruby }}@${{ matrix.appraisal }}"
         id: bundleAppraisalAttempt2
-        # If bundleAppraisalAttempt1 failed, try again here; Otherwise skip.
+        # If bundleAppraisalAttempt1 failed, clean lock/vendor and retry; Otherwise skip.
         if: ${{ !env.ACT && steps.bundleAppraisalAttempt1.outcome == 'failure' }}
-        run: bundle exec appraisal ${{ matrix.appraisal }} install
+        run: |
+          rm -f gemfiles/${{ matrix.appraisal }}.gemfile.lock
+          rm -rf vendor/bundle "$HOME/.bundle/cache"
+          bundle exec appraisal ${{ matrix.appraisal }} install
 
       - name: Restore RSpec status log
         if: "${{!env.ACT}}"
@@ -137,6 +140,8 @@ jobs:
 
       - name: "[Attempt 2] Appraisal for ${{ matrix.ruby }}@${{ matrix.appraisal }}"
         id: bundleAppraisalAttempt2
+        # If bundleAppraisalAttempt1 failed, clean lock/vendor and retry; Otherwise skip.
+        if: ${{ !env.ACT && steps.bundleAppraisalAttempt1.outcome == 'failure' }}
         run: |
           rm -f gemfiles/${{ matrix.appraisal }}.gemfile.lock
           rm -rf vendor/bundle "$HOME/.bundle/cache"
