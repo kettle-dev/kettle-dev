@@ -90,8 +90,8 @@ Please file a bug if you notice a violation of semantic versioning.</p>
 <ul>
   <li>TAG: <a href="https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.13">v3.1.13</a>
 </li>
-  <li>COVERAGE: 91.58% – 6426/7017 lines in 49 files</li>
-  <li>BRANCH COVERAGE: 75.67% – 2454/3243 branches in 49 files</li>
+  <li>COVERAGE: 91.71% – 6440/7022 lines in 49 files</li>
+  <li>BRANCH COVERAGE: 75.87% – 2462/3245 branches in 49 files</li>
   <li>53.23% documented</li>
 </ul>
 
@@ -117,15 +117,14 @@ Please file a bug if you notice a violation of semantic versioning.</p>
 <h3 id="fixed-1">Fixed</h3>
 
 <ul>
+  <li>release:guard_clean no longer aborts a –start-step 15 resume: the publish-boundary lockfile normalization added in 3.1.13 lived only inside the step 14 block, so resuming at step 15 skipped it and the parent’s own boot (family local-path toggle + gemspec self-version bump) re-dirtied the canonical Gemfile.lock with sibling PATH remotes; normalization now runs once per run from BOTH the step 14 and step 15 entry points</li>
   <li>
     <p>LockfileReset#rebuild_lockfile no longer crashes with Errno::ENOENT when a generated appraisal lockfile (e.g. Appraisal.root.gemfile.lock) vanishes between the entry guard and the backup copy (TOCTOU race with mid-process CI cleanup); the rebuild now yields without a backup and skips restore when the target was already gone</p>
   </li>
   <li>
     <p>Test suite no longer mutates the live repo checkout: appraisal rake task specs now run in a sandboxed CWD (the task’s File.delete of the relative Appraisal.root.gemfile.lock path was really deleting the repo’s lockfile mid-suite, racing parallel workers), and release_cli flow examples stub reset_release_lockfiles! instead of running real bundler resets against the live checkout — root cause of the ENOENT flake seen in ruby-3.4 CI</p>
   </li>
-  <li>
-    <p>CI rate limiter no longer sleeps while holding the machine-wide ledger flock: claims now reserve a future slot under the lock and sleep outside it (ticket limiter), so a wedged or slow claimer can no longer deadlock every other process sharing the ledger — the observed CI hang signature (spec-run worker held the flock for minutes while peers starved past the watchdog). The ledger path override is now read at call time, and the test suite isolates itself onto a per-run tmp ledger instead of the production file</p>
-  </li>
+  <li>CI rate limiter no longer sleeps while holding the machine-wide ledger flock: claims now reserve a future slot under the lock and sleep outside it (ticket limiter), so a wedged or slow claimer can no longer deadlock every other process sharing the ledger — the observed CI hang signature (spec-run worker held the flock for minutes while peers starved past the watchdog). The ledger path override is now read at call time, and the test suite isolates itself onto a per-run tmp ledger instead of the production file</li>
 </ul>
 
 <h2 id="3112---2026-10-12">

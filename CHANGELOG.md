@@ -28,14 +28,13 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-
 ### Security
 
 ## [3.1.13] - 2026-10-14
 
 - TAG: [v3.1.13][3.1.13t]
-- COVERAGE: 91.58% -- 6426/7017 lines in 49 files
-- BRANCH COVERAGE: 75.67% -- 2454/3243 branches in 49 files
+- COVERAGE: 91.71% -- 6440/7022 lines in 49 files
+- BRANCH COVERAGE: 75.87% -- 2462/3245 branches in 49 files
 - 53.23% documented
 
 ### Changed
