@@ -2,7 +2,7 @@
 version: 1
 template_state:
   version: 7.1.29
-  applied_at: '2026-10-14'
+  applied_at: '2026-10-15'
   changelog_replay:
     last_entry_key: kettle-jem-template-20260913-001
     last_entry_date: '2026-09-13'
@@ -14,18 +14,7 @@ template_state:
     - gemfiles/modular/templating.gemfile
     - kettle-dev.gemspec
     kettle-jem/template:
-    - ".github/workflows/truffle.yml"
-    - ".github/workflows/truffleruby-22.3.yml"
-    - ".github/workflows/truffleruby-23.1.yml"
-    - ".github/workflows/truffleruby-24.2.yml"
-    - ".github/workflows/truffleruby-25.0.yml"
-    - ".github/workflows/truffleruby-33.0.yml"
-    - ".simplecov"
-    - Gemfile
-    - Rakefile
-    - gemfiles/modular/templating.gemfile
-    - kettle-dev.gemspec
-    - spec/spec_helper.rb
+    - ".github/workflows/jruby-9.2.yml"
   checksums:
     ".aiignore.example": 48a5dfdd93afd1a15fdce39cc28ca9920263f00018b0968ab031fa744521e5ce
     ".config/mise/env.sh": aeea5a2ab489ba6e5467ae8de6e386ec8c8fe4ff31a044e69d0cd6a092dd6654
@@ -54,12 +43,12 @@ template_state:
     ".github/workflows/discord-notifier.yml.example": f9cc83a87058bd420426444510a1dd1520fd7cc15af50832ad52c25c5766be94
     ".github/workflows/framework-ci.yml.example": ed86c4bb31fcdbf069e3fd828625823eeab564add546a00dfaae4ecf38365962
     ".github/workflows/heads.yml.example": 2cd26b0f301b3f660cf06f4a6a0879ea91b7e742eb35f2c036fedb594ae00644
-    ".github/workflows/jruby-10.0.yml.example": 368da574823cec44871d95824d5c7cacf2018fc56a7fd4e9ea7a7a785ea3d86a
-    ".github/workflows/jruby-9.1.yml.example": 0b699b025af7697c8cb63f8ffaf34fd9a6c123a0ffe76b62de411b4dcd21d1e7
-    ".github/workflows/jruby-9.2.yml.example": 3f5d40d0f177851d37347a078b4fef7310280a81e20a33e4b38c25d2c4312983
-    ".github/workflows/jruby-9.3.yml.example": db6c5f689ec13cf50aae143c838427570725134b8015587f62c0fe1d8db211ee
-    ".github/workflows/jruby-9.4.yml.example": 28ff1ab703880d8f0669e87123a0377be3209b35c7559539ea1a6eaaead976e4
-    ".github/workflows/jruby.yml.example": 6d0d9264185ab51156ba01b630ff15936634feee5e15864966101ad06f394230
+    ".github/workflows/jruby-10.0.yml.example": 132e338db46fb8f290c2e868d86a2154d4e72f9d862c4d995899025d414d276f
+    ".github/workflows/jruby-9.1.yml.example": f06e384eae4e89704e44eaeccb600a630465a22b2000e18631f558d2d3834355
+    ".github/workflows/jruby-9.2.yml.example": 3e5f0546f72c29d01b791645664657e6137989c7aa63831c489f89ac24bd1433
+    ".github/workflows/jruby-9.3.yml.example": acb7ad1c3ecd46f71bcbe6e56055d9b48162ab3587f1b6027986da508c506fcb
+    ".github/workflows/jruby-9.4.yml.example": 6b6ead107965786b3b21967a388350585017b4117f298137eed4fce6045cb450
+    ".github/workflows/jruby.yml.example": e446d374503d43fe4dca47a8d92d00e7401708f405e070a06f6304feac8999bc
     ".github/workflows/license-eye.yml.example": 879a5e6baf41fae1b2e1a44591a632f56e426992988499956cb7636820b3fb99
     ".github/workflows/locked_deps.yml.example": 53b57f1de45ef0b82316e94ac63c2179a71bb8a8e5d90e9d7fd273764d6bbe56
     ".github/workflows/opencollective.yml.example": 785bd19b1a11ae8b0d2f4ffd25740f6f40c6422ccd57e08550f0792cd11e26f2
@@ -376,8 +365,8 @@ files:
   ".github/workflows/jruby-9.2.yml":
     recipe: template_source_application_github_workflows_jruby_9_2_yml
     action: write
-    dest_sha256: 508f486a153c8c390e63e00f260c2153bfaa4afad186b5582c0f9bdc39cf7599
-    input_fingerprint: 4455ac836dc9ce9a49a9bc50d567afda6dda10be9b140b1a3701e3821f7d30e6
+    dest_sha256: 7b8cfecbbb92181198316e59f0c92a369a084d4bdbca95d3420ef5e7281996b8
+    input_fingerprint: 45130adbe3870ac13f2965deb6b25cc156ed0dabb06b29a220c49d4271ea5006
     template_sources:
     - ".github/workflows/jruby-9.2.yml.example"
   ".github/workflows/jruby-9.3.yml":

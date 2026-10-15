@@ -59,17 +59,8 @@
     {
       "file": "CHANGELOG.md",
       "lines": [
-        170,
-        547
-      ]
-    }
-  ],
-  "- documentation (1)\n- other (2)": [
-    {
-      "file": "CHANGELOG.md",
-      "lines": [
-        60,
-        171
+        167,
+        544
       ]
     }
   ],
