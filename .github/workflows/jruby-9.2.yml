@@ -6,6 +6,10 @@ permissions:
 env:
   # Kill stalled test workers instead of hanging until the CI job timeout.
   TURBO_TESTS2_WATCHDOG_SECONDS: 1500
+  # Each turbo_tests2 worker is a full JVM subprocess; without a heap cap
+  # JRuby defaults to 1/4 of runner RAM per worker, and concurrent workers
+  # get OOM-killed silently mid-run (watchdog then reports total silence).
+  JRUBY_OPTS: "-J-Xmx1280m"
   K_SOUP_COV_DO: false
 
 on:

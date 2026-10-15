@@ -43,12 +43,12 @@ template_state:
     ".github/workflows/discord-notifier.yml.example": f9cc83a87058bd420426444510a1dd1520fd7cc15af50832ad52c25c5766be94
     ".github/workflows/framework-ci.yml.example": ed86c4bb31fcdbf069e3fd828625823eeab564add546a00dfaae4ecf38365962
     ".github/workflows/heads.yml.example": 2cd26b0f301b3f660cf06f4a6a0879ea91b7e742eb35f2c036fedb594ae00644
-    ".github/workflows/jruby-10.0.yml.example": 132e338db46fb8f290c2e868d86a2154d4e72f9d862c4d995899025d414d276f
-    ".github/workflows/jruby-9.1.yml.example": f06e384eae4e89704e44eaeccb600a630465a22b2000e18631f558d2d3834355
-    ".github/workflows/jruby-9.2.yml.example": 3e5f0546f72c29d01b791645664657e6137989c7aa63831c489f89ac24bd1433
-    ".github/workflows/jruby-9.3.yml.example": acb7ad1c3ecd46f71bcbe6e56055d9b48162ab3587f1b6027986da508c506fcb
-    ".github/workflows/jruby-9.4.yml.example": 6b6ead107965786b3b21967a388350585017b4117f298137eed4fce6045cb450
-    ".github/workflows/jruby.yml.example": e446d374503d43fe4dca47a8d92d00e7401708f405e070a06f6304feac8999bc
+    ".github/workflows/jruby-10.0.yml.example": 7f5b5e354184926cca5891ffa8125a3f84282f3b5e4b7392ea14615aa26edc21
+    ".github/workflows/jruby-9.1.yml.example": 2c08c47cf2afe4106fae8d7e5531aafa40c9bde6cb2a067bd7e60e8d797ac9ba
+    ".github/workflows/jruby-9.2.yml.example": 7aa7ba7c6da786bfb3e47141d9de8854e8da3cddfce26bf3d53074054d02110b
+    ".github/workflows/jruby-9.3.yml.example": 5d4c5d54970a91d56729491ac9a2c1d34bd12170dd4ac2ff6ecf8b2deebb264c
+    ".github/workflows/jruby-9.4.yml.example": aeb1a121f3ca511bec3a6a0b7f29b12896030fceab086a9a584ed1e313a15e02
+    ".github/workflows/jruby.yml.example": 77ab1bb2a3dc326a9dbf463dc45624abcf93cb65326594eba2280c4f5a20ef5b
     ".github/workflows/license-eye.yml.example": 879a5e6baf41fae1b2e1a44591a632f56e426992988499956cb7636820b3fb99
     ".github/workflows/locked_deps.yml.example": 53b57f1de45ef0b82316e94ac63c2179a71bb8a8e5d90e9d7fd273764d6bbe56
     ".github/workflows/opencollective.yml.example": 785bd19b1a11ae8b0d2f4ffd25740f6f40c6422ccd57e08550f0792cd11e26f2
@@ -365,8 +365,8 @@ files:
   ".github/workflows/jruby-9.2.yml":
     recipe: template_source_application_github_workflows_jruby_9_2_yml
     action: write
-    dest_sha256: 7b8cfecbbb92181198316e59f0c92a369a084d4bdbca95d3420ef5e7281996b8
-    input_fingerprint: 45130adbe3870ac13f2965deb6b25cc156ed0dabb06b29a220c49d4271ea5006
+    dest_sha256: 669a3db378a003567eca602411c67145cde9896c16ca1d48525c16ee4856e256
+    input_fingerprint: 3fdc0513f985c4c2a2bea48e466aa47fbd5635be85543df987a5982c28a425e0
     template_sources:
     - ".github/workflows/jruby-9.2.yml.example"
   ".github/workflows/jruby-9.3.yml":
