@@ -22,8 +22,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
-- [kc] kettle-jem/template: updated 1 project file:
-  - workflows (1)
+- [kc] kettle-jem/template: updated 11 project files:
+  - workflows (11)
 
 ### Deprecated
 

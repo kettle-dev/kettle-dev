@@ -10,6 +10,9 @@ env:
   # JRuby defaults to 1/4 of runner RAM per worker, and concurrent workers
   # get OOM-killed silently mid-run (watchdog then reports total silence).
   JRUBY_OPTS: "-J-Xmx1280m"
+  # Fewer, smaller JVM workers: bound workers x per-worker heap under the
+  # runner RAM so the kernel OOM killer never silences workers mid-run.
+  TURBO_TESTS2_MAX_PROCESSES: 2
   K_SOUP_COV_DO: false
 
 on:
