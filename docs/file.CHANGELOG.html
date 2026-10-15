@@ -90,8 +90,8 @@ Please file a bug if you notice a violation of semantic versioning.</p>
 <ul>
   <li>TAG: <a href="https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.13">v3.1.13</a>
 </li>
-  <li>COVERAGE: 91.71% – 6440/7022 lines in 49 files</li>
-  <li>BRANCH COVERAGE: 75.87% – 2462/3245 branches in 49 files</li>
+  <li>COVERAGE: 91.53% – 6427/7022 lines in 49 files</li>
+  <li>BRANCH COVERAGE: 75.69% – 2456/3245 branches in 49 files</li>
   <li>53.23% documented</li>
 </ul>
 
@@ -101,15 +101,19 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   <li>
     <p>GitHub API request budget is now enforced machine-wide through an flock’d XDG ledger (XDG_STATE_HOME/kettle-dev/ci-rate-budget.json, override with K_RELEASE_CI_RATE_STATE_FILE) instead of per-process memory: parallel family releases, wave jobs, ci:act, and kettle-release GitHub Releases calls all share one budget (default 90 req/min) matching GitHub’s per-token quota; unavailable ledger degrades to in-process spacing</p>
   </li>
-  <li>
-    <p>[kc] kettle-jem/template: updated 69 project files:</p>
+  <li>[kc] kettle-jem/template: updated 80 project files:
     <ul>
       <li>code and tests (5)</li>
       <li>configuration (2)</li>
       <li>dependencies (15)</li>
       <li>documentation (1)</li>
       <li>other (3)</li>
-      <li>workflows (43)</li>
+      <li>workflows (54)</li>
+    </ul>
+  </li>
+  <li>[kc] kettle-jem/prepare: updated 1 project file:
+    <ul>
+      <li>dependencies (1)</li>
     </ul>
   </li>
 </ul>
