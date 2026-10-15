@@ -8,10 +8,6 @@ template_state:
     last_entry_date: '2026-09-13'
   maintenance_changelog:
     kettle-jem/prepare:
-    - Gemfile
-    - gemfiles/modular/style.gemfile
-    - gemfiles/modular/style_local.gemfile
-    - gemfiles/modular/templating.gemfile
     - kettle-dev.gemspec
     kettle-jem/template:
     - ".github/workflows/jruby-10.0.yml"
@@ -123,7 +119,7 @@ template_state:
     bin/setup.example: 0ac35089c95a91d8973fe7a318bf9fd98b9f8e00db92c5d9ca6cd858abb8d41b
     bin/turbo_tests2.example: 0d81b72c359419a4f0146e8f0438c610211c528398b672c85325a568c9f26db2
     certs/pboling.pem.example: 18956f60643666cc181e2743b3b3691bec08c5326f514f60af54d0cdb9ebc554
-    gem.gemspec.example: 6e4261769e58d2660562147ac89591599ada0bb2d301789afc96c85c95ac8e7f
+    gem.gemspec.example: d2df025c706dd8cf2ae773921ac4c207b40eb78beb3e3c4f331fcf3a338d6b74
     gemfiles/modular/benchmark/r4/v0.5.gemfile.example: 5bc3190090ae456df1a8cce28dd47a7fb293495f6d845ec7e53a7a8b50f14ae1
     gemfiles/modular/benchmark/vHEAD.gemfile.example: ca6cd52c55c3082759c6ddc97638970f12d953aec1822470823d316086aa6e25
     gemfiles/modular/cgi/r4/v0.5.gemfile.example: c2d14a39377a2435419ceaca22a3421ebd899e9cba943df8a90b576a33624870
@@ -676,7 +672,7 @@ files:
   CHANGELOG.md:
     recipe: template_source_application_CHANGELOG_md
     action: write
-    dest_sha256: 40a7a3bede84474043b425ef96a74fcfec1567a0d96dee4fe3f9823f4ba0718b
+    dest_sha256: 1999e671f96d4f2ef9e8b5da455447ebb3a2fad927a391c07fd737e0a9e06550
     input_fingerprint: 27ee0edcb695c76808431a925e6c11542d84f3aa1533c8a771cedc8301a47ff9
     template_sources:
     - CHANGELOG.md.example
@@ -1152,8 +1148,8 @@ files:
   kettle-dev.gemspec:
     recipe: template_source_application_kettle_dev_gemspec
     action: write
-    dest_sha256: 558564ec68f74951aa579531185e289b3ce3ac47c61cd602eba69b9712782da9
-    input_fingerprint: f4e25f30d08e5b12b85db34b1806c470b3b29c03d4ef1f54b547425a79140707
+    dest_sha256: 8daa9d01a44d2a1ace506fc6a94da85be6c6ca715baf6ff5e79469453e2f3412
+    input_fingerprint: db99506ef3042b8db4c9b2084079b6fde95de339421b485ccdfb993f6873473f
     template_sources:
     - gem.gemspec.example
   lib/kettle/dev/version.rb:
