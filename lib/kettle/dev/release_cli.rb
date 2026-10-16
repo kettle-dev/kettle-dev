@@ -1909,12 +1909,14 @@ module Kettle
         numbers = Kettle::Dev::RubyGemsVersions.published_version_numbers("bundler")
         return nil unless numbers
 
-        numbers.filter_map do |number|
-          candidate = Gem::Version.new(number)
-          candidate unless candidate.prerelease?
-        rescue ArgumentError
-          nil
-        end.max
+        numbers.filter_map { |number| stable_bundler_candidate(number) }.max
+      end
+
+      def stable_bundler_candidate(number)
+        candidate = Gem::Version.new(number)
+        candidate unless candidate.prerelease?
+      rescue ArgumentError
+        nil
       end
 
       # Mirrors kettle-family's update-bundler install: rubygems.org only,
