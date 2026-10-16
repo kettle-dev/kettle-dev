@@ -41,6 +41,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - Slim gha_sha_pins_cli_spec to the kettle-dev-owned surface (alias identity + LoadError fallback); the 900 lines of CLI behavior coverage duplicated kettle-gha-pins own suite and only went red in this repo when a release-time bundle re-resolution picked up a newer kettle-gha-pins
 
+- Cover ReleaseSecretsDoctor same-process and thread shapes, the keepalive pulse loop, and OTP lookup, restoring line coverage above the 91 percent floor in the slim release-time coverage bundle after the deprecated changelog transition classes were excluded from tracking
+
 ### Security
 
 ## [3.1.13] - 2026-10-14
