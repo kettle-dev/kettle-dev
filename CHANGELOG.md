@@ -20,12 +20,6 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
-- RubyGemsVersions confirm reads: fetch and published_version_numbers accept confirm: true for answers feeding destructive or commit-producing decisions — the registry is always contacted, revalidation rides the cached entrys ETag/Last-Modified (a 304 re-arms the TTL without rewriting the payload, even past expiry), and an unconfirmable answer returns nil instead of the stale entry
-
-- kettle-release step 1 now pins release lockfiles to the newest STABLE Bundler the registry serves instead of the executing Bundler: when the registry is newer it installs that version (rubygems.org only, prereleases excluded) and runs the bundler update under it, so BUNDLED WITH stops drifting behind CI images; a registry outage fails open to the executing Bundler
-
-- New Kettle::Dev::BundlerPinning module: shared stable-Bundler resolution (installed_stable, published_stable, install_stable, ensure_latest_stable, update_argv) so kettle-release step 1 and kettle-family bupb/update-bundler can share one implementation instead of divergent copies; kettle-release now delegates to it
-
 ### Changed
 
 ### Deprecated
@@ -35,6 +29,21 @@ Please file a bug if you notice a violation of semantic versioning.
 ### Fixed
 
 ### Security
+
+## [3.1.15] - 2026-10-16
+
+- TAG: [v3.1.15][3.1.15t]
+- COVERAGE: 91.74% -- 5733/6249 lines in 48 files
+- BRANCH COVERAGE: 75.88% -- 2209/2911 branches in 48 files
+- 53.60% documented
+
+### Added
+
+- RubyGemsVersions confirm reads: fetch and published_version_numbers accept confirm: true for answers feeding destructive or commit-producing decisions — the registry is always contacted, revalidation rides the cached entrys ETag/Last-Modified (a 304 re-arms the TTL without rewriting the payload, even past expiry), and an unconfirmable answer returns nil instead of the stale entry
+
+- kettle-release step 1 now pins release lockfiles to the newest STABLE Bundler the registry serves instead of the executing Bundler: when the registry is newer it installs that version (rubygems.org only, prereleases excluded) and runs the bundler update under it, so BUNDLED WITH stops drifting behind CI images; a registry outage fails open to the executing Bundler
+
+- New Kettle::Dev::BundlerPinning module: shared stable-Bundler resolution (installed_stable, published_stable, install_stable, ensure_latest_stable, update_argv) so kettle-release step 1 and kettle-family bupb/update-bundler can share one implementation instead of divergent copies; kettle-release now delegates to it
 
 ## [3.1.14] - 2026-10-16
 
@@ -4136,7 +4145,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.14...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.15...HEAD
+[3.1.15]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.14...v3.1.15
+[3.1.15t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.15
 [3.1.14]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.13...v3.1.14
 [3.1.14t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.14
 [3.1.13]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.12...v3.1.13
