@@ -459,10 +459,6 @@ Sets up paths for CHANGELOG.md and coverage.json</p>
       <pre class="lines">
 
 
-35
-36
-37
-38
 39
 40
 41
@@ -473,10 +469,14 @@ Sets up paths for CHANGELOG.md and coverage.json</p>
 46
 47
 48
-49</pre>
+49
+50
+51
+52
+53</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/changelog_cli.rb', line 35</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/changelog_cli.rb', line 39</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='label'>strict:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>enforce_coverage_thresholds:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>update_prep:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>reformat_only:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>historical_backfill_version:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>version:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>root:</span> <span class='const'><span class='object_link'><a href="../../Kettle.html" title="Kettle (module)">Kettle</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Dev.html" title="Kettle::Dev (module)">Dev</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="CIHelpers.html" title="Kettle::Dev::CIHelpers (module)">CIHelpers</a></span></span><span class='period'>.</span><span class='id identifier rubyid_project_root'><span class='object_link'><a href="CIHelpers.html#project_root-class_method" title="Kettle::Dev::CIHelpers.project_root (method)">project_root</a></span></span><span class='comma'>,</span> <span class='label'>refresh_cache:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>yes:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>event_stream:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='ivar'>@root</span> <span class='op'>=</span> <span class='id identifier rubyid_root'><span class='object_link'><a href="../../top-level-namespace.html" title="Top Level Namespace (root)">root</a></span></span>
@@ -520,12 +520,12 @@ Sets up paths for CHANGELOG.md and coverage.json</p>
       <pre class="lines">
 
 
-172
-173
-174</pre>
+176
+177
+178</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/changelog_cli.rb', line 172</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/changelog_cli.rb', line 176</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_pending_release_status'>pending_release_status</span>
   <span class='id identifier rubyid_release_state'>release_state</span>
@@ -550,10 +550,6 @@ Sets up paths for CHANGELOG.md and coverage.json</p>
       <pre class="lines">
 
 
-176
-177
-178
-179
 180
 181
 182
@@ -604,10 +600,14 @@ Sets up paths for CHANGELOG.md and coverage.json</p>
 227
 228
 229
-230</pre>
+230
+231
+232
+233
+234</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/changelog_cli.rb', line 176</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/changelog_cli.rb', line 180</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_release_state'>release_state</span>
   <span class='id identifier rubyid_changelog_present'>changelog_present</span> <span class='op'>=</span> <span class='id identifier rubyid_ensure_changelog_for_release_state!'>ensure_changelog_for_release_state!</span>
@@ -684,10 +684,6 @@ Sets up paths for CHANGELOG.md and coverage.json</p>
       <pre class="lines">
 
 
-232
-233
-234
-235
 236
 237
 238
@@ -707,10 +703,14 @@ Sets up paths for CHANGELOG.md and coverage.json</p>
 252
 253
 254
-255</pre>
+255
+256
+257
+258
+259</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/changelog_cli.rb', line 232</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/changelog_cli.rb', line 236</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_release_state_table'>release_state_table</span><span class='lparen'>(</span><span class='id identifier rubyid_state'>state</span> <span class='op'>=</span> <span class='id identifier rubyid_release_state'>release_state</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_rows'>rows</span> <span class='op'>=</span> <span class='lbracket'>[</span>
@@ -769,10 +769,6 @@ a new version section with coverage/YARD stats, and updates all link references.
       <pre class="lines">
 
 
-57
-58
-59
-60
 61
 62
 63
@@ -882,10 +878,14 @@ a new version section with coverage/YARD stats, and updates all link references.
 167
 168
 169
-170</pre>
+170
+171
+172
+173
+174</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/changelog_cli.rb', line 57</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/changelog_cli.rb', line 61</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_run'>run</span>
   <span class='kw'>if</span> <span class='ivar'>@reformat_only</span>
