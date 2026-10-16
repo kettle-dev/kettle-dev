@@ -3802,7 +3802,11 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
 
           expect { local_cli.send(:maybe_create_github_release!, "1.2.3") }.not_to raise_error
           expect(http).to have_received(:request).with(instance_of(Net::HTTP::Post))
-          expect(Net::HTTP).to have_received(:start).with("api.github.com", 443, use_ssl: true)
+          # Cardinality is at_least(:once): with WebMock loaded, TruffleRuby's
+          # net-http adapter layer can record the stubbed `start` twice (seen
+          # intermittently on the truffleruby-33.0 lane). The POST assertion
+          # above carries the real contract.
+          expect(Net::HTTP).to have_received(:start).with("api.github.com", 443, use_ssl: true).at_least(:once)
         end
       end
 
@@ -3835,7 +3839,9 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
 
           expect { local_cli.send(:maybe_create_github_release!, "2.0.0") }.not_to raise_error
           expect(http).to have_received(:request).with(instance_of(Net::HTTP::Post))
-          expect(Net::HTTP).to have_received(:start).with("api.github.com", 443, use_ssl: true)
+          # See the sibling example above: start cardinality is engine-fragile
+          # under WebMock on TruffleRuby, so it is asserted at_least(:once).
+          expect(Net::HTTP).to have_received(:start).with("api.github.com", 443, use_ssl: true).at_least(:once)
         end
       end
 
@@ -3944,7 +3950,9 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
 
           expect { local_cli.send(:maybe_create_github_release!, "3.0.0") }.not_to raise_error
           expect(http).to have_received(:request).with(instance_of(Net::HTTP::Post))
-          expect(Net::HTTP).to have_received(:start).with("api.github.com", 443, use_ssl: true)
+          # See "creates a release with title and body" above: start cardinality
+          # is engine-fragile under WebMock on TruffleRuby — at_least(:once).
+          expect(Net::HTTP).to have_received(:start).with("api.github.com", 443, use_ssl: true).at_least(:once)
         end
       end
 

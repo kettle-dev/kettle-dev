@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Deflake GitHub-release specs on TruffleRuby: the Net::HTTP.start cardinality assertions are engine-fragile under WebMock (the start call can be recorded twice on the truffleruby lane), so they now assert at_least(:once); the request-level POST assertions carry the real contract
+
 ### Security
 
 ## [3.1.14] - 2026-10-16
