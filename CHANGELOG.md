@@ -24,6 +24,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - kettle-release step 1 now pins release lockfiles to the newest STABLE Bundler the registry serves instead of the executing Bundler: when the registry is newer it installs that version (rubygems.org only, prereleases excluded) and runs the bundler update under it, so BUNDLED WITH stops drifting behind CI images; a registry outage fails open to the executing Bundler
 
+- New Kettle::Dev::BundlerPinning module: shared stable-Bundler resolution (installed_stable, published_stable, install_stable, ensure_latest_stable, update_argv) so kettle-release step 1 and kettle-family bupb/update-bundler can share one implementation instead of divergent copies; kettle-release now delegates to it
+
 ### Changed
 
 ### Deprecated

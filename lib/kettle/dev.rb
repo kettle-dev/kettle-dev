@@ -30,6 +30,7 @@ module Kettle
     autoload :ChangelogEntryAdder, "kettle/dev/changelog_entry_adder"
     autoload :BumpCLI, "kettle/dev/bump_cli"
     autoload :BundlerEnvGuard, "kettle/dev/bundler_env_guard"
+    autoload :BundlerPinning, "kettle/dev/bundler_pinning"
     autoload :CIHelpers, "kettle/dev/ci_helpers"
     autoload :CIMonitor, "kettle/dev/ci_monitor"
     autoload :CommitMsg, "kettle/dev/commit_msg"

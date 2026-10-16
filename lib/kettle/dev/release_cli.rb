@@ -14,7 +14,6 @@ require "json"
 require "uri"
 require "yaml"
 require "set"
-require "rubygems/dependency_installer"
 
 # External gems
 require "kettle/ndjson"
@@ -1893,45 +1892,12 @@ module Kettle
       end
 
       # The release must pin BUNDLED WITH to the newest stable Bundler the
-      # registry serves, installing it first when the executing Bundler lags.
-      # A registry outage fails open to the executing Bundler (the historical
-      # behavior) rather than blocking the release.
+      # registry serves; BundlerPinning installs it first when the executing
+      # Bundler lags and fails open to the executing Bundler on a registry
+      # outage. kettle-family's bupb/update-bundler delegate to the same
+      # module once the floor reaches the version shipping it.
       def ensure_latest_stable_bundler!
-        current = Gem::Version.new(Bundler::VERSION)
-        latest = latest_stable_bundler_version
-        return current.to_s if latest.nil? || latest <= current
-
-        install_stable_bundler(latest)
-        latest.to_s
-      end
-
-      def latest_stable_bundler_version
-        numbers = Kettle::Dev::RubyGemsVersions.published_version_numbers("bundler")
-        return nil unless numbers
-
-        numbers.filter_map { |number| stable_bundler_candidate(number) }.max
-      end
-
-      def stable_bundler_candidate(number)
-        candidate = Gem::Version.new(number)
-        candidate unless candidate.prerelease?
-      rescue ArgumentError
-        nil
-      end
-
-      # Mirrors kettle-family's update-bundler install: rubygems.org only,
-      # never prereleases, and a spec reset so the just-installed version is
-      # visible to later gem lookups in this process.
-      def install_stable_bundler(version)
-        original_sources = Gem.sources.to_a
-        Gem.sources = ["https://rubygems.org"]
-        Gem::DependencyInstaller.new(domain: :remote, prerelease: false, document: []).install("bundler", "= #{version}")
-        Gem::Specification.reset
-        puts("Installed latest stable Bundler #{version}; pinning release lockfiles to it (executing Bundler is #{Bundler::VERSION})")
-      rescue => error
-        raise Kettle::Dev::Error, "could not install latest stable Bundler #{version}: #{error.message}"
-      ensure
-        Gem.sources = original_sources if original_sources
+        Kettle::Dev::BundlerPinning.ensure_latest_stable
       end
 
       # Keep Bundler maintenance separate from the release metadata commit.
