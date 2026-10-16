@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# simplecov:disable -- deprecated transition class, removal in kettle-dev 4.0; behavior coverage lives in the kettle-changelog gem
+
 require "open3"
 require "json"
 require "net/http"
