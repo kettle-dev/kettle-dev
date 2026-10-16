@@ -780,6 +780,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
       it "updates the primary and appraisal bundles before committing only lockfiles" do
         Dir.mktmpdir do |root|
           allow(ci_helpers).to receive(:project_root).and_return(root)
+          allow(Kettle::Dev::RubyGemsVersions).to receive(:published_version_numbers).with("bundler").and_return(nil)
           File.write(File.join(root, "Appraisal.root.gemfile"), "source \"https://rubygems.org\"\n")
           local_cli = described_class.new
           allow(local_cli).to receive(:update_bundler_and_commit!).and_call_original
@@ -790,12 +791,12 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           allow(local_cli).to receive(:changed_bundle_lockfile_paths).and_return(paths)
           appraisal_env = "BUNDLE_GEMFILE=#{Shellwords.escape(File.join(root, "Appraisal.root.gemfile"))} " \
             "BUNDLE_LOCKFILE=#{Shellwords.escape(File.join(root, "Appraisal.root.gemfile.lock"))}"
-          expect(local_cli).to receive(:run_cmd!).with("release bundle update --bundler=#{Bundler::VERSION}").ordered
+          expect(local_cli).to receive(:run_cmd!).with("release bundle _#{Bundler::VERSION}_ update --bundler=#{Bundler::VERSION}").ordered
           expect(local_cli).to receive(:run_cmd!).with(
             "release #{appraisal_env} bundle install"
           ).ordered
           expect(local_cli).to receive(:run_cmd!).with(
-            "release #{appraisal_env} bundle update --bundler=#{Bundler::VERSION}"
+            "release #{appraisal_env} bundle _#{Bundler::VERSION}_ update --bundler=#{Bundler::VERSION}"
           ).ordered
           expect(local_cli).to receive(:run_cmd!).with("release bundle exec rake appraisal:reset").ordered
           expect(git).to receive(:add_repository_paths).with(paths).and_return(true)
@@ -805,6 +806,54 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           expect(local_cli).to receive(:reconcile_bundle_update_commit!)
 
           expect { local_cli.send(:update_bundler_and_commit!) }.not_to raise_error
+        end
+      end
+
+      it "installs and pins the registry's newest stable Bundler when it is newer than the executing one" do
+        Dir.mktmpdir do |root|
+          allow(ci_helpers).to receive(:project_root).and_return(root)
+          newer = Gem::Version.new(Bundler::VERSION).bump.to_s
+          allow(Kettle::Dev::RubyGemsVersions).to receive(:published_version_numbers)
+            .with("bundler")
+            .and_return([Bundler::VERSION, newer, "4.1.0.beta1"])
+          installer = instance_double(Gem::DependencyInstaller)
+          allow(Gem::DependencyInstaller).to receive(:new).and_return(installer)
+          allow(installer).to receive(:install)
+          allow(Gem::Specification).to receive(:reset)
+          local_cli = described_class.new
+          allow(local_cli).to receive(:update_bundler_and_commit!).and_call_original
+          allow(local_cli).to receive(:release_project_command) { |command| "release #{command}" }
+          allow(local_cli).to receive(:changed_bundle_lockfile_paths).and_return([])
+          git = local_cli.instance_variable_get(:@git)
+          allow(git).to receive(:add_repository_paths)
+          allow(git).to receive(:commit_staged).and_return(true)
+          allow(local_cli).to receive(:reconcile_bundle_update_commit!)
+
+          expect(local_cli).to receive(:run_cmd!).with("release bundle _#{newer}_ update --bundler=#{newer}")
+
+          local_cli.send(:update_bundler_and_commit!)
+
+          expect(installer).to have_received(:install).with("bundler", "= #{newer}")
+        end
+      end
+
+      it "keeps the executing Bundler when the registry cannot be consulted" do
+        Dir.mktmpdir do |root|
+          allow(ci_helpers).to receive(:project_root).and_return(root)
+          allow(Kettle::Dev::RubyGemsVersions).to receive(:published_version_numbers).with("bundler").and_return(nil)
+          expect(Gem::DependencyInstaller).not_to receive(:new)
+          local_cli = described_class.new
+          allow(local_cli).to receive(:update_bundler_and_commit!).and_call_original
+          allow(local_cli).to receive(:release_project_command) { |command| "release #{command}" }
+          allow(local_cli).to receive(:changed_bundle_lockfile_paths).and_return([])
+          git = local_cli.instance_variable_get(:@git)
+          allow(git).to receive(:add_repository_paths)
+          allow(git).to receive(:commit_staged).and_return(true)
+          allow(local_cli).to receive(:reconcile_bundle_update_commit!)
+
+          expect(local_cli).to receive(:run_cmd!).with("release bundle _#{Bundler::VERSION}_ update --bundler=#{Bundler::VERSION}")
+
+          local_cli.send(:update_bundler_and_commit!)
         end
       end
 

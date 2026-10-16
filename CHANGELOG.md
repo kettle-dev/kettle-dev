@@ -22,6 +22,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - RubyGemsVersions confirm reads: fetch and published_version_numbers accept confirm: true for answers feeding destructive or commit-producing decisions — the registry is always contacted, revalidation rides the cached entrys ETag/Last-Modified (a 304 re-arms the TTL without rewriting the payload, even past expiry), and an unconfirmable answer returns nil instead of the stale entry
 
+- kettle-release step 1 now pins release lockfiles to the newest STABLE Bundler the registry serves instead of the executing Bundler: when the registry is newer it installs that version (rubygems.org only, prereleases excluded) and runs the bundler update under it, so BUNDLED WITH stops drifting behind CI images; a registry outage fails open to the executing Bundler
+
 ### Changed
 
 ### Deprecated

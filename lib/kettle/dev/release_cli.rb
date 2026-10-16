@@ -14,6 +14,7 @@ require "json"
 require "uri"
 require "yaml"
 require "set"
+require "rubygems/dependency_installer"
 
 # External gems
 require "kettle/ndjson"
@@ -1891,23 +1892,61 @@ module Kettle
         end
       end
 
+      # The release must pin BUNDLED WITH to the newest stable Bundler the
+      # registry serves, installing it first when the executing Bundler lags.
+      # A registry outage fails open to the executing Bundler (the historical
+      # behavior) rather than blocking the release.
+      def ensure_latest_stable_bundler!
+        current = Gem::Version.new(Bundler::VERSION)
+        latest = latest_stable_bundler_version
+        return current.to_s if latest.nil? || latest <= current
+
+        install_stable_bundler(latest)
+        latest.to_s
+      end
+
+      def latest_stable_bundler_version
+        numbers = Kettle::Dev::RubyGemsVersions.published_version_numbers("bundler")
+        return nil unless numbers
+
+        numbers.filter_map do |number|
+          candidate = Gem::Version.new(number)
+          candidate unless candidate.prerelease?
+        rescue ArgumentError
+          nil
+        end.max
+      end
+
+      # Mirrors kettle-family's update-bundler install: rubygems.org only,
+      # never prereleases, and a spec reset so the just-installed version is
+      # visible to later gem lookups in this process.
+      def install_stable_bundler(version)
+        original_sources = Gem.sources.to_a
+        Gem.sources = ["https://rubygems.org"]
+        Gem::DependencyInstaller.new(domain: :remote, prerelease: false, document: []).install("bundler", "= #{version}")
+        Gem::Specification.reset
+        puts("Installed latest stable Bundler #{version}; pinning release lockfiles to it (executing Bundler is #{Bundler::VERSION})")
+      rescue => error
+        raise Kettle::Dev::Error, "could not install latest stable Bundler #{version}: #{error.message}"
+      ensure
+        Gem.sources = original_sources if original_sources
+      end
+
       # Keep Bundler maintenance separate from the release metadata commit.
       # The project lockfiles are shared development state, so the update must
       # be real and committed rather than hidden behind a temporary lockfile.
       #
-      # The version is pinned to the Bundler actually executing rather than left
-      # bare. `bundle update --bundler` resolves to whatever RubyGems reports as
-      # bundler's "latest", which includes prereleases: bundler published
-      # 4.1.0.beta1 as latest, so a bare update installed the beta and rewrote
-      # BUNDLED WITH to it. That beta vendors its own copy of rubygems' URI
-      # constants, and loading it against rubygems' copy emits a wall of
-      # "already initialized constant Gem::URI::..." warnings on stderr, which
-      # broke any spec shelling out to the executable and asserting clean stderr
-      # — failing a later release at its coverage step. Pinning matches
-      # LockfileReset#lockfile_command, which already documents this hazard.
+      # The version is pinned to the newest STABLE Bundler the registry
+      # serves, not whatever is executing: a bare `bundle update --bundler`
+      # resolves "latest" including prereleases (bundler 4.1.0.beta1 shipped
+      # as latest and its vendored rubygems URI constants broke specs
+      # asserting clean stderr), while pinning to the executing Bundler
+      # quietly re-records a stale BUNDLED WITH whenever the releasing
+      # machine lags the registry — and CI images carrying a newer default
+      # Bundler then drift from the committed lockfile.
       def update_bundler_and_commit!
-        bundler_version = Shellwords.escape(Bundler::VERSION)
-        run_cmd!(release_project_command("bundle update --bundler=#{bundler_version}"))
+        bundler_version = Shellwords.escape(ensure_latest_stable_bundler!)
+        run_cmd!(release_project_command("bundle _#{bundler_version}_ update --bundler=#{bundler_version}"))
 
         appraisal_gemfile = File.join(@root, "Appraisal.root.gemfile")
         if File.file?(appraisal_gemfile)
@@ -1923,7 +1962,7 @@ module Kettle
           unless File.file?(appraisal_lockfile)
             run_cmd!(release_project_command("#{appraisal_env} bundle install"))
           end
-          appraisal_command = "#{appraisal_env} bundle update --bundler=#{bundler_version}"
+          appraisal_command = "#{appraisal_env} bundle _#{bundler_version}_ update --bundler=#{bundler_version}"
           run_cmd!(release_project_command(appraisal_command))
           run_cmd!(release_project_command("bundle exec rake appraisal:reset"))
         end
