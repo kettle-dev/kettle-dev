@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Keepalive pulse spec no longer depends on real-time sleep precision: the monotonic clock is stubbed to advance 5ms per read, making the loop deterministic (the real-clock version flaked on macOS CI when a 5ms sleep overshot the 20ms deadline and zero pulses ran)
+
 ### Security
 
 ## [3.1.14] - 2026-10-16

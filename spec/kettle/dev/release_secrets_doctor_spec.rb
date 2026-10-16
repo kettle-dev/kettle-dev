@@ -164,6 +164,12 @@ RSpec.describe Kettle::Dev::ReleaseSecretsDoctor do
 
   it "pulses keepalives while sleeping when a keepalive interval is configured" do
     provider = recording_provider_class.new
+    # Deterministic clock: each read advances 5ms, so the loop pulses exactly
+    # once before the 20ms deadline regardless of how long real sleeps take on
+    # a loaded CI runner (a real-clock version of this example flaked on
+    # macOS when sleep(0.005) overshot the deadline and zero pulses ran).
+    clock_reads = (0..10).map { |i| i * 0.005 }
+    allow(Process).to receive(:clock_gettime).and_return(*clock_reads)
     doctor = described_class.new(
       options: options.merge(shape: "same-process", sleep_seconds: 0.02, keepalive_seconds: 0.005),
       program_name: "/repo/exe/kettle-release-secrets-doctor",
@@ -174,7 +180,7 @@ RSpec.describe Kettle::Dev::ReleaseSecretsDoctor do
 
     expect(doctor.run).to be(true)
 
-    expect(provider.keepalive_count).to be >= 3
+    expect(provider.keepalive_count).to eq(3) # initial + one pulse + final
     expect(output.string).to include("with 0.005s keepalive")
     expect(output.string).to include("] keepalive\n")
   end
