@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "bundler"
 require "rubygems/dependency_installer"
 
 module Kettle
