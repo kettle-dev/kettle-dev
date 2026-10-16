@@ -13,6 +13,40 @@ RSpec.describe Kettle::Dev::ReleaseSecretsDoctor do
     }
   end
 
+  # A plain, thread-safe provider fake. RSpec mocks do not cross the Thread
+  # boundary the doctor's thread shape creates, so provider behavior must be
+  # faked with a real object and injected via provider_factory.
+  let(:recording_provider_class) do
+    Class.new(Kettle::Dev::ReleaseSecrets::Provider) do
+      def initialize(otp: "123456", error: nil)
+        @otp = otp
+        @error = error
+        @keepalives = Queue.new
+        @otps = Queue.new
+      end
+
+      def keepalive!(elapsed: nil)
+        raise @error if @error
+
+        @keepalives << true
+        nil
+      end
+
+      def rubygems_otp
+        @otps << true
+        @otp
+      end
+
+      def keepalive_count
+        @keepalives.size
+      end
+
+      def otp_count
+        @otps.size
+      end
+    end
+  end
+
   it "builds options from the environment" do
     env = {
       "KETTLE_RELEASE_SECRETS_PROVIDER" => "1password",
@@ -95,40 +129,6 @@ RSpec.describe Kettle::Dev::ReleaseSecretsDoctor do
     doctor = described_class.new(options: options.merge(shape: "unknown"), program_name: "/repo/exe/kettle-release-secrets-doctor", output: output, system_runner: system_runner)
 
     expect { doctor.run }.to raise_error(Kettle::Dev::Error, /unknown shape/)
-  end
-
-  # A plain, thread-safe provider fake. RSpec mocks do not cross the Thread
-  # boundary the doctor's thread shape creates, so provider behavior must be
-  # faked with a real object and injected via provider_factory.
-  let(:recording_provider_class) do
-    Class.new(Kettle::Dev::ReleaseSecrets::Provider) do
-      def initialize(otp: "123456", error: nil)
-        @otp = otp
-        @error = error
-        @keepalives = Queue.new
-        @otps = Queue.new
-      end
-
-      def keepalive!(elapsed: nil)
-        raise @error if @error
-
-        @keepalives << true
-        nil
-      end
-
-      def rubygems_otp
-        @otps << true
-        @otp
-      end
-
-      def keepalive_count
-        @keepalives.size
-      end
-
-      def otp_count
-        @otps.size
-      end
-    end
   end
 
   def fake_provider_factory(provider)
