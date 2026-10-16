@@ -97,65 +97,110 @@ RSpec.describe Kettle::Dev::ReleaseSecretsDoctor do
     expect { doctor.run }.to raise_error(Kettle::Dev::Error, /unknown shape/)
   end
 
+  # A plain, thread-safe provider fake. RSpec mocks do not cross the Thread
+  # boundary the doctor's thread shape creates, so provider behavior must be
+  # faked with a real object and injected via provider_factory.
+  let(:recording_provider_class) do
+    Class.new(Kettle::Dev::ReleaseSecrets::Provider) do
+      def initialize(otp: "123456", error: nil)
+        @otp = otp
+        @error = error
+        @keepalives = Queue.new
+        @otps = Queue.new
+      end
+
+      def keepalive!(elapsed: nil)
+        raise @error if @error
+
+        @keepalives << true
+        nil
+      end
+
+      def rubygems_otp
+        @otps << true
+        @otp
+      end
+
+      def keepalive_count
+        @keepalives.size
+      end
+
+      def otp_count
+        @otps.size
+      end
+    end
+  end
+
+  def fake_provider_factory(provider)
+    Class.new do
+      def initialize(fake)
+        @fake = fake
+      end
+
+      def build(provider_name:)
+        @fake
+      end
+    end.new(provider)
+  end
+
   it "runs same-process keepalives with an OTP lookup" do
-    provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword, keepalive!: true, rubygems_otp: "123456")
-    allow(Kettle::Dev::ReleaseSecrets::Factory).to receive(:build).with(provider_name: "op").and_return(provider)
+    provider = recording_provider_class.new(otp: "123456")
     doctor = described_class.new(
       options: options.merge(shape: "same-process", otp: true),
       program_name: "/repo/exe/kettle-release-secrets-doctor",
       output: output,
-      system_runner: system_runner
+      system_runner: system_runner,
+      provider_factory: fake_provider_factory(provider)
     )
 
     expect(doctor.run).to be(true)
 
-    expect(provider).to have_received(:keepalive!).twice
-    expect(provider).to have_received(:rubygems_otp).once
+    expect(provider.keepalive_count).to eq(2)
+    expect(provider.otp_count).to eq(1)
     expect(output.string).to include("initial keepalive")
     expect(output.string).to include("final keepalive")
     expect(output.string).to include("OTP lookup returned 6 chars")
   end
 
   it "pulses keepalives while sleeping when a keepalive interval is configured" do
-    provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword, keepalive!: true)
-    allow(Kettle::Dev::ReleaseSecrets::Factory).to receive(:build).with(provider_name: "op").and_return(provider)
+    provider = recording_provider_class.new
     doctor = described_class.new(
       options: options.merge(shape: "same-process", sleep_seconds: 0.02, keepalive_seconds: 0.005),
       program_name: "/repo/exe/kettle-release-secrets-doctor",
       output: output,
-      system_runner: system_runner
+      system_runner: system_runner,
+      provider_factory: fake_provider_factory(provider)
     )
 
     expect(doctor.run).to be(true)
 
-    expect(provider).to have_received(:keepalive!).at_least(3).times
+    expect(provider.keepalive_count).to be >= 3
     expect(output.string).to include("with 0.005s keepalive")
     expect(output.string).to include("] keepalive\n")
   end
 
   it "runs the thread shape and reports OTP inside the thread" do
-    provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword, keepalive!: true, rubygems_otp: "654321")
-    allow(Kettle::Dev::ReleaseSecrets::Factory).to receive(:build).with(provider_name: "op").and_return(provider)
+    provider = recording_provider_class.new(otp: "654321")
     doctor = described_class.new(
       options: options.merge(shape: "thread", otp: true),
       program_name: "/repo/exe/kettle-release-secrets-doctor",
       output: output,
-      system_runner: system_runner
+      system_runner: system_runner,
+      provider_factory: fake_provider_factory(provider)
     )
 
     expect(doctor.run).to be(true)
-    expect(provider).to have_received(:rubygems_otp).once
+    expect(provider.otp_count).to eq(1)
   end
 
   it "propagates provider errors from the thread shape" do
-    provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword)
-    allow(provider).to receive(:keepalive!).and_raise(Kettle::Dev::Error, "session expired")
-    allow(Kettle::Dev::ReleaseSecrets::Factory).to receive(:build).with(provider_name: "op").and_return(provider)
+    provider = recording_provider_class.new(error: Kettle::Dev::Error.new("session expired"))
     doctor = described_class.new(
       options: options.merge(shape: "thread"),
       program_name: "/repo/exe/kettle-release-secrets-doctor",
       output: output,
-      system_runner: system_runner
+      system_runner: system_runner,
+      provider_factory: fake_provider_factory(provider)
     )
 
     expect { doctor.run }.to raise_error(Kettle::Dev::Error, "session expired")

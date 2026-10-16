@@ -22,6 +22,27 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
+- ReleaseSecretsDoctor accepts an injectable provider_factory (defaulting to ReleaseSecrets::Factory) so provider construction can be faked without mocks; RSpec stubs do not cross the thread boundary the thread shape spawns, which let a real 1Password lookup escape during specs
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Spec suite can no longer trigger real 1Password authorization prompts: a globally included with-mocked-release-secrets shared context stubs ReleaseSecrets::Factory.build to the no-op base Provider, with :real_release_secrets as the opt-out tag for provider-construction specs; thread-shape doctor specs now use plain thread-safe fakes via the injected factory
+
+### Security
+
+## [3.1.14] - 2026-10-16
+
+- TAG: [v3.1.14][3.1.14t]
+- COVERAGE: 91.65% -- 5660/6176 lines in 47 files
+- BRANCH COVERAGE: 75.46% -- 2165/2869 branches in 47 files
+- 53.23% documented
+
+### Changed
+
 - [kc] kettle-jem/prepare: updated 5 project files:
   - dependencies (5)
 
@@ -33,8 +54,6 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - [kc] kettle-changelog-transition-deprecation: Kettle::Dev::ChangelogCLI and Kettle::Dev::ChangelogEntryAdder: the transition classes retained after the kettle-changelog extraction now warn on load and will be removed in kettle-dev 4.0; use Kettle::Changelog::CLI / Kettle::Changelog::EntryAdder from the kettle-changelog gem instead. Behavior coverage lives in the extracted gem suite, and both files are excluded from this gem coverage tracking via simplecov:disable until removal
 
-### Removed
-
 ### Fixed
 
 - Sync kettle-gha-pins CLI check-mode output spec with the full fix hint shipped in kettle-gha-pins 0.3.18: the recommended fix is now the copy-paste chain kettle-gha-pins --commit --push --upgrade <level> followed by the resume-command continuation line
@@ -42,8 +61,6 @@ Please file a bug if you notice a violation of semantic versioning.
 - Slim gha_sha_pins_cli_spec to the kettle-dev-owned surface (alias identity + LoadError fallback); the 900 lines of CLI behavior coverage duplicated kettle-gha-pins own suite and only went red in this repo when a release-time bundle re-resolution picked up a newer kettle-gha-pins
 
 - Cover ReleaseSecretsDoctor same-process and thread shapes, the keepalive pulse loop, and OTP lookup, restoring line coverage above the 91 percent floor in the slim release-time coverage bundle after the deprecated changelog transition classes were excluded from tracking
-
-### Security
 
 ## [3.1.13] - 2026-10-14
 
@@ -4109,7 +4126,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.13...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.14...HEAD
+[3.1.14]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.13...v3.1.14
+[3.1.14t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.14
 [3.1.13]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.12...v3.1.13
 [3.1.13t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.13
 [3.1.12]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.11...v3.1.12

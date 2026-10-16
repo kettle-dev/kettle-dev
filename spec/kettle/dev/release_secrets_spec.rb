@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Kettle::Dev::ReleaseSecrets do
+RSpec.describe Kettle::Dev::ReleaseSecrets, :real_release_secrets do
   before do
     allow(Kettle::Dev::ReleaseNotifier).to receive(:alert)
   end

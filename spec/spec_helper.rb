@@ -212,6 +212,8 @@ require_relative "support/shared_contexts/with_mocked_exit_adapter"
 require_relative "support/shared_contexts/with_truffleruby_skip_31_32"
 # Include mocked input adapter for all examples; it will skip when :real_input_adapter is set
 require_relative "support/shared_contexts/with_mocked_input_adapter"
+# Include no-op release secrets for all examples; it will skip when :real_release_secrets is set
+require_relative "support/shared_contexts/with_mocked_release_secrets"
 # Stub out the actual rake release command globally in specs
 require_relative "support/shared_contexts/with_stubbed_release_rake"
 # The test input machine is used when testing actual $stdin, by replacing it with the machine.
@@ -225,6 +227,8 @@ RSpec.configure do |config|
   config.include_context "with mocked exit adapter"
 
   config.include_context "with mocked input adapter"
+
+  config.include_context "with mocked release secrets"
 
   # Include the stub so any spec that reaches ReleaseCLI.run_cmd!("bundle exec rake release") no-ops
   # it will skip when :real_rake_release is set

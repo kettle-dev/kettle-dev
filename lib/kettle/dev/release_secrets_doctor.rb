@@ -34,11 +34,12 @@ module Kettle
         }
       end
 
-      def initialize(options:, program_name:, output: $stdout, system_runner: Kernel)
+      def initialize(options:, program_name:, output: $stdout, system_runner: Kernel, provider_factory: Kettle::Dev::ReleaseSecrets::Factory)
         @options = normalize_options(options)
         @program_name = program_name
         @output = output
         @system_runner = system_runner
+        @provider_factory = provider_factory
       end
 
       def run
@@ -85,7 +86,7 @@ module Kettle
 
       private
 
-      attr_reader :options, :program_name, :output, :system_runner
+      attr_reader :options, :program_name, :output, :system_runner, :provider_factory
 
       def normalize_options(raw_options)
         {
@@ -98,7 +99,7 @@ module Kettle
       end
 
       def provider_for(current_options)
-        Kettle::Dev::ReleaseSecrets::Factory.build(provider_name: current_options.fetch(:provider))
+        provider_factory.build(provider_name: current_options.fetch(:provider))
       end
 
       def run_same_process(current_options)
