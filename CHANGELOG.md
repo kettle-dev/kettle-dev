@@ -28,15 +28,13 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Deflake GitHub-release specs on TruffleRuby: the Net::HTTP.start cardinality assertions are engine-fragile under WebMock (the start call can be recorded twice on the truffleruby lane), so they now assert at_least(:once); the request-level POST assertions carry the real contract
-
 ### Security
 
 ## [3.1.14] - 2026-10-16
 
 - TAG: [v3.1.14][3.1.14t]
-- COVERAGE: 91.89% -- 5676/6177 lines in 47 files
-- BRANCH COVERAGE: 75.85% -- 2176/2869 branches in 47 files
+- COVERAGE: 91.92% -- 5678/6177 lines in 47 files
+- BRANCH COVERAGE: 75.81% -- 2175/2869 branches in 47 files
 - 53.23% documented
 
 ### Changed
@@ -63,6 +61,8 @@ Please file a bug if you notice a violation of semantic versioning.
 - Cover ReleaseSecretsDoctor same-process and thread shapes, the keepalive pulse loop, and OTP lookup, restoring line coverage above the 91 percent floor in the slim release-time coverage bundle after the deprecated changelog transition classes were excluded from tracking
 
 - Spec suite can no longer trigger real 1Password authorization prompts: a globally included with-mocked-release-secrets shared context stubs ReleaseSecrets::Factory.build to the no-op base Provider, with :real_release_secrets as the opt-out tag for provider-construction specs; thread-shape doctor specs now use plain thread-safe fakes via the injected factory
+
+- Deflake GitHub-release specs on TruffleRuby: the Net::HTTP.start cardinality assertions are engine-fragile under WebMock (the start call can be recorded twice on the truffleruby lane), so they now assert at_least(:once); the request-level POST assertions carry the real contract
 
 ## [3.1.13] - 2026-10-14
 

@@ -90,8 +90,8 @@ Please file a bug if you notice a violation of semantic versioning.</p>
 <ul>
   <li>TAG: <a href="https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.14">v3.1.14</a>
 </li>
-  <li>COVERAGE: 91.89% – 5676/6177 lines in 47 files</li>
-  <li>BRANCH COVERAGE: 75.85% – 2176/2869 branches in 47 files</li>
+  <li>COVERAGE: 91.92% – 5678/6177 lines in 47 files</li>
+  <li>BRANCH COVERAGE: 75.81% – 2175/2869 branches in 47 files</li>
   <li>53.23% documented</li>
 </ul>
 
@@ -132,6 +132,9 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   </li>
   <li>
     <p>Spec suite can no longer trigger real 1Password authorization prompts: a globally included with-mocked-release-secrets shared context stubs ReleaseSecrets::Factory.build to the no-op base Provider, with :real_release_secrets as the opt-out tag for provider-construction specs; thread-shape doctor specs now use plain thread-safe fakes via the injected factory</p>
+  </li>
+  <li>
+    <p>Deflake GitHub-release specs on TruffleRuby: the Net::HTTP.start cardinality assertions are engine-fragile under WebMock (the start call can be recorded twice on the truffleruby lane), so they now assert at_least(:once); the request-level POST assertions carry the real contract</p>
   </li>
 </ul>
 
