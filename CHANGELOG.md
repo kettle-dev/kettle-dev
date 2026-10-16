@@ -37,6 +37,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - Sync kettle-gha-pins CLI check-mode output spec with the full fix hint shipped in kettle-gha-pins 0.3.18: the recommended fix is now the copy-paste chain kettle-gha-pins --commit --push --upgrade <level> followed by the resume-command continuation line
 
+- Slim gha_sha_pins_cli_spec to the kettle-dev-owned surface (alias identity + LoadError fallback); the 900 lines of CLI behavior coverage duplicated kettle-gha-pins own suite and only went red in this repo when a release-time bundle re-resolution picked up a newer kettle-gha-pins
+
 ### Security
 
 ## [3.1.13] - 2026-10-14
