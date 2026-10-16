@@ -4,10 +4,11 @@ require "tmpdir"
 require "kettle/dev/ruby_gems_versions"
 
 RSpec.describe Kettle::Dev::RubyGemsVersions do
-  def ok_response(body)
+  def ok_response(body, etag: nil)
     response = Net::HTTPOK.new("1.1", "200", "OK")
     response.instance_variable_set(:@read, true)
     response.body = body
+    response["ETag"] = etag if etag
     response
   end
 
@@ -225,7 +226,7 @@ RSpec.describe Kettle::Dev::RubyGemsVersions do
 
     described_class.published_version_numbers("demo", source: "https://gem.coop", version: "1.2.3")
 
-    expect(described_class).to have_received(:fetch).with("demo", version_hint: "1.2.3", source: "https://gem.coop")
+    expect(described_class).to have_received(:fetch).with("demo", version_hint: "1.2.3", source: "https://gem.coop", confirm: false)
   end
 
   it "reports recently_released? true for a version the marker records within TTL", freeze: Time.utc(2026, 7, 21, 12, 0, 0) do
@@ -256,6 +257,67 @@ RSpec.describe Kettle::Dev::RubyGemsVersions do
     expect(described_class.recently_released?("demo", "1.2.3")).to be(false)
   end
 
+  describe "confirm reads" do
+    def not_modified_response
+      Net::HTTPNotModified.new("1.1", "304", "Not Modified")
+    end
+
+    it "revalidates with cached validators and re-arms the entry on 304", freeze: Time.utc(2026, 8, 21, 12, 0, 0) do
+      write_version_cache("demo", "2026-07-01T12:00:00Z", [{"number" => "1.2.3"}], etag: "\"abc123\"")
+      request_headers = nil
+      http = instance_double(Net::HTTP)
+      allow(http).to receive(:request) do |request|
+        request_headers = request.to_hash
+        not_modified_response
+      end
+      allow(Net::HTTP).to receive(:start).and_yield(http)
+
+      versions = described_class.fetch("demo", confirm: true)
+
+      expect(versions).to eq([{"number" => "1.2.3"}])
+      expect(request_headers.fetch("if-none-match")).to eq(["\"abc123\""])
+      cached_at = JSON.parse(File.read(@version_cache_path)).dig("versions", "demo", "cached_at")
+      expect(cached_at).to eq("2026-08-21T12:00:00Z")
+    end
+
+    it "stores fresh validators from a 200 answer", freeze: Time.utc(2026, 8, 21, 12, 0, 0) do
+      write_version_cache("demo", "2026-07-01T12:00:00Z", [{"number" => "1.2.3"}], etag: "\"old\"")
+      response = ok_response(JSON.generate([{"number" => "1.2.3"}, {"number" => "1.2.4"}]), etag: "\"new\"")
+      http = instance_double(Net::HTTP)
+      allow(http).to receive(:request).and_return(response)
+      allow(Net::HTTP).to receive(:start).and_yield(http)
+
+      versions = described_class.fetch("demo", confirm: true)
+
+      expect(versions).to eq([{"number" => "1.2.3"}, {"number" => "1.2.4"}])
+      entry = JSON.parse(File.read(@version_cache_path)).dig("versions", "demo")
+      expect(entry["etag"]).to eq("\"new\"")
+      expect(entry["cached_at"]).to eq("2026-08-21T12:00:00Z")
+    end
+
+    it "returns nil when freshness cannot be confirmed, never the stale entry" do
+      write_version_cache("demo", "2026-07-01T12:00:00Z", [{"number" => "1.2.3"}])
+      allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
+
+      expect(described_class.fetch("demo", confirm: true)).to be_nil
+      expect(described_class.published_version_numbers("demo", confirm: true)).to be_nil
+    end
+
+    it "fetches without conditional headers when nothing is cached" do
+      request_headers = nil
+      response = ok_response(JSON.generate([{"number" => "1.0.0"}]))
+      http = instance_double(Net::HTTP)
+      allow(http).to receive(:request) do |request|
+        request_headers = request.to_hash
+        response
+      end
+      allow(Net::HTTP).to receive(:start).and_yield(http)
+
+      expect(described_class.fetch("demo", confirm: true)).to eq([{"number" => "1.0.0"}])
+      expect(request_headers).not_to have_key("if-none-match")
+    end
+  end
+
   def write_marker(gem_name, version, released_at)
     File.write(
       @cache_bust_path,
@@ -263,10 +325,12 @@ RSpec.describe Kettle::Dev::RubyGemsVersions do
     )
   end
 
-  def write_version_cache(gem_name, cached_at, entries)
+  def write_version_cache(gem_name, cached_at, entries, etag: nil)
+    entry = {"cached_at" => cached_at, "entries" => entries}
+    entry["etag"] = etag if etag
     File.write(
       @version_cache_path,
-      JSON.generate("versions" => {gem_name => {"cached_at" => cached_at, "entries" => entries}})
+      JSON.generate("versions" => {gem_name => entry})
     )
   end
 end

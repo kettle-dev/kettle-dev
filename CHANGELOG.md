@@ -20,6 +20,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
+- RubyGemsVersions confirm reads: fetch and published_version_numbers accept confirm: true for answers feeding destructive or commit-producing decisions — the registry is always contacted, revalidation rides the cached entrys ETag/Last-Modified (a 304 re-arms the TTL without rewriting the payload, even past expiry), and an unconfirmable answer returns nil instead of the stale entry
+
 ### Changed
 
 ### Deprecated

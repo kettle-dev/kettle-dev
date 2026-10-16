@@ -70,11 +70,21 @@ module Kettle
         # such as gem.coop can lag rubygems.org: a version present on one may
         # be absent from the other. Cache entries are keyed by source for the
         # same reason, so the two registries cannot poison each other.
-        def fetch(gem_name, version_hint: nil, refresh: false, source: DEFAULT_SOURCE)
+        #
+        # +confirm: true+ is the consequence-based read: the answer feeds a
+        # destructive or commit-producing decision (uninstalling a gem,
+        # resetting a lockfile), so the TTL'd cache is never trusted on its
+        # own. The registry is always contacted, but revalidation is cheap:
+        # the cached entry's ETag/Last-Modified go out as conditional headers
+        # and a 304 re-arms the cached answer instead of replacing it. When
+        # the network cannot confirm freshness, +nil+ is returned — never the
+        # stale entry — because a destructive caller must read that as
+        # "unknown", and absence is the dangerous answer to get wrong.
+        def fetch(gem_name, version_hint: nil, refresh: false, source: DEFAULT_SOURCE, confirm: false)
           name = gem_name.to_s
           key = cache_key(name, source)
           cached = cached_versions(key)
-          cache_bust = refresh || env_refresh? || fresh_release_marker?(name, version_hint) || cached_behind_version?(cached, version_hint)
+          cache_bust = refresh || confirm || env_refresh? || fresh_release_marker?(name, version_hint) || cached_behind_version?(cached, version_hint)
           return cached if cached && !cache_bust
 
           uri = versions_uri(gem_name, source: source, cache_bust: cache_bust)
@@ -82,6 +92,9 @@ module Kettle
           if cache_bust
             request["Cache-Control"] = "no-cache"
             request["Pragma"] = "no-cache"
+            validators = cache_validators(key)
+            request["If-None-Match"] = validators["etag"] if validators["etag"]
+            request["If-Modified-Since"] = validators["last_modified"] if validators["last_modified"]
           end
           response = Net::HTTP.start(
             uri.host,
@@ -92,16 +105,28 @@ module Kettle
           ) do |http|
             http.request(request)
           end
+          if response.is_a?(Net::HTTPNotModified)
+            stored = stored_entry(key)
+            if stored
+              rearm_versions(key)
+              return Array(stored["entries"])
+            end
+          end
           if response.code.to_i == 404
             write_versions(key, [])
             return []
           end
-          return cached unless response.is_a?(Net::HTTPSuccess)
+          unless response.is_a?(Net::HTTPSuccess)
+            return nil if confirm
+
+            return cached
+          end
 
           data = JSON.parse(response.body)
-          write_versions(key, data) if data.is_a?(Array)
+          write_versions(key, data, etag: response["etag"], last_modified: response["last-modified"]) if data.is_a?(Array)
           data
         rescue => error
+          return nil if confirm
           return cached if cached
 
           raise error
@@ -121,8 +146,12 @@ module Kettle
         # within the marker TTL. Without it a caller cannot tell "this version
         # was published moments ago in this very run" from "this gem was
         # released at some point in the last month".
-        def published_version_numbers(gem_name, source: DEFAULT_SOURCE, version: nil)
-          versions = fetch(gem_name, version_hint: version, source: normalize_source(source))
+        # +confirm: true+ marks the read as feeding a destructive or
+        # commit-producing decision; it always revalidates against the
+        # registry (cheaply, via the cached entry's validators) and returns
+        # nil when freshness cannot be confirmed.
+        def published_version_numbers(gem_name, source: DEFAULT_SOURCE, version: nil, confirm: false)
+          versions = fetch(gem_name, version_hint: version, source: normalize_source(source), confirm: confirm)
           return nil if versions.nil?
 
           versions.filter_map { |entry| entry["number"] if entry.is_a?(Hash) }
@@ -246,26 +275,69 @@ module Kettle
         end
 
         def cached_versions(cache_key)
-          path = version_cache_path
-          return nil if path.empty?
-
-          entry = read_version_cache(path).fetch("versions", {})[cache_key]
-          return nil unless entry.is_a?(Hash)
-          return nil unless fresh_version_cache_entry?(entry)
+          entry = cached_entry(cache_key)
+          return nil unless entry
 
           Array(entry["entries"])
         end
 
-        def write_versions(cache_key, entries)
+        # Validators from the last successful fetch, sent as conditional
+        # headers on revalidation so a 304 can confirm freshness cheaply.
+        # Deliberately TTL-agnostic: an expired entry's validators still prove
+        # payload currency when the server answers 304, which is the entire
+        # point of carrying them.
+        def cache_validators(cache_key)
+          entry = stored_entry(cache_key)
+          return {} unless entry
+
+          {"etag" => entry["etag"], "last_modified" => entry["last_modified"]}.compact
+        end
+
+        def cached_entry(cache_key)
+          entry = stored_entry(cache_key)
+          return nil unless entry
+          return nil unless fresh_version_cache_entry?(entry)
+
+          entry
+        end
+
+        def stored_entry(cache_key)
+          path = version_cache_path
+          return nil if path.empty?
+
+          entry = read_version_cache(path).fetch("versions", {})[cache_key]
+          entry.is_a?(Hash) ? entry : nil
+        end
+
+        # A 304 means the cached payload is still current; re-arming the TTL
+        # without rewriting the payload keeps the entry valid for TTL reads.
+        def rearm_versions(cache_key)
+          path = version_cache_path
+          return if path.empty?
+
+          data = read_version_cache(path)
+          entry = data.fetch("versions", {})[cache_key]
+          return unless entry.is_a?(Hash)
+
+          entry["cached_at"] = Time.now.utc.iso8601
+          File.write(path, JSON.pretty_generate(data) << "\n")
+        rescue => error
+          warn("[kettle-dev] could not re-arm RubyGems version cache: #{error.class}: #{error.message}") if Kettle::Dev::DEBUGGING
+        end
+
+        def write_versions(cache_key, entries, etag: nil, last_modified: nil)
           path = version_cache_path
           return if path.empty?
 
           data = read_version_cache(path)
           data["versions"] ||= {}
-          data["versions"][cache_key] = {
+          entry = {
             "cached_at" => Time.now.utc.iso8601,
             "entries" => entries
           }
+          entry["etag"] = etag if etag
+          entry["last_modified"] = last_modified if last_modified
+          data["versions"][cache_key] = entry
           FileUtils.mkdir_p(File.dirname(path))
           File.write(path, JSON.pretty_generate(data) << "\n")
         rescue => error
