@@ -8,6 +8,8 @@ require "fileutils"
 require "yaml"
 require "kettle/ndjson"
 
+warn("Kettle::Dev::ChangelogCLI is deprecated and will be removed in kettle-dev 4.0; use Kettle::Changelog::CLI from the kettle-changelog gem instead")
+
 module Kettle
   module Dev
     # CLI for updating CHANGELOG.md with new version sections

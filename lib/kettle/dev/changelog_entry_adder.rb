@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+warn("Kettle::Dev::ChangelogEntryAdder is deprecated and will be removed in kettle-dev 4.0; use Kettle::Changelog::EntryAdder from the kettle-changelog gem instead")
+
 module Kettle
   module Dev
     class ChangelogEntryAdder

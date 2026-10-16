@@ -31,6 +31,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Deprecated
 
+- Kettle::Dev::ChangelogCLI and Kettle::Dev::ChangelogEntryAdder: the transition classes retained after the kettle-changelog extraction now warn on load and will be removed in kettle-dev 4.0; use Kettle::Changelog::CLI / Kettle::Changelog::EntryAdder from the kettle-changelog gem instead. Their behavior coverage lives in the extracted gem's suite; kettle-dev keeps deprecation smoke specs only
+
 ### Removed
 
 ### Fixed
