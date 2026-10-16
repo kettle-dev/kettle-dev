@@ -732,7 +732,7 @@ RSpec.describe Kettle::Dev::GhaShaPinsCLI do
 
       expect do
         expect(cli.run!).to eq(3)
-      end.to output(/Outdated actions \(1\):.*Recommended fix: kettle-gha-pins --write --upgrade minor/m).to_stdout
+      end.to output(/Outdated actions \(1\):.*Recommended fix: kettle-gha-pins --commit --push --upgrade minor\nOnly afterwards re-run the release resume command printed by kettle-family\./m).to_stdout
     end
 
     it "does not fail check mode for broader outdated pins outside the selected upgrade level" do

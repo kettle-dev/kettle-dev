@@ -35,6 +35,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Sync kettle-gha-pins CLI check-mode output spec with the full fix hint shipped in kettle-gha-pins 0.3.18: the recommended fix is now the copy-paste chain kettle-gha-pins --commit --push --upgrade <level> followed by the resume-command continuation line
+
 ### Security
 
 ## [3.1.13] - 2026-10-14
