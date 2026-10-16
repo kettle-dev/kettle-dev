@@ -24,7 +24,8 @@
         116,
         120,
         124,
-        128
+        128,
+        132
       ]
     }
   ],
@@ -53,7 +54,17 @@
         115,
         119,
         123,
-        127
+        127,
+        131
+      ]
+    }
+  ],
+  "- [kc] kettle-jem/prepare: updated 5 project files:\n- dependencies (5)": [
+    {
+      "file": "CHANGELOG.md",
+      "lines": [
+        25,
+        128
       ]
     }
   ],
@@ -62,7 +73,7 @@
       "file": "CHANGELOG.md",
       "lines": [
         28,
-        125
+        131
       ]
     }
   ],
@@ -71,7 +82,7 @@
       "file": "CHANGELOG.md",
       "lines": [
         29,
-        126
+        132
       ]
     }
   ],
@@ -79,8 +90,8 @@
     {
       "file": "CHANGELOG.md",
       "lines": [
-        176,
-        553
+        182,
+        559
       ]
     }
   ],
