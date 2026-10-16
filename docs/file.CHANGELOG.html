@@ -70,11 +70,32 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 and <a href="https://tom.preston-werner.com/2022/05/23/major-version-numbers-are-not-sacred.html">yes</a>, platform and engine support are part of the <a href="https://github.com/semver/semver/issues/716#issuecomment-869336139">public API</a>.<br>
 Please file a bug if you notice a violation of semantic versioning.</p>
 
-<h2 id="unreleased"><a href="https://github.com/kettle-dev/kettle-dev/compare/v3.1.13...HEAD">Unreleased</a></h2>
+<h2 id="unreleased"><a href="https://github.com/kettle-dev/kettle-dev/compare/v3.1.14...HEAD">Unreleased</a></h2>
 
 <h3 id="added">Added</h3>
 
 <h3 id="changed">Changed</h3>
+
+<h3 id="deprecated">Deprecated</h3>
+
+<h3 id="removed">Removed</h3>
+
+<h3 id="fixed">Fixed</h3>
+
+<h3 id="security">Security</h3>
+
+<h2 id="3114---2026-10-16">
+<a href="https://github.com/kettle-dev/kettle-dev/compare/v3.1.13...v3.1.14">3.1.14</a> - 2026-10-16</h2>
+
+<ul>
+  <li>TAG: <a href="https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.14">v3.1.14</a>
+</li>
+  <li>COVERAGE: 91.89% – 5676/6177 lines in 47 files</li>
+  <li>BRANCH COVERAGE: 75.85% – 2176/2869 branches in 47 files</li>
+  <li>53.23% documented</li>
+</ul>
+
+<h3 id="changed-1">Changed</h3>
 
 <ul>
   <li>[kc] kettle-jem/prepare: updated 5 project files:
@@ -88,17 +109,16 @@ Please file a bug if you notice a violation of semantic versioning.</p>
       <li>other (1)</li>
     </ul>
   </li>
+  <li>ReleaseSecretsDoctor accepts an injectable provider_factory (defaulting to ReleaseSecrets::Factory) so provider construction can be faked without mocks; RSpec stubs do not cross the thread boundary the thread shape spawns, which let a real 1Password lookup escape during specs</li>
 </ul>
 
-<h3 id="deprecated">Deprecated</h3>
+<h3 id="deprecated-1">Deprecated</h3>
 
 <ul>
   <li>[kc] kettle-changelog-transition-deprecation: Kettle::Dev::ChangelogCLI and Kettle::Dev::ChangelogEntryAdder: the transition classes retained after the kettle-changelog extraction now warn on load and will be removed in kettle-dev 4.0; use Kettle::Changelog::CLI / Kettle::Changelog::EntryAdder from the kettle-changelog gem instead. Behavior coverage lives in the extracted gem suite, and both files are excluded from this gem coverage tracking via simplecov:disable until removal</li>
 </ul>
 
-<h3 id="removed">Removed</h3>
-
-<h3 id="fixed">Fixed</h3>
+<h3 id="fixed-1">Fixed</h3>
 
 <ul>
   <li>
@@ -110,9 +130,10 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   <li>
     <p>Cover ReleaseSecretsDoctor same-process and thread shapes, the keepalive pulse loop, and OTP lookup, restoring line coverage above the 91 percent floor in the slim release-time coverage bundle after the deprecated changelog transition classes were excluded from tracking</p>
   </li>
+  <li>
+    <p>Spec suite can no longer trigger real 1Password authorization prompts: a globally included with-mocked-release-secrets shared context stubs ReleaseSecrets::Factory.build to the no-op base Provider, with :real_release_secrets as the opt-out tag for provider-construction specs; thread-shape doctor specs now use plain thread-safe fakes via the injected factory</p>
+  </li>
 </ul>
-
-<h3 id="security">Security</h3>
 
 <h2 id="3113---2026-10-14">
 <a href="https://github.com/kettle-dev/kettle-dev/compare/v3.1.12...v3.1.13">3.1.13</a> - 2026-10-14</h2>
@@ -125,7 +146,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   <li>53.23% documented</li>
 </ul>
 
-<h3 id="changed-1">Changed</h3>
+<h3 id="changed-2">Changed</h3>
 
 <ul>
   <li>
@@ -148,7 +169,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   </li>
 </ul>
 
-<h3 id="fixed-1">Fixed</h3>
+<h3 id="fixed-2">Fixed</h3>
 
 <ul>
   <li>release:guard_clean no longer aborts a –start-step 15 resume: the publish-boundary lockfile normalization added in 3.1.13 lived only inside the step 14 block, so resuming at step 15 skipped it and the parent’s own boot (family local-path toggle + gemspec self-version bump) re-dirtied the canonical Gemfile.lock with sibling PATH remotes; normalization now runs once per run from BOTH the step 14 and step 15 entry points</li>
@@ -172,7 +193,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   <li>52.49% documented</li>
 </ul>
 
-<h3 id="fixed-2">Fixed</h3>
+<h3 id="fixed-3">Fixed</h3>
 
 <ul>
   <li>
@@ -197,7 +218,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   <li>52.20% documented</li>
 </ul>
 
-<h3 id="fixed-3">Fixed</h3>
+<h3 id="fixed-4">Fixed</h3>
 
 <ul>
   <li>CI monitor aborts on the first failed GitHub Actions job instead of waiting for run-level completion: a large matrix keeps the run in_progress for minutes after a red job, so releases burned dead time a re-run must spend anyway; the abort names the job and links it</li>
@@ -214,7 +235,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   <li>52.10% documented</li>
 </ul>
 
-<h3 id="fixed-4">Fixed</h3>
+<h3 id="fixed-5">Fixed</h3>
 
 <ul>
   <li>appraisal:generate now deletes a stale Appraisal.root.gemfile.lock before its bundle install. The root appraisal lockfile is a gitignored local artifact that drifts after dependency bumps; a stale pin made appraisal:generate fail with an opaque “locked to X … can no longer be found” (observed templating kettle-jem after ast-crispr-ruby-prism’s floor moved to an unpublished version). appraisal:generate’s contract is to work without resolving appraisal locks, so the stale lock is removed and Bundler resolves fresh.</li>
@@ -242,7 +263,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   <li>51.77% documented</li>
 </ul>
 
-<h3 id="changed-2">Changed</h3>
+<h3 id="changed-3">Changed</h3>
 
 <ul>
   <li>[kc] kettle-jem/prepare: updated 5 project files:
@@ -258,7 +279,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   </li>
 </ul>
 
-<h3 id="fixed-5">Fixed</h3>
+<h3 id="fixed-6">Fixed</h3>
 
 <ul>
   <li>[kc] bundler-pin-no-prerelease: Release step 1 (<code>update_bundler_and_commit!</code>) and <code>appraisal:update</code> pin the Bundler version when running <code>bundle update --bundler</code> instead of leaving it bare. A bare <code>--bundler</code> resolves to whatever RubyGems reports as bundler’s “latest”, which includes prereleases: bundler published <code>4.1.0.beta1</code> as latest, so a bare update installed the beta and rewrote <code>BUNDLED WITH</code> to it. That beta vendors its own copy of rubygems’ URI constants, and loading it against rubygems’ copy emits a wall of <code>already initialized constant Gem::URI::...</code> warnings on stderr, which broke any spec shelling out to an executable and asserting clean stderr — failing a later release at its coverage step. Pinning matches <code>LockfileReset#lockfile_command</code>, which already documents this hazard.</li>
@@ -309,7 +330,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   <li>kettle-release warns when the current branch is not among the release branches its family declares, naming the declaring config and the declared branches, instead of silently treating it as a feature branch destined for trunk.</li>
 </ul>
 
-<h3 id="fixed-6">Fixed</h3>
+<h3 id="fixed-7">Fixed</h3>
 
 <ul>
   <li>
@@ -323,7 +344,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   </li>
 </ul>
 
-<h3 id="changed-3">Changed</h3>
+<h3 id="changed-4">Changed</h3>
 
 <ul>
   <li>[kc] kettle-jem/prepare: updated 13 project files:
@@ -353,7 +374,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   <li>51.34% documented</li>
 </ul>
 
-<h3 id="fixed-7">Fixed</h3>
+<h3 id="fixed-8">Fixed</h3>
 
 <ul>
   <li>
@@ -378,7 +399,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   <li>51.34% documented</li>
 </ul>
 
-<h3 id="fixed-8">Fixed</h3>
+<h3 id="fixed-9">Fixed</h3>
 
 <ul>
   <li>Recheck registry gem availability after release lockfile resolution instead of reusing stale negative probes.</li>
@@ -395,7 +416,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   <li>51.34% documented</li>
 </ul>
 
-<h3 id="fixed-9">Fixed</h3>
+<h3 id="fixed-10">Fixed</h3>
 
 <ul>
   <li>Centralize canonical path and component-aware containment checks for Kettle tools.</li>
@@ -412,7 +433,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
   <li>51.13% documented</li>
 </ul>
 
-<h3 id="fixed-10">Fixed</h3>
+<h3 id="fixed-11">Fixed</h3>
 
 <ul>
   <li>Recognize Windows drive, UNC, and relative paths as local lockfile remotes during release validation.</li>
@@ -440,7 +461,7 @@ dependency doesn’t support one or more of this project’s declared<br>
 engine support needs.</li>
 </ul>
 
-<h3 id="changed-4">Changed</h3>
+<h3 id="changed-5">Changed</h3>
 
 <ul>
   <li>[kc] kettle-jem/prepare: updated 15 project files:
@@ -459,7 +480,7 @@ engine support needs.</li>
   </li>
 </ul>
 
-<h3 id="fixed-11">Fixed</h3>
+<h3 id="fixed-12">Fixed</h3>
 
 <ul>
   <li>
@@ -481,7 +502,7 @@ engine support needs.</li>
   <li>51.02% documented</li>
 </ul>
 
-<h3 id="fixed-12">Fixed</h3>
+<h3 id="fixed-13">Fixed</h3>
 
 <ul>
   <li>Close release-created branch-stack validation PRs after successful publication instead of leaving obsolete conflicted PRs open.</li>
@@ -498,7 +519,7 @@ engine support needs.</li>
   <li>51.02% documented</li>
 </ul>
 
-<h3 id="fixed-13">Fixed</h3>
+<h3 id="fixed-14">Fixed</h3>
 
 <ul>
   <li>
@@ -520,7 +541,7 @@ engine support needs.</li>
   <li>50.23% documented</li>
 </ul>
 
-<h3 id="fixed-14">Fixed</h3>
+<h3 id="fixed-15">Fixed</h3>
 
 <ul>
   <li>
@@ -542,7 +563,7 @@ engine support needs.</li>
   <li>50.35% documented</li>
 </ul>
 
-<h3 id="fixed-15">Fixed</h3>
+<h3 id="fixed-16">Fixed</h3>
 
 <ul>
   <li>Isolate the published-gem availability probe from locally activated gems so release validation resolves the registry dependency graph.</li>
@@ -559,7 +580,7 @@ engine support needs.</li>
   <li>50.35% documented</li>
 </ul>
 
-<h3 id="fixed-16">Fixed</h3>
+<h3 id="fixed-17">Fixed</h3>
 
 <ul>
   <li>Preserve active local dependency selectors while generating Appraisal files during family templating.</li>
@@ -576,7 +597,7 @@ engine support needs.</li>
   <li>50.00% documented</li>
 </ul>
 
-<h3 id="fixed-17">Fixed</h3>
+<h3 id="fixed-18">Fixed</h3>
 
 <ul>
   <li>
@@ -598,7 +619,7 @@ engine support needs.</li>
   <li>50.00% documented</li>
 </ul>
 
-<h3 id="fixed-18">Fixed</h3>
+<h3 id="fixed-19">Fixed</h3>
 
 <ul>
   <li>
@@ -620,7 +641,7 @@ engine support needs.</li>
   <li>50.24% documented</li>
 </ul>
 
-<h3 id="fixed-19">Fixed</h3>
+<h3 id="fixed-20">Fixed</h3>
 
 <ul>
   <li>
@@ -642,7 +663,7 @@ engine support needs.</li>
   <li>50.24% documented</li>
 </ul>
 
-<h3 id="fixed-20">Fixed</h3>
+<h3 id="fixed-21">Fixed</h3>
 
 <ul>
   <li>Recognize disabled checksum validation as inert in unbundled command environments.</li>
@@ -665,7 +686,7 @@ engine support needs.</li>
   <li>Emit GitHub Release creation and asset-upload lifecycle events, including retry attempts.</li>
 </ul>
 
-<h3 id="fixed-21">Fixed</h3>
+<h3 id="fixed-22">Fixed</h3>
 
 <ul>
   <li>Retry transient GitHub Release asset uploads and report every failed asset.</li>
@@ -682,7 +703,7 @@ engine support needs.</li>
   <li>50.47% documented</li>
 </ul>
 
-<h3 id="fixed-22">Fixed</h3>
+<h3 id="fixed-23">Fixed</h3>
 
 <ul>
   <li>Refresh existing GitHub Release notes while backfilling missing assets.</li>
@@ -699,7 +720,7 @@ engine support needs.</li>
   <li>50.47% documented</li>
 </ul>
 
-<h3 id="fixed-23">Fixed</h3>
+<h3 id="fixed-24">Fixed</h3>
 
 <ul>
   <li>Attach missing assets when recovering an existing GitHub Release.</li>
@@ -716,7 +737,7 @@ engine support needs.</li>
   <li>50.47% documented</li>
 </ul>
 
-<h3 id="fixed-24">Fixed</h3>
+<h3 id="fixed-25">Fixed</h3>
 
 <ul>
   <li>
@@ -741,7 +762,7 @@ engine support needs.</li>
   <li>50.47% documented</li>
 </ul>
 
-<h3 id="fixed-25">Fixed</h3>
+<h3 id="fixed-26">Fixed</h3>
 
 <ul>
   <li>Add an explicit reset option for release graphs that must omit the optional changelog dependency.</li>
@@ -758,7 +779,7 @@ engine support needs.</li>
   <li>50.47% documented</li>
 </ul>
 
-<h3 id="changed-5">Changed</h3>
+<h3 id="changed-6">Changed</h3>
 
 <ul>
   <li>Add an appraisal-only release skip while preserving documentation generation.</li>
@@ -775,7 +796,7 @@ engine support needs.</li>
   <li>50.47% documented</li>
 </ul>
 
-<h3 id="changed-6">Changed</h3>
+<h3 id="changed-7">Changed</h3>
 
 <ul>
   <li>Mark coordinated family release-preparation commits so CI can distinguish aggregate validation from duplicate member release commits.</li>
@@ -792,7 +813,7 @@ engine support needs.</li>
   <li>50.47% documented</li>
 </ul>
 
-<h3 id="fixed-26">Fixed</h3>
+<h3 id="fixed-27">Fixed</h3>
 
 <ul>
   <li>Preserve configured monorepo member-path lockfiles during release while rejecting unapproved local paths.</li>
@@ -809,7 +830,7 @@ engine support needs.</li>
   <li>50.97% documented</li>
 </ul>
 
-<h3 id="fixed-27">Fixed</h3>
+<h3 id="fixed-28">Fixed</h3>
 
 <ul>
   <li>
@@ -834,7 +855,7 @@ engine support needs.</li>
   <li>50.97% documented</li>
 </ul>
 
-<h3 id="fixed-28">Fixed</h3>
+<h3 id="fixed-29">Fixed</h3>
 
 <ul>
   <li>
@@ -862,7 +883,7 @@ engine support needs.</li>
   <li>50.97% documented</li>
 </ul>
 
-<h3 id="fixed-29">Fixed</h3>
+<h3 id="fixed-30">Fixed</h3>
 
 <ul>
   <li>
@@ -887,7 +908,7 @@ engine support needs.</li>
   <li>51.10% documented</li>
 </ul>
 
-<h3 id="fixed-30">Fixed</h3>
+<h3 id="fixed-31">Fixed</h3>
 
 <ul>
   <li>Retry release lockfile resets while newly published workspace gems propagate to the configured source.</li>
@@ -904,7 +925,7 @@ engine support needs.</li>
   <li>51.10% documented</li>
 </ul>
 
-<h3 id="fixed-31">Fixed</h3>
+<h3 id="fixed-32">Fixed</h3>
 
 <ul>
   <li>Correct Markdown reference validation after indented fenced code blocks in list items.</li>
@@ -921,7 +942,7 @@ engine support needs.</li>
   <li>50.86% documented</li>
 </ul>
 
-<h3 id="changed-7">Changed</h3>
+<h3 id="changed-8">Changed</h3>
 
 <ul>
   <li>[kc] kettle-jem/prepare: updated 9 project files:
@@ -942,7 +963,7 @@ engine support needs.</li>
   </li>
 </ul>
 
-<h3 id="fixed-32">Fixed</h3>
+<h3 id="fixed-33">Fixed</h3>
 
 <ul>
   <li>
@@ -967,7 +988,7 @@ engine support needs.</li>
   <li>50.74% documented</li>
 </ul>
 
-<h3 id="changed-8">Changed</h3>
+<h3 id="changed-9">Changed</h3>
 
 <ul>
   <li>Add named standalone release aliases for CI bypass and numbered-step recovery.</li>
@@ -984,13 +1005,13 @@ engine support needs.</li>
   <li>50.74% documented</li>
 </ul>
 
-<h3 id="changed-9">Changed</h3>
+<h3 id="changed-10">Changed</h3>
 
 <ul>
   <li>Expose shared lockfile section inspection primitives for family release validation.</li>
 </ul>
 
-<h3 id="fixed-33">Fixed</h3>
+<h3 id="fixed-34">Fixed</h3>
 
 <ul>
   <li>Skip unresolved Kettle-Jem template image URLs during pre-release validation.</li>
@@ -1007,7 +1028,7 @@ engine support needs.</li>
   <li>51.11% documented</li>
 </ul>
 
-<h3 id="fixed-34">Fixed</h3>
+<h3 id="fixed-35">Fixed</h3>
 
 <ul>
   <li>
@@ -1029,7 +1050,7 @@ engine support needs.</li>
   <li>50.62% documented</li>
 </ul>
 
-<h3 id="fixed-35">Fixed</h3>
+<h3 id="fixed-36">Fixed</h3>
 
 <ul>
   <li>
@@ -1051,7 +1072,7 @@ engine support needs.</li>
   <li>50.62% documented</li>
 </ul>
 
-<h3 id="fixed-36">Fixed</h3>
+<h3 id="fixed-37">Fixed</h3>
 
 <ul>
   <li>Keep Bundler platform reconciliation in an isolated lockfile during release builds and publication so normalized release lockfiles remain clean.</li>
@@ -1068,7 +1089,7 @@ engine support needs.</li>
   <li>50.62% documented</li>
 </ul>
 
-<h3 id="fixed-37">Fixed</h3>
+<h3 id="fixed-38">Fixed</h3>
 
 <ul>
   <li>Release lockfile normalization now resolves in isolated gem paths, preventing unreleased locally installed versions from entering release lockfiles.</li>
@@ -1085,7 +1106,7 @@ engine support needs.</li>
   <li>50.62% documented</li>
 </ul>
 
-<h3 id="fixed-38">Fixed</h3>
+<h3 id="fixed-39">Fixed</h3>
 
 <ul>
   <li>
@@ -1113,7 +1134,7 @@ engine support needs.</li>
   <li>Add –skip-changelog to release without skipping pre-release gates or the default task.</li>
 </ul>
 
-<h3 id="fixed-39">Fixed</h3>
+<h3 id="fixed-40">Fixed</h3>
 
 <ul>
   <li>
@@ -1135,7 +1156,7 @@ engine support needs.</li>
   <li>50.74% documented</li>
 </ul>
 
-<h3 id="fixed-40">Fixed</h3>
+<h3 id="fixed-41">Fixed</h3>
 
 <ul>
   <li>Keep release lockfile platforms stable across repeated normalization passes.</li>
@@ -1152,7 +1173,7 @@ engine support needs.</li>
   <li>50.87% documented</li>
 </ul>
 
-<h3 id="fixed-41">Fixed</h3>
+<h3 id="fixed-42">Fixed</h3>
 
 <ul>
   <li>Honor K_RELEASE_CI_CONTINUE during GitHub Actions and GitLab release monitoring, continuing after failed checks instead of aborting.</li>
@@ -1169,7 +1190,7 @@ engine support needs.</li>
   <li>51.00% documented</li>
 </ul>
 
-<h3 id="fixed-42">Fixed</h3>
+<h3 id="fixed-43">Fixed</h3>
 
 <ul>
   <li>Skip volatile Star History chart image URLs during pre-release validation.</li>
@@ -1186,7 +1207,7 @@ engine support needs.</li>
   <li>51.00% documented</li>
 </ul>
 
-<h3 id="fixed-43">Fixed</h3>
+<h3 id="fixed-44">Fixed</h3>
 
 <ul>
   <li>
@@ -1214,7 +1235,7 @@ engine support needs.</li>
   <li>50.64% documented</li>
 </ul>
 
-<h3 id="fixed-44">Fixed</h3>
+<h3 id="fixed-45">Fixed</h3>
 
 <ul>
   <li>
@@ -1236,7 +1257,7 @@ engine support needs.</li>
   <li>50.77% documented</li>
 </ul>
 
-<h3 id="changed-10">Changed</h3>
+<h3 id="changed-11">Changed</h3>
 
 <ul>
   <li>
@@ -1247,7 +1268,7 @@ engine support needs.</li>
   </li>
 </ul>
 
-<h3 id="fixed-45">Fixed</h3>
+<h3 id="fixed-46">Fixed</h3>
 
 <ul>
   <li>
@@ -1269,7 +1290,7 @@ engine support needs.</li>
   <li>50.77% documented</li>
 </ul>
 
-<h3 id="fixed-46">Fixed</h3>
+<h3 id="fixed-47">Fixed</h3>
 
 <ul>
   <li>Retry an existing gem publication once with a fresh RubyGems MFA OTP when the release task reports an invalid OTP.</li>
@@ -1286,7 +1307,7 @@ engine support needs.</li>
   <li>50.90% documented</li>
 </ul>
 
-<h3 id="fixed-47">Fixed</h3>
+<h3 id="fixed-48">Fixed</h3>
 
 <ul>
   <li>Skip duplicate specs and coverage during release default checks while preserving local lint autocorrection</li>
@@ -1303,7 +1324,7 @@ engine support needs.</li>
   <li>50.90% documented</li>
 </ul>
 
-<h3 id="fixed-48">Fixed</h3>
+<h3 id="fixed-49">Fixed</h3>
 
 <ul>
   <li>
@@ -1343,7 +1364,7 @@ engine support needs.</li>
   <li>50.90% documented</li>
 </ul>
 
-<h3 id="fixed-49">Fixed</h3>
+<h3 id="fixed-50">Fixed</h3>
 
 <ul>
   <li>Select the most recent GitHub Actions build when multiple runs exist for the same commit.</li>
@@ -1366,7 +1387,7 @@ engine support needs.</li>
   <li>GitHub releases can include published gem and checksum artifacts.</li>
 </ul>
 
-<h3 id="fixed-50">Fixed</h3>
+<h3 id="fixed-51">Fixed</h3>
 
 <ul>
   <li>
@@ -1388,7 +1409,7 @@ engine support needs.</li>
   <li>50.90% documented</li>
 </ul>
 
-<h3 id="fixed-51">Fixed</h3>
+<h3 id="fixed-52">Fixed</h3>
 
 <ul>
   <li>Exclude Markdown test fixtures from release image and reference validation.</li>
@@ -1405,7 +1426,7 @@ engine support needs.</li>
   <li>50.90% documented</li>
 </ul>
 
-<h3 id="fixed-52">Fixed</h3>
+<h3 id="fixed-53">Fixed</h3>
 
 <ul>
   <li>CI monitoring can use an explicit repository root for monorepo release workflows.</li>
@@ -1422,7 +1443,7 @@ engine support needs.</li>
   <li>50.77% documented</li>
 </ul>
 
-<h3 id="fixed-53">Fixed</h3>
+<h3 id="fixed-54">Fixed</h3>
 
 <ul>
   <li>
@@ -1444,7 +1465,7 @@ engine support needs.</li>
   <li>50.77% documented</li>
 </ul>
 
-<h3 id="fixed-54">Fixed</h3>
+<h3 id="fixed-55">Fixed</h3>
 
 <ul>
   <li>
@@ -1466,13 +1487,13 @@ engine support needs.</li>
   <li>50.64% documented</li>
 </ul>
 
-<h3 id="changed-11">Changed</h3>
+<h3 id="changed-12">Changed</h3>
 
 <ul>
   <li>Track the released kettle-gha-pins client and its cache/tag-resolution contract in the development lockfile and specs.</li>
 </ul>
 
-<h3 id="fixed-55">Fixed</h3>
+<h3 id="fixed-56">Fixed</h3>
 
 <ul>
   <li>
@@ -1494,7 +1515,7 @@ engine support needs.</li>
   <li>50.41% documented</li>
 </ul>
 
-<h3 id="fixed-56">Fixed</h3>
+<h3 id="fixed-57">Fixed</h3>
 
 <ul>
   <li>Repair release lockfile recovery when locally installed workspace gems are retained as unreleased registry versions.</li>
@@ -1511,7 +1532,7 @@ engine support needs.</li>
   <li>50.41% documented</li>
 </ul>
 
-<h3 id="fixed-57">Fixed</h3>
+<h3 id="fixed-58">Fixed</h3>
 
 <ul>
   <li>kettle-jem-template-20260802-001 - Devcontainer JSON files now merge as JSONC,<br>
@@ -1529,14 +1550,14 @@ preserving comments and trailing commas during template updates.</li>
   <li>50.41% documented</li>
 </ul>
 
-<h3 id="changed-12">Changed</h3>
+<h3 id="changed-13">Changed</h3>
 
 <ul>
   <li>kettle-jem-template-20260801-001 - Generated README gem dashboard links now<br>
 use ClickGems instead of BestGems.</li>
 </ul>
 
-<h3 id="fixed-58">Fixed</h3>
+<h3 id="fixed-59">Fixed</h3>
 
 <ul>
   <li>
@@ -1590,7 +1611,7 @@ matching Galtzo-hosted asset exists.</p>
   </li>
 </ul>
 
-<h3 id="fixed-59">Fixed</h3>
+<h3 id="fixed-60">Fixed</h3>
 
 <ul>
   <li>
@@ -1618,7 +1639,7 @@ matching Galtzo-hosted asset exists.</p>
   <li>50.41% documented</li>
 </ul>
 
-<h3 id="fixed-60">Fixed</h3>
+<h3 id="fixed-61">Fixed</h3>
 
 <ul>
   <li>
@@ -1638,7 +1659,7 @@ registry-sourced gems, allowing valid Git-sourced dependencies such as the<br>
   <li>50.41% documented</li>
 </ul>
 
-<h3 id="fixed-61">Fixed</h3>
+<h3 id="fixed-62">Fixed</h3>
 
 <ul>
   <li>
@@ -1679,7 +1700,7 @@ monitor, pre-release, changelog, release lockfile, and release probe events.</p>
 while waiting for workflow runs to appear and complete.</li>
 </ul>
 
-<h3 id="changed-13">Changed</h3>
+<h3 id="changed-14">Changed</h3>
 
 <ul>
   <li>
@@ -1717,7 +1738,7 @@ secret keepalives and provider-backed prompt responses.</p>
   </li>
 </ul>
 
-<h3 id="fixed-62">Fixed</h3>
+<h3 id="fixed-63">Fixed</h3>
 
 <ul>
   <li>
@@ -1758,7 +1779,7 @@ before later release tasks run.</li>
   <li>53.78% documented</li>
 </ul>
 
-<h3 id="fixed-63">Fixed</h3>
+<h3 id="fixed-64">Fixed</h3>
 
 <ul>
   <li>RubyGems version lookups now share the 30-day local version-response cache<br>
@@ -1781,7 +1802,7 @@ refresh recently released gems without refreshing untouched gems.</li>
   <li>54.41% documented</li>
 </ul>
 
-<h3 id="fixed-64">Fixed</h3>
+<h3 id="fixed-65">Fixed</h3>
 
 <ul>
   <li>
@@ -1805,7 +1826,7 @@ resolved without inheriting Bundler state.</li>
   <li>54.41% documented</li>
 </ul>
 
-<h3 id="fixed-65">Fixed</h3>
+<h3 id="fixed-66">Fixed</h3>
 
 <ul>
   <li>
@@ -1825,7 +1846,7 @@ collect aggregate family coverage instead of reusing the member bundle.</li>
   <li>54.41% documented</li>
 </ul>
 
-<h3 id="changed-14">Changed</h3>
+<h3 id="changed-15">Changed</h3>
 
 <ul>
   <li>
@@ -1847,7 +1868,7 @@ changelog command from the family root.</li>
 
 <h3 id="added-10">Added</h3>
 
-<h3 id="changed-15">Changed</h3>
+<h3 id="changed-16">Changed</h3>
 
 <ul>
   <li>Raised the runtime dependency floors for <code>kettle-ndjson</code> to <code>0.1.3</code> and<br>
@@ -1857,7 +1878,7 @@ changelog command from the family root.</li>
 can run inside a gem while updating a shared root changelog.</li>
 </ul>
 
-<h3 id="fixed-66">Fixed</h3>
+<h3 id="fixed-67">Fixed</h3>
 
 <ul>
   <li>kettle-jem-template-20260728-004 - Generated dep-heads workflows now use the<br>
@@ -1889,7 +1910,7 @@ even when the gemspec is loaded from another working directory.</li>
   <li>54.41% documented</li>
 </ul>
 
-<h3 id="fixed-67">Fixed</h3>
+<h3 id="fixed-68">Fixed</h3>
 
 <ul>
   <li>Unexpected Bundler environment warnings emitted by unbundled release/reset<br>
@@ -1907,7 +1928,7 @@ subprocess setup are now de-duplicated per process.</li>
   <li>54.44% documented</li>
 </ul>
 
-<h3 id="fixed-68">Fixed</h3>
+<h3 id="fixed-69">Fixed</h3>
 
 <ul>
   <li>
@@ -1941,7 +1962,7 @@ subprocesses.</li>
   <li>56.04% documented</li>
 </ul>
 
-<h3 id="changed-16">Changed</h3>
+<h3 id="changed-17">Changed</h3>
 
 <ul>
   <li>Raised the runtime dependency floor for <code>kettle-gha-pins</code> to <code>0.3.3</code>.</li>
@@ -1958,7 +1979,7 @@ subprocesses.</li>
   <li>56.04% documented</li>
 </ul>
 
-<h3 id="fixed-69">Fixed</h3>
+<h3 id="fixed-70">Fixed</h3>
 
 <ul>
   <li>
@@ -1978,7 +1999,7 @@ unreleased sibling gems from aborting appraisal generation.</li>
   <li>56.04% documented</li>
 </ul>
 
-<h3 id="fixed-70">Fixed</h3>
+<h3 id="fixed-71">Fixed</h3>
 
 <ul>
   <li>
@@ -1992,7 +2013,7 @@ compatible APIs, fixing Ruby 2.4 CI failures in lockfile reset specs.</p>
   </li>
 </ul>
 
-<h3 id="changed-17">Changed</h3>
+<h3 id="changed-18">Changed</h3>
 
 <ul>
   <li>kettle-jem-template-20260728-001 - Generated Ruby workflows now use clearer<br>
@@ -2011,7 +2032,7 @@ installing the main Gemfile bundle.</li>
   <li>56.21% documented</li>
 </ul>
 
-<h3 id="fixed-71">Fixed</h3>
+<h3 id="fixed-72">Fixed</h3>
 
 <ul>
   <li>
@@ -2055,7 +2076,7 @@ release and appraisal generation.</p>
 RSpec helpers provided by <code>kettle-test</code>.</li>
 </ul>
 
-<h3 id="changed-18">Changed</h3>
+<h3 id="changed-19">Changed</h3>
 
 <ul>
   <li>Documented family release credential automation with 1Password and the<br>
@@ -2073,7 +2094,7 @@ when <code>kettle-changelog</code> already generated strict coverage in the same
 generation, reducing formatter noise during release preparation.</li>
 </ul>
 
-<h3 id="fixed-72">Fixed</h3>
+<h3 id="fixed-73">Fixed</h3>
 
 <ul>
   <li>
@@ -2160,7 +2181,7 @@ configuration and documentation dependencies so documentation issues fail<br>
 before generated docs are refreshed.</li>
 </ul>
 
-<h3 id="changed-19">Changed</h3>
+<h3 id="changed-20">Changed</h3>
 
 <ul>
   <li>Executable startup headers are now shown only when <code>--verbose</code> is passed;<br>
@@ -2178,7 +2199,7 @@ cover <code>version.rb</code> without redefining constants, or are removed when 
 specs are not managed for the project.</li>
 </ul>
 
-<h3 id="fixed-73">Fixed</h3>
+<h3 id="fixed-74">Fixed</h3>
 
 <ul>
   <li>
@@ -2218,7 +2239,7 @@ version namespace and constants, reducing warning-only YARD lint output.</li>
   <li>59.16% documented</li>
 </ul>
 
-<h3 id="fixed-74">Fixed</h3>
+<h3 id="fixed-75">Fixed</h3>
 
 <ul>
   <li>
@@ -2238,7 +2259,7 @@ caller’s repository bundle.</li>
   <li>59.16% documented</li>
 </ul>
 
-<h3 id="fixed-75">Fixed</h3>
+<h3 id="fixed-76">Fixed</h3>
 
 <ul>
   <li>
@@ -2275,7 +2296,7 @@ gem.coop full-index requests from old Bundler/RubyGems combinations.</li>
 <code>kettle-ndjson</code> event toolkit.</li>
 </ul>
 
-<h3 id="changed-20">Changed</h3>
+<h3 id="changed-21">Changed</h3>
 
 <ul>
   <li>kettle-jem-template-20260725-001 - Generated JRuby and TruffleRuby workflow<br>
@@ -2284,7 +2305,7 @@ so release CI monitoring does not report intentionally skipped engine<br>
 workflows as failures.</li>
 </ul>
 
-<h3 id="fixed-76">Fixed</h3>
+<h3 id="fixed-77">Fixed</h3>
 
 <ul>
   <li>
@@ -2311,7 +2332,7 @@ dependency remains installable on kettle-dev’s Ruby 2.4+ support floor.</li>
   <li>59.00% documented</li>
 </ul>
 
-<h3 id="fixed-77">Fixed</h3>
+<h3 id="fixed-78">Fixed</h3>
 
 <ul>
   <li>
@@ -2332,7 +2353,7 @@ happen or cannot be validated.</li>
   <li>58.66% documented</li>
 </ul>
 
-<h3 id="fixed-78">Fixed</h3>
+<h3 id="fixed-79">Fixed</h3>
 
 <ul>
   <li>
@@ -2360,7 +2381,7 @@ checksums cannot leak into CI.</li>
 <code>kettle-dev</code> gem version they shipped with.</li>
 </ul>
 
-<h3 id="changed-21">Changed</h3>
+<h3 id="changed-22">Changed</h3>
 
 <ul>
   <li>Raised the runtime dependency floor for <code>kettle-gha-pins</code> to <code>0.3.1</code>.</li>
@@ -2381,7 +2402,7 @@ execution paths.</li>
   <li>59.51% documented</li>
 </ul>
 
-<h3 id="fixed-79">Fixed</h3>
+<h3 id="fixed-80">Fixed</h3>
 
 <ul>
   <li>GitHub Actions release monitoring now falls back to repository-level workflow<br>
@@ -2400,7 +2421,7 @@ five minutes by default for workflows to appear.</li>
   <li>60.00% documented</li>
 </ul>
 
-<h3 id="changed-22">Changed</h3>
+<h3 id="changed-23">Changed</h3>
 
 <ul>
   <li>Local development tooling now uses <code>kettle-gha-pins</code> 0.2.0 or newer on<br>
@@ -2415,7 +2436,7 @@ and upgrade-target selection to the shared<br>
 <code>kettle-gha-pins</code> executable.</li>
 </ul>
 
-<h3 id="fixed-80">Fixed</h3>
+<h3 id="fixed-81">Fixed</h3>
 
 <ul>
   <li>
@@ -2440,7 +2461,7 @@ JRuby 9.4.</p>
   <li>54.64% documented</li>
 </ul>
 
-<h3 id="fixed-81">Fixed</h3>
+<h3 id="fixed-82">Fixed</h3>
 
 <ul>
   <li>
@@ -2484,7 +2505,7 @@ non-trunk release branches before waiting for GitHub Actions, so<br>
 pull-request-only workflows start after release branch pushes.</li>
 </ul>
 
-<h3 id="changed-23">Changed</h3>
+<h3 id="changed-24">Changed</h3>
 
 <ul>
   <li>kettle-jem-template-20260720-002 - Generated development Gemfiles now use the<br>
@@ -2506,7 +2527,7 @@ now include a RubyForum help badge.</li>
   <li>56.25% documented</li>
 </ul>
 
-<h3 id="fixed-82">Fixed</h3>
+<h3 id="fixed-83">Fixed</h3>
 
 <ul>
   <li>
@@ -2536,14 +2557,14 @@ wait step while retaining the default behavior of waiting for all applicable<br>
 workflows.</li>
 </ul>
 
-<h3 id="changed-24">Changed</h3>
+<h3 id="changed-25">Changed</h3>
 
 <ul>
   <li>kettle-jem-template-20260716-002 - Generated gemspec manifests now ship fewer<br>
 repository-only files by default to reduce downstream distro packaging churn.</li>
 </ul>
 
-<h3 id="fixed-83">Fixed</h3>
+<h3 id="fixed-84">Fixed</h3>
 
 <ul>
   <li>
@@ -2563,13 +2584,13 @@ matching RBS signatures.</li>
   <li>56.88% documented</li>
 </ul>
 
-<h3 id="changed-25">Changed</h3>
+<h3 id="changed-26">Changed</h3>
 
 <ul>
   <li>Updated the <code>kettle-rb</code> runtime dependency floor to <code>&gt;= 0.1.2</code>.</li>
 </ul>
 
-<h3 id="fixed-84">Fixed</h3>
+<h3 id="fixed-85">Fixed</h3>
 
 <ul>
   <li>
@@ -2589,7 +2610,7 @@ data without requiring a synthetic root gemspec.</li>
   <li>56.88% documented</li>
 </ul>
 
-<h3 id="fixed-85">Fixed</h3>
+<h3 id="fixed-86">Fixed</h3>
 
 <ul>
   <li>GitHub Actions release monitoring now ignores <code>scorecard-analysis.yml</code> by<br>
@@ -2608,7 +2629,7 @@ commits.</li>
   <li>56.88% documented</li>
 </ul>
 
-<h3 id="fixed-86">Fixed</h3>
+<h3 id="fixed-87">Fixed</h3>
 
 <ul>
   <li>AST-based version edits now apply Prism byte offsets as byte offsets, avoiding<br>
@@ -2626,7 +2647,7 @@ corrupted Ruby when non-ASCII content appears before the edited string.</li>
   <li>57.09% documented</li>
 </ul>
 
-<h3 id="fixed-87">Fixed</h3>
+<h3 id="fixed-88">Fixed</h3>
 
 <ul>
   <li>
@@ -2661,7 +2682,7 @@ defaults so a known advisory can be handled outside the automated release.</p>
   </li>
 </ul>
 
-<h3 id="changed-26">Changed</h3>
+<h3 id="changed-27">Changed</h3>
 
 <ul>
   <li>
@@ -2669,7 +2690,7 @@ defaults so a known advisory can be handled outside the automated release.</p>
 <code>kettle/dev/version_gem</code> for the optional <code>VersionGem::Basic</code> extension.</li>
 </ul>
 
-<h3 id="fixed-88">Fixed</h3>
+<h3 id="fixed-89">Fixed</h3>
 
 <ul>
   <li>
@@ -2715,13 +2736,13 @@ Prism edits, and write behavior without shelling out or duplicating logic.</li>
   <li>59.34% documented</li>
 </ul>
 
-<h3 id="changed-27">Changed</h3>
+<h3 id="changed-28">Changed</h3>
 
 <ul>
   <li>Updated the <code>kettle-rb</code> runtime dependency floor to 0.1.1.</li>
 </ul>
 
-<h3 id="fixed-89">Fixed</h3>
+<h3 id="fixed-90">Fixed</h3>
 
 <ul>
   <li>
@@ -2750,7 +2771,7 @@ is investigated.</p>
   <li>59.83% documented</li>
 </ul>
 
-<h3 id="changed-28">Changed</h3>
+<h3 id="changed-29">Changed</h3>
 
 <ul>
   <li>
@@ -2773,7 +2794,7 @@ printing every checked URL or action reference.</li>
   <li>61.04% documented</li>
 </ul>
 
-<h3 id="fixed-90">Fixed</h3>
+<h3 id="fixed-91">Fixed</h3>
 
 <ul>
   <li>
@@ -2792,7 +2813,7 @@ the release is running from that same branch-stack checkout.</li>
   <li>61.04% documented</li>
 </ul>
 
-<h3 id="fixed-91">Fixed</h3>
+<h3 id="fixed-92">Fixed</h3>
 
 <ul>
   <li>
@@ -2811,7 +2832,7 @@ so stale packages in <code>pkg/</code> cannot cause checksums for the wrong vers
   <li>61.04% documented</li>
 </ul>
 
-<h3 id="fixed-92">Fixed</h3>
+<h3 id="fixed-93">Fixed</h3>
 
 <ul>
   <li>
@@ -2839,7 +2860,7 @@ branches.</li>
 selected numbered release steps while running the rest of the release flow.</li>
 </ul>
 
-<h3 id="fixed-93">Fixed</h3>
+<h3 id="fixed-94">Fixed</h3>
 
 <ul>
   <li>
@@ -2856,7 +2877,7 @@ running setup and default rake tasks.</p>
   </li>
 </ul>
 
-<h3 id="changed-29">Changed</h3>
+<h3 id="changed-30">Changed</h3>
 
 <ul>
   <li>
@@ -2875,7 +2896,7 @@ running setup and default rake tasks.</p>
   <li>61.84% documented</li>
 </ul>
 
-<h3 id="changed-30">Changed</h3>
+<h3 id="changed-31">Changed</h3>
 
 <ul>
   <li>
@@ -2896,7 +2917,7 @@ update path.</li>
   <li>62.11% documented</li>
 </ul>
 
-<h3 id="fixed-94">Fixed</h3>
+<h3 id="fixed-95">Fixed</h3>
 
 <ul>
   <li>
@@ -2939,7 +2960,7 @@ branch in family release-state tables.</li>
   <li>62.11% documented</li>
 </ul>
 
-<h3 id="changed-31">Changed</h3>
+<h3 id="changed-32">Changed</h3>
 
 <ul>
   <li>
@@ -2948,7 +2969,7 @@ branch in family release-state tables.</li>
 section before the numbered release steps.</li>
 </ul>
 
-<h3 id="fixed-95">Fixed</h3>
+<h3 id="fixed-96">Fixed</h3>
 
 <ul>
   <li>
@@ -3000,7 +3021,7 @@ Markdown adapter, failing closed when the expected section shape is absent.</p>
   </li>
 </ul>
 
-<h3 id="changed-32">Changed</h3>
+<h3 id="changed-33">Changed</h3>
 
 <ul>
   <li>
@@ -3012,7 +3033,7 @@ the existing nomono <code>VENDORED_GEMS</code> workflow.</p>
   </li>
 </ul>
 
-<h3 id="fixed-96">Fixed</h3>
+<h3 id="fixed-97">Fixed</h3>
 
 <ul>
   <li>Corrected OpenCollective funding metadata to use the <code>kettle-dev</code> collective.</li>
@@ -3044,7 +3065,7 @@ branches deterministically.</li>
   <li>63.76% documented</li>
 </ul>
 
-<h3 id="fixed-97">Fixed</h3>
+<h3 id="fixed-98">Fixed</h3>
 
 <ul>
   <li>
@@ -3072,7 +3093,7 @@ for shim gems whose release version is intentionally sourced outside the local<b
 <code>lib/**/version.rb</code> file.</li>
 </ul>
 
-<h3 id="fixed-98">Fixed</h3>
+<h3 id="fixed-99">Fixed</h3>
 
 <ul>
   <li>Updated <code>kettle-changelog</code> and <code>kettle-pre-release</code> help text to match current<br>
@@ -3090,7 +3111,7 @@ coverage generation, documentation stats, and image URL cache behavior.</li>
   <li>64.06% documented</li>
 </ul>
 
-<h3 id="fixed-99">Fixed</h3>
+<h3 id="fixed-100">Fixed</h3>
 
 <ul>
   <li>
@@ -3110,7 +3131,7 @@ bumps.</li>
   <li>64.35% documented</li>
 </ul>
 
-<h3 id="changed-33">Changed</h3>
+<h3 id="changed-34">Changed</h3>
 
 <ul>
   <li>
@@ -3130,7 +3151,7 @@ HEAD requests during release readiness checks.</li>
   <li>65.38% documented</li>
 </ul>
 
-<h3 id="fixed-100">Fixed</h3>
+<h3 id="fixed-101">Fixed</h3>
 
 <ul>
   <li>
@@ -3156,7 +3177,7 @@ such as <code># v7</code> idempotently instead of repeatedly planning the same<b
   <li>66.02% documented</li>
 </ul>
 
-<h3 id="fixed-101">Fixed</h3>
+<h3 id="fixed-102">Fixed</h3>
 
 <h4 id="changelog-1">Changelog</h4>
 
@@ -3225,7 +3246,7 @@ release section has not been published yet.</li>
   <li>67.00% documented</li>
 </ul>
 
-<h3 id="changed-34">Changed</h3>
+<h3 id="changed-35">Changed</h3>
 
 <ul>
   <li>
@@ -3234,7 +3255,7 @@ such as <code>v2</code>, while patch and minor upgrade targeting remain limited 
 <code>x.y.z</code> SemVer tags.</li>
 </ul>
 
-<h3 id="fixed-102">Fixed</h3>
+<h3 id="fixed-103">Fixed</h3>
 
 <ul>
   <li>
@@ -3253,7 +3274,7 @@ whose releases and tags only include major-line versions such as <code>v2</code>
   <li>67.00% documented</li>
 </ul>
 
-<h3 id="changed-35">Changed</h3>
+<h3 id="changed-36">Changed</h3>
 
 <ul>
   <li>Retemplated generated project files with the current <code>kettle-jem</code> template,<br>
@@ -3261,7 +3282,7 @@ refreshing development dependency floors, binstubs, README metadata, and RBS<br>
 validation workflow output.</li>
 </ul>
 
-<h3 id="fixed-103">Fixed</h3>
+<h3 id="fixed-104">Fixed</h3>
 
 <ul>
   <li>
@@ -3282,7 +3303,7 @@ API redirects.</li>
   <li>67.00% documented</li>
 </ul>
 
-<h3 id="fixed-104">Fixed</h3>
+<h3 id="fixed-105">Fixed</h3>
 
 <ul>
   <li>
@@ -3301,7 +3322,7 @@ instead of recursive scratch output such as <code>tmp/template_test</code>.</li>
   <li>66.83% documented</li>
 </ul>
 
-<h3 id="changed-36">Changed</h3>
+<h3 id="changed-37">Changed</h3>
 
 <ul>
   <li>
@@ -3310,7 +3331,7 @@ defaulting to <code>.github/workflows</code>, instead of recursively searching e
 nested <code>.github/workflows</code> directory under the project root.</li>
 </ul>
 
-<h3 id="fixed-105">Fixed</h3>
+<h3 id="fixed-106">Fixed</h3>
 
 <ul>
   <li>Updated generated project metadata links to use the migrated <code>kettle-dev</code><br>
@@ -3328,7 +3349,7 @@ GitHub organization, including README QLTY badge URLs.</li>
   <li>66.83% documented</li>
 </ul>
 
-<h3 id="fixed-106">Fixed</h3>
+<h3 id="fixed-107">Fixed</h3>
 
 <ul>
   <li>
@@ -3379,7 +3400,7 @@ the XDG state location and supports <code>--refresh-cache</code> to bypass stale
 while preserving cached discoveries for other projects and actions.</li>
 </ul>
 
-<h3 id="fixed-107">Fixed</h3>
+<h3 id="fixed-108">Fixed</h3>
 
 <ul>
   <li>
@@ -3419,7 +3440,7 @@ run on the supported legacy matrix.</p>
 and the Ruby 3.2 appraisal includes <code>prism</code> so the specs run where supported.</li>
 </ul>
 
-<h3 id="changed-37">Changed</h3>
+<h3 id="changed-38">Changed</h3>
 
 <ul>
   <li>
@@ -3451,7 +3472,7 @@ publish the gem before any git push, create the release tag locally, and push<br
 commits and tags only after publishing succeeds.</li>
 </ul>
 
-<h3 id="changed-38">Changed</h3>
+<h3 id="changed-39">Changed</h3>
 
 <ul>
   <li>Refreshed kettle-jem template output, including Appraisal2 plugin wiring and<br>
@@ -3470,7 +3491,7 @@ current dependency floors for <code>appraisal2</code>, <code>appraisal2-rubocop<
   <li>75.93% documented</li>
 </ul>
 
-<h3 id="changed-39">Changed</h3>
+<h3 id="changed-40">Changed</h3>
 
 <ul>
   <li>
@@ -3494,7 +3515,7 @@ Appraisal2 plugin hook such as <code>appraisal2-rubocop</code>.</li>
   <li>75.93% documented</li>
 </ul>
 
-<h3 id="fixed-108">Fixed</h3>
+<h3 id="fixed-109">Fixed</h3>
 
 <ul>
   <li>
@@ -3514,7 +3535,7 @@ Appraisal root lockfile does not exist yet.</li>
   <li>75.93% documented</li>
 </ul>
 
-<h3 id="changed-40">Changed</h3>
+<h3 id="changed-41">Changed</h3>
 
 <ul>
   <li>Runtime dependency <code>kettle-test</code> now requires 2.0.2 or newer.</li>
@@ -3522,7 +3543,7 @@ Appraisal root lockfile does not exist yet.</li>
   <li>Lint / style updates</li>
 </ul>
 
-<h3 id="fixed-109">Fixed</h3>
+<h3 id="fixed-110">Fixed</h3>
 
 <ul>
   <li>Avoided moving mocked CI task input reads into a background thread for<br>
@@ -3548,7 +3569,7 @@ non-interactive runs, fixing TruffleRuby v23.0-v23.1 CI stability.</li>
 preparation for gems whose version constants live below subproject roots.</li>
 </ul>
 
-<h3 id="changed-41">Changed</h3>
+<h3 id="changed-42">Changed</h3>
 
 <ul>
   <li>
@@ -3568,7 +3589,7 @@ Synopsis heading with the current kettle-jem width defaults.</li>
 StructuredMerge as the templating and merge-contract tooling.</li>
 </ul>
 
-<h3 id="fixed-110">Fixed</h3>
+<h3 id="fixed-111">Fixed</h3>
 
 <ul>
   <li>Regenerated the spec helper so <code>kettle-dev</code> is required only after coverage<br>
@@ -3604,7 +3625,7 @@ bootstrap setup.</li>
   <li>76.40% documented</li>
 </ul>
 
-<h3 id="fixed-111">Fixed</h3>
+<h3 id="fixed-112">Fixed</h3>
 
 <ul>
   <li>
@@ -3632,7 +3653,7 @@ installed <code>kettle-jem</code> package does not expose rake task installation
   <li>76.40% documented</li>
 </ul>
 
-<h3 id="fixed-112">Fixed</h3>
+<h3 id="fixed-113">Fixed</h3>
 
 <ul>
   <li>The default rake task now includes documentation generation via <code>yard</code>, so<br>
@@ -3655,7 +3676,7 @@ known release.</li>
   <li>76.40% documented</li>
 </ul>
 
-<h3 id="changed-42">Changed</h3>
+<h3 id="changed-43">Changed</h3>
 
 <ul>
   <li>
@@ -3674,7 +3695,7 @@ Ruby 2.4-targeted RuboCop LTS style dependencies.</li>
   <li>Removed Ruby 2.3 and JRuby 9.1 CI workflows and appraisal gemfiles.</li>
 </ul>
 
-<h3 id="fixed-113">Fixed</h3>
+<h3 id="fixed-114">Fixed</h3>
 
 <ul>
   <li>
@@ -3723,7 +3744,7 @@ release section in place, including date, coverage, documentation stats, and<br>
 any follow-up Unreleased notes.</li>
 </ul>
 
-<h3 id="changed-43">Changed</h3>
+<h3 id="changed-44">Changed</h3>
 
 <ul>
   <li>
@@ -3749,7 +3770,7 @@ CHANGELOG.md release section before prompting for confirmation.</li>
   <li>Updated the development dependency on <code>kettle-test</code> to require 2.0.1 or newer.</li>
 </ul>
 
-<h3 id="fixed-114">Fixed</h3>
+<h3 id="fixed-115">Fixed</h3>
 
 <ul>
   <li>
@@ -3801,7 +3822,7 @@ instead of writing a single blank line.</li>
   </li>
 </ul>
 
-<h3 id="changed-44">Changed</h3>
+<h3 id="changed-45">Changed</h3>
 
 <ul>
   <li>Updated documentation on hostile takeover of RubyGems
@@ -3859,7 +3880,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
 </li>
 </ul>
 
-<h3 id="fixed-115">Fixed</h3>
+<h3 id="fixed-116">Fixed</h3>
 
 <ul>
   <li>Fixed <code>PrismAppraisals</code> various comment chunk spacing
@@ -4006,13 +4027,13 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="changed-45">Changed</h3>
+<h3 id="changed-46">Changed</h3>
 
 <ul>
   <li>Updated <code>FREEZE_REMINDER</code> constant to include blank line before and empty comment line after</li>
 </ul>
 
-<h3 id="fixed-116">Fixed</h3>
+<h3 id="fixed-117">Fixed</h3>
 
 <ul>
   <li>Fixed <code>reminder_present?</code> to correctly detect freeze reminder when it has leading blank line</li>
@@ -4029,7 +4050,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>69.78% documented</li>
 </ul>
 
-<h3 id="fixed-117">Fixed</h3>
+<h3 id="fixed-118">Fixed</h3>
 
 <ul>
   <li>Fixed comment deduplication in <code>restore_custom_leading_comments</code> to prevent accumulation across multiple template runs
@@ -4053,7 +4074,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>70.55% documented</li>
 </ul>
 
-<h3 id="fixed-118">Fixed</h3>
+<h3 id="fixed-119">Fixed</h3>
 
 <ul>
   <li>Fixed Gemfile parsing to properly deduplicate comments across multiple template runs
@@ -4113,7 +4134,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>69.14% documented</li>
 </ul>
 
-<h3 id="changed-46">Changed</h3>
+<h3 id="changed-47">Changed</h3>
 
 <ul>
   <li>Source merging switched from Regex-based string manipulation to Prism AST-based manipulation
@@ -4145,7 +4166,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="fixed-119">Fixed</h3>
+<h3 id="fixed-120">Fixed</h3>
 
 <ul>
   <li>Prevent double test runs by ensuring only one of test/coverage/spec are in default task
@@ -4166,13 +4187,13 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.89% documented</li>
 </ul>
 
-<h3 id="changed-47">Changed</h3>
+<h3 id="changed-48">Changed</h3>
 
 <ul>
   <li>Improved default devcontainer with common dependencies of most Ruby projects</li>
 </ul>
 
-<h3 id="fixed-120">Fixed</h3>
+<h3 id="fixed-121">Fixed</h3>
 
 <ul>
   <li>
@@ -4205,7 +4226,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>Ignore more .idea plugin artifacts</li>
 </ul>
 
-<h3 id="fixed-121">Fixed</h3>
+<h3 id="fixed-122">Fixed</h3>
 
 <ul>
   <li>bin/rake yard no longer overrides the .yardignore for checksums</li>
@@ -4229,7 +4250,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>Improved .env.local.example template</li>
 </ul>
 
-<h3 id="fixed-122">Fixed</h3>
+<h3 id="fixed-123">Fixed</h3>
 
 <ul>
   <li>.yardignore more comprehensively ignores directories that are not relevant to documentation</li>
@@ -4246,7 +4267,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.89% documented</li>
 </ul>
 
-<h3 id="fixed-123">Fixed</h3>
+<h3 id="fixed-124">Fixed</h3>
 
 <ul>
   <li>Appraisals template merge with existing header</li>
@@ -4328,7 +4349,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>Update documentation</li>
 </ul>
 
-<h3 id="changed-48">Changed</h3>
+<h3 id="changed-49">Changed</h3>
 
 <ul>
   <li>Upgrade to yard-fence v0.8.0</li>
@@ -4366,7 +4387,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.89% documented</li>
 </ul>
 
-<h3 id="fixed-124">Fixed</h3>
+<h3 id="fixed-125">Fixed</h3>
 
 <ul>
   <li>invalid documentation (bad find/replace outcomes during templating)</li>
@@ -4401,7 +4422,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.89% documented</li>
 </ul>
 
-<h3 id="fixed-125">Fixed</h3>
+<h3 id="fixed-126">Fixed</h3>
 
 <ul>
   <li>Typo in markdown link</li>
@@ -4426,7 +4447,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>Intelligent templating of Appraisals</li>
 </ul>
 
-<h3 id="fixed-126">Fixed</h3>
+<h3 id="fixed-127">Fixed</h3>
 
 <ul>
   <li>Typos in funding links</li>
@@ -4449,7 +4470,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>Validate RBS Types within style workflow</li>
 </ul>
 
-<h3 id="fixed-127">Fixed</h3>
+<h3 id="fixed-128">Fixed</h3>
 
 <ul>
   <li>typos in README.md</li>
@@ -4466,7 +4487,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.68% documented</li>
 </ul>
 
-<h3 id="changed-49">Changed</h3>
+<h3 id="changed-50">Changed</h3>
 
 <ul>
   <li>floss-funding related documentation improvements</li>
@@ -4492,7 +4513,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>prepare-commit-msg.example: no longer needed</li>
 </ul>
 
-<h3 id="fixed-128">Fixed</h3>
+<h3 id="fixed-129">Fixed</h3>
 
 <ul>
   <li>prepare-commit-msg git hook: incompatibility between direnv and mise by removing <code>direnv exec</code>
@@ -4510,7 +4531,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.68% documented</li>
 </ul>
 
-<h3 id="fixed-129">Fixed</h3>
+<h3 id="fixed-130">Fixed</h3>
 
 <ul>
   <li>typos in CONTRIBUTING.md used for templating</li>
@@ -4544,7 +4565,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.68% documented</li>
 </ul>
 
-<h3 id="changed-50">Changed</h3>
+<h3 id="changed-51">Changed</h3>
 
 <ul>
   <li>Improved formatting of errors</li>
@@ -4561,7 +4582,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.68% documented</li>
 </ul>
 
-<h3 id="changed-51">Changed</h3>
+<h3 id="changed-52">Changed</h3>
 
 <ul>
   <li>Improved copy for this gem and templated gems</li>
@@ -4584,7 +4605,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>CONTRIBUTING.md.example tailored for the templated gem</li>
 </ul>
 
-<h3 id="fixed-130">Fixed</h3>
+<h3 id="fixed-131">Fixed</h3>
 
 <ul>
   <li>Minor typos</li>
@@ -4601,13 +4622,13 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.68% documented</li>
 </ul>
 
-<h3 id="changed-52">Changed</h3>
+<h3 id="changed-53">Changed</h3>
 
 <ul>
   <li>legacy ruby 3.1 pinned to bundler 2.6.9</li>
 </ul>
 
-<h3 id="fixed-131">Fixed</h3>
+<h3 id="fixed-132">Fixed</h3>
 
 <ul>
   <li>Corrected typo: truffleruby-24.1 (targets Ruby 3.3 compatibility)</li>
@@ -4632,7 +4653,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>improved documentation of spec setup with kettle-test</li>
 </ul>
 
-<h3 id="changed-53">Changed</h3>
+<h3 id="changed-54">Changed</h3>
 
 <ul>
   <li>upgrade to kettle-test v1.0.6</li>
@@ -4655,7 +4676,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>More documentation of RC situation</li>
 </ul>
 
-<h3 id="fixed-132">Fixed</h3>
+<h3 id="fixed-133">Fixed</h3>
 
 <ul>
   <li>alphabetize dependencies</li>
@@ -4678,7 +4699,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>more documentation of the RC.O situation</li>
 </ul>
 
-<h3 id="changed-54">Changed</h3>
+<h3 id="changed-55">Changed</h3>
 
 <ul>
   <li>upgraded kettle-test to v1.0.5</li>
@@ -4701,14 +4722,14 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.68% documented</li>
 </ul>
 
-<h3 id="changed-55">Changed</h3>
+<h3 id="changed-56">Changed</h3>
 
 <ul>
   <li>kettle-release: Make step 17 only push the checksum commit; bin/gem_checksums creates the commit internally.</li>
   <li>kettle-release: Ensure a final push of tags occurs after checksums and optional GitHub release; supports an ‘all’ remote aggregator when configured.</li>
 </ul>
 
-<h3 id="fixed-133">Fixed</h3>
+<h3 id="fixed-134">Fixed</h3>
 
 <ul>
   <li>fixed rake task compatibility with BUNDLE_PATH (i.e. vendored bundle)
@@ -4745,13 +4766,13 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>added codeberg gem source</li>
 </ul>
 
-<h3 id="changed-56">Changed</h3>
+<h3 id="changed-57">Changed</h3>
 
 <ul>
   <li>removed redundant github gem source</li>
 </ul>
 
-<h3 id="fixed-134">Fixed</h3>
+<h3 id="fixed-135">Fixed</h3>
 
 <ul>
   <li>added addressable to optional modular gemfile template, as it is required for kettle-pre-release</li>
@@ -4775,7 +4796,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>A top-level note on gem server switch in README.md &amp; template</li>
 </ul>
 
-<h3 id="changed-57">Changed</h3>
+<h3 id="changed-58">Changed</h3>
 
 <ul>
   <li>Switch to cooperative gem server
@@ -4796,7 +4817,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.12% documented</li>
 </ul>
 
-<h3 id="fixed-135">Fixed</h3>
+<h3 id="fixed-136">Fixed</h3>
 
 <ul>
   <li>order of checksums and release / tag reversed
@@ -4838,7 +4859,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.12% documented</li>
 </ul>
 
-<h3 id="changed-58">Changed</h3>
+<h3 id="changed-59">Changed</h3>
 
 <ul>
   <li>Testing release</li>
@@ -4855,7 +4876,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.12% documented</li>
 </ul>
 
-<h3 id="fixed-136">Fixed</h3>
+<h3 id="fixed-137">Fixed</h3>
 
 <ul>
   <li>kettle-release: restore compatability with MFA input</li>
@@ -4872,13 +4893,13 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>79.12% documented</li>
 </ul>
 
-<h3 id="changed-59">Changed</h3>
+<h3 id="changed-60">Changed</h3>
 
 <ul>
   <li>Use obfuscated URLs, and avatars from Open Collective in ReadmeBackers</li>
 </ul>
 
-<h3 id="fixed-137">Fixed</h3>
+<h3 id="fixed-138">Fixed</h3>
 
 <ul>
   <li>improved handling of flaky truffleruby builds in workflow templates</li>
@@ -4896,7 +4917,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>78.33% documented</li>
 </ul>
 
-<h3 id="fixed-138">Fixed</h3>
+<h3 id="fixed-139">Fixed</h3>
 
 <ul>
   <li>kettle-readme-backers fails gracefully when README_UPDATER_TOKEN is missing from org secrets</li>
@@ -4919,13 +4940,13 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>Replace template tokens with real minimum ruby versions for runtime and development</li>
 </ul>
 
-<h3 id="changed-60">Changed</h3>
+<h3 id="changed-61">Changed</h3>
 
 <ul>
   <li>consolidated specs</li>
 </ul>
 
-<h3 id="fixed-139">Fixed</h3>
+<h3 id="fixed-140">Fixed</h3>
 
 <ul>
   <li>All .example files are now included in the gem package</li>
@@ -4943,7 +4964,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>77.97% documented</li>
 </ul>
 
-<h3 id="fixed-140">Fixed</h3>
+<h3 id="fixed-141">Fixed</h3>
 
 <ul>
   <li>GemSpecReader, ReadmeBackers now use shared OpenCollectiveConfig
@@ -4964,7 +4985,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>77.01% documented</li>
 </ul>
 
-<h3 id="changed-61">Changed</h3>
+<h3 id="changed-62">Changed</h3>
 
 <ul>
   <li>Revert “🔒️ Use pull_request_target in workflows”
@@ -4985,14 +5006,14 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>77.01% documented</li>
 </ul>
 
-<h3 id="changed-62">Changed</h3>
+<h3 id="changed-63">Changed</h3>
 
 <ul>
   <li>improved templating</li>
   <li>improved documentation</li>
 </ul>
 
-<h3 id="fixed-141">Fixed</h3>
+<h3 id="fixed-142">Fixed</h3>
 
 <ul>
   <li>kettle-readme-backers: read correct config file
@@ -5022,7 +5043,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>more test coverage</li>
 </ul>
 
-<h3 id="fixed-142">Fixed</h3>
+<h3 id="fixed-143">Fixed</h3>
 
 <ul>
   <li>Add .licenserc.yaml to gem package</li>
@@ -5053,7 +5074,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="fixed-143">Fixed</h3>
+<h3 id="fixed-144">Fixed</h3>
 
 <ul>
   <li>fix duplicate headings in CHANGELOG.md Unreleased section</li>
@@ -5099,7 +5120,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="changed-63">Changed</h3>
+<h3 id="changed-64">Changed</h3>
 
 <ul>
   <li>update template to version_gem v1.1.9</li>
@@ -5123,7 +5144,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>76.88% documented</li>
 </ul>
 
-<h3 id="fixed-144">Fixed</h3>
+<h3 id="fixed-145">Fixed</h3>
 
 <ul>
   <li>handling of alternate format of Unreleased section in CHANGELOG.md</li>
@@ -5140,7 +5161,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>76.88% documented</li>
 </ul>
 
-<h3 id="fixed-145">Fixed</h3>
+<h3 id="fixed-146">Fixed</h3>
 
 <ul>
   <li>fix appraisals for Ruby v2.7 to use correct x_std_libs</li>
@@ -5157,7 +5178,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>76.88% documented</li>
 </ul>
 
-<h3 id="changed-64">Changed</h3>
+<h3 id="changed-65">Changed</h3>
 
 <ul>
   <li>use current x_std_libs modular gemfile for all appraisals that are pinned to current ruby</li>
@@ -5175,7 +5196,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>76.88% documented</li>
 </ul>
 
-<h3 id="fixed-146">Fixed</h3>
+<h3 id="fixed-147">Fixed</h3>
 
 <ul>
   <li>include .rubocop_rspec.yml during install / template task’s file copy</li>
@@ -5193,7 +5214,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>76.88% documented</li>
 </ul>
 
-<h3 id="changed-65">Changed</h3>
+<h3 id="changed-66">Changed</h3>
 
 <ul>
   <li>improve Gemfile updates during kettle-dev-setup</li>
@@ -5211,13 +5232,13 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>77.06% documented</li>
 </ul>
 
-<h3 id="changed-66">Changed</h3>
+<h3 id="changed-67">Changed</h3>
 
 <ul>
   <li>move kettle-dev-setup logic into Kettle::Dev::SetupCLI</li>
 </ul>
 
-<h3 id="fixed-147">Fixed</h3>
+<h3 id="fixed-148">Fixed</h3>
 
 <ul>
   <li>gem dependency detection in kettle-dev-setup to prevent duplication</li>
@@ -5244,7 +5265,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="changed-67">Changed</h3>
+<h3 id="changed-68">Changed</h3>
 
 <ul>
   <li>template task no longer overwrites CHANGELOG.md completely
@@ -5254,13 +5275,13 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="fixed-148">Fixed</h3>
+<h3 id="fixed-149">Fixed</h3>
 
 <ul>
   <li>Fix a typo in the README.md</li>
 </ul>
 
-<h3 id="fixed-149">Fixed</h3>
+<h3 id="fixed-150">Fixed</h3>
 
 <ul>
   <li>fix typo in the path to x_std_libs.gemfile</li>
@@ -5283,7 +5304,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>badge for current runtime heads in example readme</li>
 </ul>
 
-<h3 id="fixed-150">Fixed</h3>
+<h3 id="fixed-151">Fixed</h3>
 
 <ul>
   <li>Add gemfiles/modular/x_std_libs.gemfile &amp; injected.gemfile to template</li>
@@ -5325,7 +5346,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>Kettle::Dev.default_registered?</li>
 </ul>
 
-<h3 id="fixed-151">Fixed</h3>
+<h3 id="fixed-152">Fixed</h3>
 
 <ul>
   <li>run specs as part of the test task</li>
@@ -5352,7 +5373,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="changed-68">Changed</h3>
+<h3 id="changed-69">Changed</h3>
 
 <ul>
   <li>.git-hooks/commit-msg allows commit if gitmoji-regex is unavailable</li>
@@ -5373,7 +5394,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="fixed-152">Fixed</h3>
+<h3 id="fixed-153">Fixed</h3>
 
 <ul>
   <li>Fix local CI via act for templated workflows (skip JRuby in nektos/act locally)</li>
@@ -5390,7 +5411,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>76.97% documented</li>
 </ul>
 
-<h3 id="fixed-153">Fixed</h3>
+<h3 id="fixed-154">Fixed</h3>
 
 <ul>
   <li>bin/rake test works for minitest</li>
@@ -5423,7 +5444,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>how to set up forge tokens for ci:act, and other tools, instructions for README.md</li>
 </ul>
 
-<h3 id="changed-69">Changed</h3>
+<h3 id="changed-70">Changed</h3>
 
 <ul>
   <li>expanded use of adapter patterns (Exit, Git, and Input)</li>
@@ -5437,7 +5458,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>defensive NameError handling in ChangelogCLI.abort method</li>
 </ul>
 
-<h3 id="fixed-154">Fixed</h3>
+<h3 id="fixed-155">Fixed</h3>
 
 <ul>
   <li>replace token <code>{OPENCOLLECTIVE|ORG_NAME}</code> with funding org name</li>
@@ -5459,7 +5480,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>76.22% documented</li>
 </ul>
 
-<h3 id="fixed-155">Fixed</h3>
+<h3 id="fixed-156">Fixed</h3>
 
 <ul>
   <li>documentation of rake tasks from this gem no longer includes standard gem tasks</li>
@@ -5478,7 +5499,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>76.22% documented</li>
 </ul>
 
-<h3 id="changed-70">Changed</h3>
+<h3 id="changed-71">Changed</h3>
 
 <ul>
   <li>URL for migrating repo to CodeBerg:
@@ -5488,7 +5509,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="fixed-156">Fixed</h3>
+<h3 id="fixed-157">Fixed</h3>
 
 <ul>
   <li>Stop double defining DEBUGGING constant</li>
@@ -5522,13 +5543,13 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>Specs for DvcsCLI covering remote normalization, fetch outcomes, and README updates</li>
 </ul>
 
-<h3 id="changed-71">Changed</h3>
+<h3 id="changed-72">Changed</h3>
 
 <ul>
   <li>major spec refactoring</li>
 </ul>
 
-<h3 id="fixed-157">Fixed</h3>
+<h3 id="fixed-158">Fixed</h3>
 
 <ul>
   <li>(linting) rspec-pending_for 0.0.17+ (example gemspec)</li>
@@ -5553,7 +5574,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>.gitlab-ci.yml documentation</li>
 </ul>
 
-<h3 id="fixed-158">Fixed</h3>
+<h3 id="fixed-159">Fixed</h3>
 
 <ul>
   <li>reduce extra leading whitespace in info table column 2</li>
@@ -5600,7 +5621,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>76.47% documented</li>
 </ul>
 
-<h3 id="changed-72">Changed</h3>
+<h3 id="changed-73">Changed</h3>
 
 <ul>
   <li>Use semver version dependency (~&gt; 1.0) on kettle-dev when templating</li>
@@ -5623,7 +5644,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>75.00% documented</li>
 </ul>
 
-<h3 id="fixed-159">Fixed</h3>
+<h3 id="fixed-160">Fixed</h3>
 
 <ul>
   <li>.env.local.example is now included in the packaged gem
@@ -5650,7 +5671,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>test that .env.local.example is copied by install / template tasks</li>
 </ul>
 
-<h3 id="changed-73">Changed</h3>
+<h3 id="changed-74">Changed</h3>
 
 <ul>
   <li>update Appraisals.example template’s instructions for updating appraisals</li>
@@ -5676,7 +5697,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>integration test for kettle-changelog using KEEP_A_CHANGELOG.md.</li>
 </ul>
 
-<h3 id="changed-74">Changed</h3>
+<h3 id="changed-75">Changed</h3>
 
 <ul>
   <li>add output to error handling related to release creation on GitHub</li>
@@ -5689,7 +5710,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>move –help handling for kettle-changelog to kettle-changelog itself</li>
 </ul>
 
-<h3 id="fixed-160">Fixed</h3>
+<h3 id="fixed-161">Fixed</h3>
 
 <ul>
   <li>typos in README for gem &amp; template</li>
@@ -5722,7 +5743,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="fixed-161">Fixed</h3>
+<h3 id="fixed-162">Fixed</h3>
 
 <ul>
   <li>include FUNDING.md in the released gem package</li>
@@ -5808,7 +5829,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>improved documentation</li>
 </ul>
 
-<h3 id="changed-75">Changed</h3>
+<h3 id="changed-76">Changed</h3>
 
 <ul>
   <li>dependabot: ignore rubocop-lts for updates</li>
@@ -5826,7 +5847,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>76.23% documented</li>
 </ul>
 
-<h3 id="changed-76">Changed</h3>
+<h3 id="changed-77">Changed</h3>
 
 <ul>
   <li>Use example version of ancient.yml workflow since local version has been customized</li>
@@ -5844,7 +5865,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>76.23% documented</li>
 </ul>
 
-<h3 id="fixed-162">Fixed</h3>
+<h3 id="fixed-163">Fixed</h3>
 
 <ul>
   <li>replacement logic handles a dashed gem-name which maps onto a nested path structure</li>
@@ -5874,7 +5895,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="fixed-163">Fixed</h3>
+<h3 id="fixed-164">Fixed</h3>
 
 <ul>
   <li>kettle:dev:install remove “Works with MRI Ruby*” lines with no badges left</li>
@@ -5892,7 +5913,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>76.23% documented</li>
 </ul>
 
-<h3 id="fixed-164">Fixed</h3>
+<h3 id="fixed-165">Fixed</h3>
 
 <ul>
   <li>kettle-changelog added to exe files so packaged with released gem</li>
@@ -5909,7 +5930,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>76.23% documented</li>
 </ul>
 
-<h3 id="fixed-165">Fixed</h3>
+<h3 id="fixed-166">Fixed</h3>
 
 <ul>
   <li>default rake task must be defined before it can be enhanced</li>
@@ -5934,7 +5955,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>kettle-release: update Rakefile.example with version and date</li>
 </ul>
 
-<h3 id="changed-77">Changed</h3>
+<h3 id="changed-78">Changed</h3>
 
 <ul>
   <li>kettle-release: print package name and version released as final line</li>
@@ -5946,7 +5967,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="fixed-166">Fixed</h3>
+<h3 id="fixed-167">Fixed</h3>
 
 <ul>
   <li>include gemfiles/modular/*gemfile.example with packaged gem</li>
@@ -5976,13 +5997,13 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>kettle-release: Push tags to additional remotes after release</li>
 </ul>
 
-<h3 id="changed-78">Changed</h3>
+<h3 id="changed-79">Changed</h3>
 
 <ul>
   <li>Improve .gitlab-ci.yml pipeline</li>
 </ul>
 
-<h3 id="fixed-167">Fixed</h3>
+<h3 id="fixed-168">Fixed</h3>
 
 <ul>
   <li>Removed README badges for unsupported old Ruby versions</li>
@@ -6041,7 +6062,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="fixed-168">Fixed</h3>
+<h3 id="fixed-169">Fixed</h3>
 
 <ul>
   <li>added optional.gemfile.example, and handling for it in templating</li>
@@ -6085,7 +6106,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>new exe script: kettle-changelog - transitions a changelog from unreleased to next release</li>
 </ul>
 
-<h3 id="changed-79">Changed</h3>
+<h3 id="changed-80">Changed</h3>
 
 <ul>
   <li>Make ‘git’ gem dependency optional; fall back to raw <code>git</code> commands when the gem is not present (rescues LoadError). See Kettle::Dev::GitAdapter.</li>
@@ -6105,7 +6126,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   </li>
 </ul>
 
-<h3 id="fixed-169">Fixed</h3>
+<h3 id="fixed-170">Fixed</h3>
 
 <ul>
   <li>Upgrade stone_checksums for release compatibility with bundler v2.7+
@@ -6139,7 +6160,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>runs git add –all before git commit, to ensure all files are committed.</li>
 </ul>
 
-<h3 id="changed-80">Changed</h3>
+<h3 id="changed-81">Changed</h3>
 
 <ul>
   <li>This gem is now loaded via Ruby’s standard <code>autoload</code> feature.</li>
@@ -6155,7 +6176,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>attempts to make exe/* scripts work without bundler. Bundler is required.</li>
 </ul>
 
-<h3 id="fixed-170">Fixed</h3>
+<h3 id="fixed-171">Fixed</h3>
 
 <ul>
   <li>
@@ -6200,7 +6221,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>95.35% documented</li>
 </ul>
 
-<h3 id="fixed-171">Fixed</h3>
+<h3 id="fixed-172">Fixed</h3>
 
 <ul>
   <li>Can’t add checksums to the gem package, because it changes the checksum (duh!)</li>
@@ -6217,7 +6238,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>95.35% documented</li>
 </ul>
 
-<h3 id="fixed-172">Fixed</h3>
+<h3 id="fixed-173">Fixed</h3>
 
 <ul>
   <li>Reproducible builds, with consistent checksums, by <em>not</em> using SOURCE_DATE_EPOCH.
@@ -6238,7 +6259,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>95.35% documented</li>
 </ul>
 
-<h3 id="fixed-173">Fixed</h3>
+<h3 id="fixed-174">Fixed</h3>
 
 <ul>
   <li>kettle-release: ensure SOURCE_DATE_EPOCH is applied within the same shell for both build and release by prefixing the commands with the env var (e.g., <code>SOURCE_DATE_EPOCH=$epoch bundle exec rake build</code> and <code>... rake release</code>); prevents losing the variable across shell boundaries and improves reproducible checksums.</li>
@@ -6255,7 +6276,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>95.35% documented</li>
 </ul>
 
-<h3 id="fixed-174">Fixed</h3>
+<h3 id="fixed-175">Fixed</h3>
 
 <ul>
   <li>kettle-release: will run regardless of how it is invoked (i.e. works as binstub)</li>
@@ -6279,7 +6300,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>kettle-release: push logic improved — if a remote named <code>all</code> exists, push the current branch to it (assumed to cover multiple push URLs). Otherwise push the current branch to <code>origin</code> and to any GitHub, GitLab, and Codeberg remotes (whatever their names are).</li>
 </ul>
 
-<h3 id="fixed-175">Fixed</h3>
+<h3 id="fixed-176">Fixed</h3>
 
 <ul>
   <li>kettle-release now validates SHA256 checksums of the built gem against the recorded checksums and aborts on mismatch; helps ensure reproducible artifacts (honoring SOURCE_DATE_EPOCH).</li>
@@ -6304,7 +6325,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>template task now copies .git-hooks files necessary for git hooks to work</li>
 </ul>
 
-<h3 id="fixed-176">Fixed</h3>
+<h3 id="fixed-177">Fixed</h3>
 
 <ul>
   <li>kettle-release now uses the host project’s root, instead of this gem’s installed root.</li>
@@ -6322,7 +6343,7 @@ Only <code>.env.local.example</code> is retained as a dev resource for all desti
   <li>94.59% documented</li>
 </ul>
 
-<h3 id="fixed-177">Fixed</h3>
+<h3 id="fixed-178">Fixed</h3>
 
 <ul>
   <li>Added files necessary for kettle:dev:template task to work</li>

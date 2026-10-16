@@ -22,23 +22,19 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
-- ReleaseSecretsDoctor accepts an injectable provider_factory (defaulting to ReleaseSecrets::Factory) so provider construction can be faked without mocks; RSpec stubs do not cross the thread boundary the thread shape spawns, which let a real 1Password lookup escape during specs
-
 ### Deprecated
 
 ### Removed
 
 ### Fixed
 
-- Spec suite can no longer trigger real 1Password authorization prompts: a globally included with-mocked-release-secrets shared context stubs ReleaseSecrets::Factory.build to the no-op base Provider, with :real_release_secrets as the opt-out tag for provider-construction specs; thread-shape doctor specs now use plain thread-safe fakes via the injected factory
-
 ### Security
 
 ## [3.1.14] - 2026-10-16
 
 - TAG: [v3.1.14][3.1.14t]
-- COVERAGE: 91.65% -- 5660/6176 lines in 47 files
-- BRANCH COVERAGE: 75.46% -- 2165/2869 branches in 47 files
+- COVERAGE: 91.89% -- 5676/6177 lines in 47 files
+- BRANCH COVERAGE: 75.85% -- 2176/2869 branches in 47 files
 - 53.23% documented
 
 ### Changed
@@ -49,6 +45,8 @@ Please file a bug if you notice a violation of semantic versioning.
 - [kc] kettle-jem/template: updated 3 project files:
   - code and tests (2)
   - other (1)
+
+- ReleaseSecretsDoctor accepts an injectable provider_factory (defaulting to ReleaseSecrets::Factory) so provider construction can be faked without mocks; RSpec stubs do not cross the thread boundary the thread shape spawns, which let a real 1Password lookup escape during specs
 
 ### Deprecated
 
@@ -61,6 +59,8 @@ Please file a bug if you notice a violation of semantic versioning.
 - Slim gha_sha_pins_cli_spec to the kettle-dev-owned surface (alias identity + LoadError fallback); the 900 lines of CLI behavior coverage duplicated kettle-gha-pins own suite and only went red in this repo when a release-time bundle re-resolution picked up a newer kettle-gha-pins
 
 - Cover ReleaseSecretsDoctor same-process and thread shapes, the keepalive pulse loop, and OTP lookup, restoring line coverage above the 91 percent floor in the slim release-time coverage bundle after the deprecated changelog transition classes were excluded from tracking
+
+- Spec suite can no longer trigger real 1Password authorization prompts: a globally included with-mocked-release-secrets shared context stubs ReleaseSecrets::Factory.build to the no-op base Provider, with :real_release_secrets as the opt-out tag for provider-construction specs; thread-shape doctor specs now use plain thread-safe fakes via the injected factory
 
 ## [3.1.13] - 2026-10-14
 
