@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Family member publish materializes the release task lockfile before building: run_family_member_publish now runs the same normalize guard as the step 14/15 build entry points, so the BUNDLE_LOCKFILE snapshot copied from the committed Gemfile.lock is bundle-installed before rake build. Without it, a monorepo member build failed with: Could not find tool-old-version in locally installed gems, when the committed lockfile pinned an older release-tool resolution than the boot environment.
+
 ### Security
 
 ## [3.1.16] - 2026-10-18
