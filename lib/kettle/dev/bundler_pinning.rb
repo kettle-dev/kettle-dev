@@ -34,10 +34,11 @@ module Kettle
         versions = Gem::Specification.find_all_by_name("bundler").map(&:version)
         Array(Gem.path).each do |base|
           Dir.glob(File.join(base, "specifications", "bundler-*.gemspec")).each do |path|
-            version = Gem::Version.new(File.basename(path, ".gemspec").delete_prefix("bundler-"))
-            versions << version
-          rescue ArgumentError
-            nil
+            begin
+              versions << Gem::Version.new(File.basename(path, ".gemspec").delete_prefix("bundler-"))
+            rescue ArgumentError
+              nil
+            end
           end
         end
         versions.push(active) if active

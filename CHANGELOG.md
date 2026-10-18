@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- kettle-release surfaces spec failures instead of a bare exit status: kettle-changelog commands now stream output while retaining the last 30 lines, and a failure abort appends an OUTPUT tail, so a failed coverage suite reads as a spec failure in the release summary. BundlerPinning.installed_stable also reads bundler gemspecs from disk under every Gem.path: under bundle exec the spec index is scoped to the active bundle, so a lockfile that pinned a prerelease bundler (4.1.0.betaN) hid every stable version and broke update-bundler/bupb and normalize lockfiles.
-
 ### Security
+
+## [3.1.16] - 2026-10-18
+
+- TAG: [v3.1.16][3.1.16t]
+- COVERAGE: 91.89% -- 5764/6273 lines in 48 files
+- BRANCH COVERAGE: 75.89% -- 2216/2920 branches in 48 files
+- 53.60% documented
+
+### Fixed
+
+- kettle-release surfaces spec failures instead of a bare exit status: kettle-changelog commands now stream output while retaining the last 30 lines, and a failure abort appends an OUTPUT tail, so a failed coverage suite reads as a spec failure in the release summary. BundlerPinning.installed_stable also reads bundler gemspecs from disk under every Gem.path: under bundle exec the spec index is scoped to the active bundle, so a lockfile that pinned a prerelease bundler (4.1.0.betaN) hid every stable version and broke update-bundler/bupb and normalize lockfiles.
 
 ## [3.1.15] - 2026-10-16
 
@@ -4147,7 +4156,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.15...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.16...HEAD
+[3.1.16]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.15...v3.1.16
+[3.1.16t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.16
 [3.1.15]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.14...v3.1.15
 [3.1.15t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.15
 [3.1.14]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.13...v3.1.14
