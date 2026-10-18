@@ -672,6 +672,14 @@ module Kettle
 
       def run_family_member_publish
         version = detect_version
+        # The build pins BUNDLE_LOCKFILE to this run's task lockfile snapshot,
+        # copied from the committed Gemfile.lock on first use. Materialize it
+        # (bundle install against the snapshot) or the build fails on gems the
+        # snapshot pins but the boot env never installed — exactly what a
+        # stale committed lockfile plus an independently-versioned release
+        # tool produces (e.g. kettle-family 1.3.13 vs 1.3.18). Same guard the
+        # step 14/15 entry points run before `bundle exec rake build`.
+        normalize_release_lockfiles_before_publish_tasks!
         prepare_release_lockfiles_for_release_tasks!
         ensure_signing_setup_or_skip!
         ensure_release_secrets_ready_for_signing! if signing_enabled? && release_secrets_configured?

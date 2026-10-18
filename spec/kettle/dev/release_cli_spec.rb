@@ -53,6 +53,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
       allow_any_instance_of(described_class).to receive(:prepare_release_lockfiles_for_commit!)
       allow_any_instance_of(described_class).to receive(:prepare_release_lockfiles_for_release_tasks!)
       allow_any_instance_of(described_class).to receive(:materialize_release_lockfiles_for_release_tasks!)
+      allow_any_instance_of(described_class).to receive(:normalize_release_lockfiles_before_publish_tasks!)
       allow_any_instance_of(described_class).to receive(:validate_release_lockfiles!)
       allow_any_instance_of(described_class).to receive(:update_bundler_and_commit!)
       # rubocop:enable RSpec/AnyInstance
@@ -400,6 +401,27 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
 
         expect { cli.send(:run_cmd!, "bundle exec kettle-changelog") }
           .to raise_error(/876 examples, 4 failures/)
+      end
+
+      it "materializes the release task lockfile before building in family member publish mode" do
+        cli = described_class.new
+        allow(cli).to receive(:detect_version).and_return("1.2.3")
+        allow(cli).to receive(:detect_gem_name).and_return("example")
+        allow(cli).to receive(:normalize_release_lockfiles_before_publish_tasks!)
+        allow(cli).to receive(:ensure_signing_setup_or_skip!)
+        allow(cli).to receive(:signing_enabled?).and_return(false)
+        allow(cli).to receive(:release_project_command) { |command| command }
+        build_command = nil
+        allow(cli).to receive(:run_cmd!) { |command| build_command = command }
+        allow(cli).to receive(:build_release_candidate).and_return(double("release-candidate"))
+        allow(cli).to receive(:with_unpublished_candidate_cleanup).and_yield
+        allow(cli).to receive(:publish_built_gem!)
+        allow(cli).to receive(:human_output).and_return(instance_double(StringIO, puts: nil))
+
+        cli.send(:run_family_member_publish)
+
+        expect(cli).to have_received(:normalize_release_lockfiles_before_publish_tasks!)
+        expect(build_command).to include("rake build")
       end
 
       it "removes the parent bundle environment for standalone changelog commands" do
