@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- kettle-release surfaces spec failures instead of a bare exit status: kettle-changelog commands now stream output while retaining the last 30 lines, and a failure abort appends an OUTPUT tail, so a failed coverage suite reads as a spec failure in the release summary. BundlerPinning.installed_stable also reads bundler gemspecs from disk under every Gem.path: under bundle exec the spec index is scoped to the active bundle, so a lockfile that pinned a prerelease bundler (4.1.0.betaN) hid every stable version and broke update-bundler/bupb and normalize lockfiles.
+
 ### Security
 
 ## [3.1.15] - 2026-10-16

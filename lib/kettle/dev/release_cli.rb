@@ -91,8 +91,20 @@ module Kettle
           # so they inherit the current TTY and can read the user's input.
           interactive_words = effective_command_words(cmd)
           interactive = interactive_words.first(4) == ["bundle", "exec", "rake", "release"] ||
-            interactive_words.first(2) == ["gem", "push"] ||
-            interactive_words.first(2) == ["bundle", "exec"] && interactive_words[2] == "kettle-changelog"
+            interactive_words.first(2) == ["gem", "push"]
+          if interactive_words.first(3) == ["bundle", "exec", "kettle-changelog"]
+            # kettle-changelog runs the test suite for coverage data; when that
+            # suite fails, the spec summary must surface in the abort message,
+            # not just the exit status. Stream output (so the release log keeps
+            # its live tail) while retaining the last lines for diagnostics.
+            # With --yes the child never reads stdin, so a pipe is safe here.
+            ok, diag = stream_with_capture(env_hash, cmd)
+            unless ok
+              exit_code = $?.respond_to?(:exitstatus) ? $?.exitstatus : 1
+              Kettle::Dev::ExitAdapter.abort("Command failed: #{cmd} (exit #{exit_code})#{diag}")
+            end
+            return
+          end
           if interactive
             ok = system(env_hash, cmd)
             unless ok
@@ -123,6 +135,28 @@ module Kettle
         end
 
         private
+
+        # Runs cmd with output streamed to $stdout (preserving the live release
+        # log tail) while retaining the last `tail_lines` lines. Returns
+        # [success, diagnostic] where diagnostic is an empty string on success
+        # and a formatted output tail on failure, mirroring the STDERR tail the
+        # non-interactive path appends to its abort message.
+        def stream_with_capture(env_hash, cmd, tail_lines: 30)
+          recent = []
+          success = Open3.popen2e(env_hash, cmd) do |_stdin, output, thread|
+            output.each_line do |line|
+              $stdout.print(line)
+              recent << line
+              recent.shift while recent.length > tail_lines
+            end
+            thread.value.success?
+          end
+          diag = ""
+          if !success && recent.any?
+            diag = "\n--- OUTPUT (last #{tail_lines} lines) ---\n#{recent.join}".rstrip
+          end
+          [success, diag]
+        end
 
         def command_env
           env_hash = ENV.respond_to?(:to_hash) ? ENV.to_hash : ENV.to_h

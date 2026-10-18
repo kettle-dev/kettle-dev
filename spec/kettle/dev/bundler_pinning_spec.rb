@@ -5,7 +5,7 @@ RSpec.describe Kettle::Dev::BundlerPinning do
     instance_double(Gem::Specification, version: Gem::Version.new(version))
   end
 
-  def stub_installed_bundlers(loaded: nil, installed: [])
+  def stub_installed_bundlers(loaded: nil, installed: [], gem_path: [])
     allow(Gem).to receive(:loaded_specs).and_call_original
     loaded_specs = Gem.loaded_specs.dup
     if loaded
@@ -16,6 +16,7 @@ RSpec.describe Kettle::Dev::BundlerPinning do
     allow(Gem).to receive(:loaded_specs).and_return(loaded_specs)
     allow(Gem::Specification).to receive(:find_all_by_name).and_call_original
     allow(Gem::Specification).to receive(:find_all_by_name).with("bundler").and_return(installed.map { |v| gem_spec_double(v) })
+    allow(Gem).to receive(:path).and_return(Array(gem_path))
   end
 
   describe ".installed_stable" do
@@ -35,6 +36,33 @@ RSpec.describe Kettle::Dev::BundlerPinning do
       stub_installed_bundlers(loaded: nil, installed: ["4.1.0.beta1"])
 
       expect(described_class.installed_stable).to be_nil
+    end
+
+    it "falls back to gemspec files on disk when the bundle-scoped index hides stable versions" do
+      gem_home = Dir.mktmpdir("bundler-pinning-gem-home")
+      specs_dir = File.join(gem_home, "specifications")
+      FileUtils.mkdir_p(specs_dir)
+      %w[bundler-4.0.23.gemspec bundler-4.1.0.beta2.gemspec bundler-audit-0.9.3.gemspec].each do |name|
+        FileUtils.touch(File.join(specs_dir, name))
+      end
+      stub_installed_bundlers(loaded: "4.1.0.beta2", installed: ["4.1.0.beta2"], gem_path: [gem_home])
+
+      expect(described_class.installed_stable).to eq(Gem::Version.new("4.0.23"))
+    ensure
+      FileUtils.rm_rf(gem_home)
+    end
+
+    it "ignores unparseable bundler gemspec filenames on disk" do
+      gem_home = Dir.mktmpdir("bundler-pinning-gem-home")
+      specs_dir = File.join(gem_home, "specifications")
+      FileUtils.mkdir_p(specs_dir)
+      FileUtils.touch(File.join(specs_dir, "bundler-not-a-version.gemspec"))
+      FileUtils.touch(File.join(specs_dir, "bundler-4.0.23.gemspec"))
+      stub_installed_bundlers(loaded: nil, installed: [], gem_path: [gem_home])
+
+      expect(described_class.installed_stable).to eq(Gem::Version.new("4.0.23"))
+    ensure
+      FileUtils.rm_rf(gem_home)
     end
   end
 

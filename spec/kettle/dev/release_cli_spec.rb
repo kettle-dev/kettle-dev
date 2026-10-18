@@ -385,11 +385,21 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         cli.send(:run_cmd!, "bin/setup")
       end
 
-      it "runs kettle-changelog with the current TTY so its confirmation prompt is visible" do
-        allow(described_class).to receive(:system).with(kind_of(Hash), "bundle exec kettle-changelog").and_return(true)
+      it "streams kettle-changelog output without capture3 so diagnostics stay live" do
+        allow(described_class).to receive(:stream_with_capture).with(kind_of(Hash), "bundle exec kettle-changelog").and_return([true, ""])
+        expect(described_class).not_to receive(:system)
         expect(Open3).not_to receive(:capture3)
 
         cli.send(:run_cmd!, "bundle exec kettle-changelog")
+      end
+
+      it "aborts with the captured output tail when kettle-changelog fails" do
+        allow(described_class).to receive(:stream_with_capture)
+          .with(kind_of(Hash), "bundle exec kettle-changelog")
+          .and_return([false, "\n--- OUTPUT (last 30 lines) ---\n876 examples, 4 failures"])
+
+        expect { cli.send(:run_cmd!, "bundle exec kettle-changelog") }
+          .to raise_error(/876 examples, 4 failures/)
       end
 
       it "removes the parent bundle environment for standalone changelog commands" do

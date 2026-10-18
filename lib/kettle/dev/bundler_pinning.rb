@@ -22,9 +22,24 @@ module Kettle
       # Newest stable Bundler installed locally. Consults BOTH sources —
       # the activated spec and every installed spec — because bundler/setup
       # scoping can hide one from the other depending on how the process booted.
+      #
+      # The spec index itself is not enough: under `bundle exec`, Bundler
+      # replaces the index with the ACTIVE BUNDLE's specs, so a lockfile that
+      # pinned a prerelease (the 4.1.0.betaN reinfection vector) makes this
+      # lookup see only that prerelease and wrongly report "no stable bundler".
+      # The gemspec files on disk are read directly from every Gem.path to
+      # escape that scoping.
       def installed_stable
         active = Gem.loaded_specs["bundler"]&.version
         versions = Gem::Specification.find_all_by_name("bundler").map(&:version)
+        Array(Gem.path).each do |base|
+          Dir.glob(File.join(base, "specifications", "bundler-*.gemspec")).each do |path|
+            version = Gem::Version.new(File.basename(path, ".gemspec").delete_prefix("bundler-"))
+            versions << version
+          rescue ArgumentError
+            nil
+          end
+        end
         versions.push(active) if active
         versions.reject(&:prerelease?).max
       end
