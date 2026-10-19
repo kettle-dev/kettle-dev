@@ -968,12 +968,16 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
       end
 
       it "is skipped by KETTLE_DEV_SKIP_TOOL_CURRENCY_CHECK" do
-        ENV["KETTLE_DEV_SKIP_TOOL_CURRENCY_CHECK"] = "true"
-        allow(cli).to receive(:latest_released_versions).and_raise("should not be called")
+        begin
+          # rubocop:disable Env/Assign -- isolated per-example environment switch
+          ENV["KETTLE_DEV_SKIP_TOOL_CURRENCY_CHECK"] = "true"
+          # rubocop:enable Env/Assign
+          allow(cli).to receive(:latest_released_versions).and_raise("should not be called")
 
-        expect { cli.send(:ensure_release_tool_current!) }.not_to raise_error
-      ensure
-        ENV.delete("KETTLE_DEV_SKIP_TOOL_CURRENCY_CHECK")
+          expect { cli.send(:ensure_release_tool_current!) }.not_to raise_error
+        ensure
+          ENV.delete("KETTLE_DEV_SKIP_TOOL_CURRENCY_CHECK")
+        end
       end
 
       it "aborts run when the release tool is outdated" do

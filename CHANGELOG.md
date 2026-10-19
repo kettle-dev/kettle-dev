@@ -20,8 +20,6 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
-- kettle-release aborts with an explicit outdated-tool error when a newer release of kettle-dev exists in the same minor series (registry lookup; failures never block; newer minors only warn; KETTLE_DEV_SKIP_TOOL_CURRENCY_CHECK skips), so a stale copy resolved from an old lockfile can no longer silently run without lockfile materialization and self-heal fixes.
-
 ### Changed
 
 ### Deprecated
@@ -31,6 +29,17 @@ Please file a bug if you notice a violation of semantic versioning.
 ### Fixed
 
 ### Security
+
+## [3.1.18] - 2026-10-19
+
+- TAG: [v3.1.18][3.1.18t]
+- COVERAGE: 91.53% -- 5751/6283 lines in 48 files
+- BRANCH COVERAGE: 75.46% -- 2208/2926 branches in 48 files
+- 53.60% documented
+
+### Added
+
+- kettle-release aborts with an explicit outdated-tool error when a newer release of kettle-dev exists in the same minor series (registry lookup; failures never block; newer minors only warn; KETTLE_DEV_SKIP_TOOL_CURRENCY_CHECK skips), so a stale copy resolved from an old lockfile can no longer silently run without lockfile materialization and self-heal fixes.
 
 ## [3.1.17] - 2026-10-18
 
@@ -4169,7 +4178,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.17...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.18...HEAD
+[3.1.18]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.17...v3.1.18
+[3.1.18t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.18
 [3.1.17]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.16...v3.1.17
 [3.1.17t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.17
 [3.1.16]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.15...v3.1.16
