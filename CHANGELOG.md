@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Family member publish materializes the release task lockfile before building: run_family_member_publish now runs the same normalize guard as the step 14/15 build entry points, so the BUNDLE_LOCKFILE snapshot copied from the committed Gemfile.lock is bundle-installed before rake build. Without it, a monorepo member build failed with: Could not find tool-old-version in locally installed gems, when the committed lockfile pinned an older release-tool resolution than the boot environment.
-
 ### Security
+
+## [3.1.17] - 2026-10-18
+
+- TAG: [v3.1.17][3.1.17t]
+- COVERAGE: 91.74% -- 5755/6273 lines in 48 files
+- BRANCH COVERAGE: 75.68% -- 2210/2920 branches in 48 files
+- 53.60% documented
+
+### Fixed
+
+- Family member publish materializes the release task lockfile before building: run_family_member_publish now runs the same normalize guard as the step 14/15 build entry points, so the BUNDLE_LOCKFILE snapshot copied from the committed Gemfile.lock is bundle-installed before rake build. Without it, a monorepo member build failed with: Could not find tool-old-version in locally installed gems, when the committed lockfile pinned an older release-tool resolution than the boot environment.
 
 ## [3.1.16] - 2026-10-18
 
@@ -4158,7 +4167,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.16...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.17...HEAD
+[3.1.17]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.16...v3.1.17
+[3.1.17t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.17
 [3.1.16]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.15...v3.1.16
 [3.1.16t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.16
 [3.1.15]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.14...v3.1.15
