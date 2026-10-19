@@ -42,6 +42,13 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
     end
   end
 
+  # The release-tool currency guard consults the registry at the top of every
+  # run; default the lookup to empty so run-path examples stay hermetic, and
+  # re-stub per example where currency behavior is tested.
+  before do
+    allow(Kettle::Dev::RubyGemsVersions).to receive(:fetch).with("kettle-dev", any_args).and_return(nil)
+  end
+
   describe "core behaviors" do
     let(:ci_helpers) { Kettle::Dev::CIHelpers }
     let(:cli) { described_class.new }
@@ -930,6 +937,53 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
       end
     end
 
+    describe "#ensure_release_tool_current!" do
+      it "aborts when a newer release exists in the same minor series" do
+        allow(cli).to receive(:latest_released_versions).with("kettle-dev", anything).and_return(["3.2.0", "3.1.99"])
+
+        expect do
+          cli.send(:ensure_release_tool_current!)
+        end.to raise_error(Kettle::Dev::Error, /outdated.*3\.1\.99.*same minor series/m)
+      end
+
+      it "passes when the running release is the latest in its minor series" do
+        current = Kettle::Dev::VERSION
+        allow(cli).to receive(:latest_released_versions).with("kettle-dev", anything).and_return([current, current])
+
+        expect { cli.send(:ensure_release_tool_current!) }.not_to raise_error
+      end
+
+      it "warns but passes when only a newer minor series is available" do
+        allow(cli).to receive(:latest_released_versions).with("kettle-dev", anything).and_return(["4.0.0", Kettle::Dev::VERSION])
+        allow(cli).to receive(:warn)
+
+        expect { cli.send(:ensure_release_tool_current!) }.not_to raise_error
+        expect(cli).to have_received(:warn).with(/4\.0\.0 is available/)
+      end
+
+      it "tolerates registry lookup failure" do
+        allow(cli).to receive(:latest_released_versions).with("kettle-dev", anything).and_return([nil, nil])
+
+        expect { cli.send(:ensure_release_tool_current!) }.not_to raise_error
+      end
+
+      it "is skipped by KETTLE_DEV_SKIP_TOOL_CURRENCY_CHECK" do
+        ENV["KETTLE_DEV_SKIP_TOOL_CURRENCY_CHECK"] = "true"
+        allow(cli).to receive(:latest_released_versions).and_raise("should not be called")
+
+        expect { cli.send(:ensure_release_tool_current!) }.not_to raise_error
+      ensure
+        ENV.delete("KETTLE_DEV_SKIP_TOOL_CURRENCY_CHECK")
+      end
+
+      it "aborts run when the release tool is outdated" do
+        release_cli = described_class.new(start_step: 0)
+        allow(release_cli).to receive(:latest_released_versions).with("kettle-dev", anything).and_return(["3.1.99", "3.1.99"])
+
+        expect { release_cli.run }.to raise_error(Kettle::Dev::Error, /outdated/)
+      end
+    end
+
     describe "#run_pre_release_checks!" do
       it "normalizes and materializes release lockfiles before changelog coverage can run" do
         release_cli = described_class.new(start_step: 0, skip_steps: "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19")
@@ -1025,6 +1079,9 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         overall, series = nil, nil
         # Ensure any previous stubs on Net::HTTP from unit tests do not apply here; we want a real HTTP call (recorded by VCR)
         allow(Net::HTTP).to receive(:get_response).and_call_original
+        # The release-tool currency guard stubs the registry lookup for hermetic
+        # run-path examples; this integration example must call through to VCR.
+        allow(Kettle::Dev::RubyGemsVersions).to receive(:fetch).and_call_original
         VCR.use_cassette(cassette) do
           overall, series = cli.send(:latest_released_versions, "kettle-dev", "1.0.0")
         end

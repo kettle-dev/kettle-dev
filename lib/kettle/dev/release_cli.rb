@@ -268,6 +268,7 @@ module Kettle
 
       def run
         @started_at = monotonic_time
+        ensure_release_tool_current!
         emit_run_start
         status = "ok"
         error = nil
@@ -2320,6 +2321,34 @@ module Kettle
         m = content.match(/spec\.name\s*=\s*(["'])([^"']+)\1/)
         abort("Could not determine gem name from #{Kettle::Dev.display_path(path)}.") unless m
         m[2]
+      end
+
+      # Refuse to run a release with an outdated release tool. kettle-release
+      # is resolved from the invoking bundle (for family releases, the family
+      # root's Gemfile, which each family version-manages); a stale copy
+      # silently misses lockfile materialization and self-heal behavior added
+      # in later patch releases. When a newer release of this gem exists in
+      # the same minor series, abort with the reason instead of misbehaving.
+      # Newer releases in other minor series only warn: a family may
+      # deliberately track an older minor. Registry lookup failure never
+      # blocks a release. Skippable with KETTLE_DEV_SKIP_TOOL_CURRENCY_CHECK
+      # for intentionally offline runs.
+      def ensure_release_tool_current!
+        return if truthy_value?(ENV["KETTLE_DEV_SKIP_TOOL_CURRENCY_CHECK"])
+
+        gem_name = "kettle-dev"
+        current = Gem::Version.new(Kettle::Dev::VERSION)
+        latest_overall, latest_series = latest_released_versions(gem_name, current.to_s)
+
+        if latest_series && Gem::Version.new(latest_series) > current
+          raise Error,
+            "kettle-release (#{gem_name} #{current}) is outdated: #{latest_series} is available in " \
+            "the same minor series. Update the invoking Gemfile (bundle update #{gem_name}) and retry."
+        end
+
+        if latest_overall && Gem::Version.new(latest_overall) > current
+          warn("[kettle-release] #{gem_name} #{latest_overall} is available (running #{current} in the #{current.segments[0, 2].join(".")} series).")
+        end
       end
 
       def latest_released_versions(gem_name, current_version)

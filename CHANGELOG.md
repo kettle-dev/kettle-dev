@@ -20,6 +20,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
+- kettle-release aborts with an explicit outdated-tool error when a newer release of kettle-dev exists in the same minor series (registry lookup; failures never block; newer minors only warn; KETTLE_DEV_SKIP_TOOL_CURRENCY_CHECK skips), so a stale copy resolved from an old lockfile can no longer silently run without lockfile materialization and self-heal fixes.
+
 ### Changed
 
 ### Deprecated
