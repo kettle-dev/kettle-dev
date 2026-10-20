@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- [kc] appraisal-bundler-pin: Pin every bundler process spawned by the appraisal rake tasks to the exact Bundler version running rake via BUNDLER_VERSION, so RubyGems can no longer resolve a child bundle to a newer prerelease with different plugin DSL behavior.
+
 ### Security
 
 ## [3.1.18] - 2026-10-19

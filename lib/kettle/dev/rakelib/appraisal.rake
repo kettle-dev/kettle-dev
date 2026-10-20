@@ -47,6 +47,10 @@ begin
     "BUNDLE_GEMFILE" => "Appraisal.root.gemfile",
     "BUNDLE_LOCKFILE" => "Appraisal.root.gemfile.lock"
   )
+  # Pin every spawned bundler process to the exact version running this rake.
+  # Without this, RubyGems resolves the child `bundle` to its latest release,
+  # which can be a prerelease with different DSL behavior.
+  appraisal_env["BUNDLER_VERSION"] = bundler_version if bundler_version
 
   run_command = lambda do |failure_message, *args|
     ok = system(*args)

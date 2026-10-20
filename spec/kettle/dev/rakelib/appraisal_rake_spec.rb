@@ -57,6 +57,13 @@ RSpec.describe "appraisal rake tasks" do # rubocop:disable RSpec/DescribeClass
         "BUNDLE_GEMFILE" => "Appraisal.root.gemfile",
         "BUNDLE_LOCKFILE" => "Appraisal.root.gemfile.lock"
       )
+      .merge(bundler_version ? {"BUNDLER_VERSION" => bundler_version} : {})
+  end
+  # Mirrors the rake's own derivation: the exact Bundler running the rake, so
+  # spawned bundle processes cannot resolve a newer prerelease.
+  let(:bundler_version) do
+    (Bundler::VERSION if defined?(Bundler) && Bundler::VERSION) ||
+      Gem.loaded_specs["bundler"]&.version.to_s.then { |v| v.empty? ? nil : v }
   end
   let(:bundle_install_call) { [appraisal_env, "bundle", "install", "--quiet"] }
 
