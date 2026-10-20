@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- [kc] appraisal-bundler-pin: Pin every bundler process spawned by the appraisal rake tasks to the exact Bundler version running rake via BUNDLER_VERSION, so RubyGems can no longer resolve a child bundle to a newer prerelease with different plugin DSL behavior.
-
 ### Security
+
+## [3.1.19] - 2026-10-19
+
+- TAG: [v3.1.19][3.1.19t]
+- COVERAGE: 91.79% -- 5768/6284 lines in 48 files
+- BRANCH COVERAGE: 75.75% -- 2218/2928 branches in 48 files
+- 53.60% documented
+
+### Fixed
+
+- [kc] appraisal-bundler-pin: Pin every bundler process spawned by the appraisal rake tasks to the exact Bundler version running rake via BUNDLER_VERSION, so RubyGems can no longer resolve a child bundle to a newer prerelease with different plugin DSL behavior.
 
 ## [3.1.18] - 2026-10-19
 
@@ -4180,7 +4189,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.18...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.19...HEAD
+[3.1.19]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.18...v3.1.19
+[3.1.19t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.19
 [3.1.18]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.17...v3.1.18
 [3.1.18t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.18
 [3.1.17]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.16...v3.1.17
