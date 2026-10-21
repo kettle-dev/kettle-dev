@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Release step 18 now attaches the built gem and its checksums to the GitHub release. Standalone releases and family members excluded from the aggregate release (e.g. kettle-jem in structuredmerge-ruby) were previously created assetless; family aggregate members still get assets from the family's closing aggregate and are unaffected
-
 ### Security
+
+## [3.1.21] - 2026-10-21
+
+- TAG: [v3.1.21][3.1.21t]
+- COVERAGE: 91.84% -- 5799/6314 lines in 48 files
+- BRANCH COVERAGE: 75.59% -- 2224/2942 branches in 48 files
+- 53.70% documented
+
+### Fixed
+
+- Release step 18 now attaches the built gem and its checksums to the GitHub release. Standalone releases and family members excluded from the aggregate release (e.g. kettle-jem in structuredmerge-ruby) were previously created assetless; family aggregate members still get assets from the family's closing aggregate and are unaffected
 
 ## [3.1.20] - 2026-10-21
 
@@ -4202,7 +4211,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.20...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.21...HEAD
+[3.1.21]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.20...v3.1.21
+[3.1.21t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.21
 [3.1.20]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.19...v3.1.20
 [3.1.20t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.20
 [3.1.19]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.18...v3.1.19
