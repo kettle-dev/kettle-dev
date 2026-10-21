@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Release availability probe no longer fails a release after a successful push when the gem.coop proxy lags rubygems.org: the probe alternates the gem.coop consumer-mirror validation with a live rubygems.org confirmation of the push target, backs off exponentially between attempts (10s base, 1.6x growth, 120s cap; tunable via KETTLE_DEV_RELEASE_PROBE_ATTEMPTS / KETTLE_DEV_RELEASE_PROBE_INITIAL_DELAY / KETTLE_DEV_RELEASE_PROBE_INTERVAL / KETTLE_DEV_RELEASE_PROBE_MAX_INTERVAL, also applied to release lockfile-reset retries), and proceeds with a warning when rubygems.org confirms the publish but gem.coop has not yet synced, instead of aborting the wave
+
 ### Security
 
 ## [3.1.19] - 2026-10-19

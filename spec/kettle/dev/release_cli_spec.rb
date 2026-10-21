@@ -3201,9 +3201,12 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           passed = instance_double(Process::Status, success?: true, exitstatus: 0)
 
           allow(local_cli).to receive(:write_release_availability_probe).with(candidate).and_return(script_path)
-          allow(local_cli).to receive(:release_availability_probe_attempts).and_return(3)
-          allow(local_cli).to receive(:release_availability_probe_initial_delay).and_return(5)
-          allow(local_cli).to receive(:release_availability_probe_interval).and_return(0)
+          allow(local_cli).to receive_messages(
+            release_availability_probe_attempts: 3,
+            release_availability_probe_initial_delay: 5,
+            release_availability_probe_interval: 0,
+            release_probe_upstream_published?: false
+          )
           expect(local_cli).to receive(:sleep).with(5).ordered
           expect(Open3).to receive(:capture3).ordered.and_return(["", "missing", failed])
           expect(local_cli).to receive(:sleep).with(0).ordered
@@ -3262,9 +3265,12 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           failed = instance_double(Process::Status, success?: false, exitstatus: 1)
 
           allow(local_cli).to receive(:write_release_availability_probe).with(candidate).and_return(script_path)
-          allow(local_cli).to receive(:release_availability_probe_attempts).and_return(2)
-          allow(local_cli).to receive(:release_availability_probe_initial_delay).and_return(5)
-          allow(local_cli).to receive(:release_availability_probe_interval).and_return(0)
+          allow(local_cli).to receive_messages(
+            release_availability_probe_attempts: 2,
+            release_availability_probe_initial_delay: 5,
+            release_availability_probe_interval: 0,
+            release_probe_upstream_published?: false
+          )
           expect(local_cli).to receive(:sleep).with(5).ordered
           expect(Open3).to receive(:capture3).ordered.and_return(["", "still missing", failed])
           expect(local_cli).to receive(:sleep).with(0).ordered
@@ -3273,6 +3279,102 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           expect do
             local_cli.send(:run_release_availability_probe, candidate)
           end.to raise_error(MockSystemExit, /after 2 attempt\(s\).*still missing/m)
+        end
+      end
+
+      it "backs off probe intervals exponentially with a cap" do
+        hide_env(
+          "KETTLE_DEV_RELEASE_PROBE_INTERVAL",
+          "KETTLE_DEV_RELEASE_PROBE_MAX_INTERVAL"
+        )
+        local_cli = described_class.new
+
+        expect(local_cli.send(:release_availability_probe_interval, 1)).to eq(10)
+        expect(local_cli.send(:release_availability_probe_interval, 2)).to eq(16)
+        expect(local_cli.send(:release_availability_probe_interval, 5)).to eq(66)
+        expect(local_cli.send(:release_availability_probe_interval, 20)).to eq(120)
+      end
+
+      it "honors env overrides for probe timing" do
+        stub_env(
+          "KETTLE_DEV_RELEASE_PROBE_ATTEMPTS" => "30",
+          "KETTLE_DEV_RELEASE_PROBE_INITIAL_DELAY" => "1",
+          "KETTLE_DEV_RELEASE_PROBE_INTERVAL" => "3",
+          "KETTLE_DEV_RELEASE_PROBE_MAX_INTERVAL" => "9"
+        )
+        local_cli = described_class.new
+
+        expect(local_cli.send(:release_availability_probe_attempts)).to eq(30)
+        expect(local_cli.send(:release_availability_probe_initial_delay)).to eq(1)
+        expect(local_cli.send(:release_availability_probe_interval, 1)).to eq(3)
+        expect(local_cli.send(:release_availability_probe_interval, 10)).to eq(9)
+      end
+
+      it "alternates to the push-target registry on each failed mirror probe until confirmed" do
+        Dir.mktmpdir do |root|
+          local_cli = described_class.new
+          candidate = Kettle::Dev::ReleaseCLI::ReleaseCandidate.new(
+            gem_name: "mygem",
+            version: "1.2.3",
+            installed_before: false,
+            published: false
+          )
+          script_path = File.join(root, "probe.rb")
+          File.write(script_path, "probe")
+          failed = instance_double(Process::Status, success?: false, exitstatus: 1)
+          passed = instance_double(Process::Status, success?: true, exitstatus: 0)
+
+          allow(local_cli).to receive(:write_release_availability_probe).with(candidate).and_return(script_path)
+          allow(local_cli).to receive_messages(
+            release_availability_probe_attempts: 3,
+            release_availability_probe_initial_delay: 0,
+            release_availability_probe_interval: 0
+          )
+          allow(local_cli).to receive(:sleep)
+          expect(Open3).to receive(:capture3).ordered.and_return(["", "missing", failed])
+          expect(Open3).to receive(:capture3).ordered.and_return(["validated\n", "", passed])
+          expect(local_cli).to receive(:release_probe_upstream_published?).with(candidate).once.and_return(true)
+
+          expect { expect(local_cli.send(:run_release_availability_probe, candidate)).to be(true) }
+            .to output(/published on https:\/\/rubygems\.org.*waiting for https:\/\/gem\.coop to sync/).to_stdout
+        end
+      end
+
+      it "proceeds with a warning when the push target confirms the gem but the mirror never syncs" do
+        Dir.mktmpdir do |root|
+          io = StringIO.new
+          event_stream = Kettle::Ndjson.event_stream(io, types: "release_probe")
+          local_cli = described_class.new(event_stream: event_stream)
+          candidate = Kettle::Dev::ReleaseCLI::ReleaseCandidate.new(
+            gem_name: "mygem",
+            version: "1.2.3",
+            installed_before: false,
+            published: false
+          )
+          script_path = File.join(root, "probe.rb")
+          File.write(script_path, "probe")
+          failed = instance_double(Process::Status, success?: false, exitstatus: 1)
+
+          allow(local_cli).to receive(:write_release_availability_probe).with(candidate).and_return(script_path)
+          allow(local_cli).to receive_messages(
+            release_availability_probe_attempts: 2,
+            release_availability_probe_initial_delay: 0,
+            release_availability_probe_interval: 0,
+            release_probe_upstream_published?: true
+          )
+          allow(local_cli).to receive(:sleep)
+          allow(Open3).to receive(:capture3).and_return(["", "still missing", failed])
+
+          expect { expect(local_cli.send(:run_release_availability_probe, candidate)).to be(true) }
+            .to output(/WARNING: mygem 1\.2\.3 is published on https:\/\/rubygems\.org.*not synced it after 2 attempt\(s\)/m).to_stderr
+          events = io.string.lines.map { |line| JSON.parse(line) }
+          expect(events.last).to include(
+            "type" => "release_probe",
+            "action" => "availability",
+            "status" => "ok",
+            "upstream" => "confirmed",
+            "reason" => "confirmed on https://rubygems.org; https://gem.coop sync pending"
+          )
         end
       end
 

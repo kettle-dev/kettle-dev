@@ -71,6 +71,9 @@ module Kettle
       ].freeze
       DEBUG_TRUE_VALUES = %w[1 true yes on].freeze
       RELEASE_VALIDATION_SOURCE = "https://gem.coop"
+      # The push target registry. gem.coop is a caching proxy that can lag it,
+      # so this is authoritative for whether a pushed gem landed at all.
+      RELEASE_UPSTREAM_SOURCE = "https://rubygems.org"
       FAMILY_MEMBER_PUBLISH_MODE_ENV = "KETTLE_RELEASE_FAMILY_MEMBER_PUBLISH"
       FAMILY_MEMBER_FINALIZE_MODE_ENV = "KETTLE_RELEASE_FAMILY_MEMBER_FINALIZE"
 
@@ -887,7 +890,7 @@ module Kettle
             )
             if retryable
               puts "Release lockfile reset could not resolve a newly published workspace gem from #{RELEASE_VALIDATION_SOURCE}; waiting before retry #{attempt + 1}/#{attempts}."
-              sleep(release_availability_probe_interval)
+              sleep(release_availability_probe_interval(attempt))
               next
             end
 
@@ -908,7 +911,7 @@ module Kettle
             raise unless retryable
 
             puts "Release lockfile reset could not resolve a gem from #{RELEASE_VALIDATION_SOURCE}; waiting before retry #{attempt + 1}/#{attempts}."
-            sleep(release_availability_probe_interval)
+            sleep(release_availability_probe_interval(attempt))
           end
         end
 
@@ -2222,6 +2225,7 @@ module Kettle
         attempts = release_availability_probe_attempts
         last_stderr = nil
         last_status = nil
+        upstream_confirmed = false
         sleep(release_availability_probe_initial_delay)
         attempts.times do |index|
           attempt = index + 1
@@ -2247,33 +2251,99 @@ module Kettle
 
           last_stderr = stderr_str
           last_status = status
+          # Alternate the consumer-mirror check with the push target:
+          # #{RELEASE_UPSTREAM_SOURCE} answers "did the push land at all",
+          # while #{RELEASE_VALIDATION_SOURCE} is a caching proxy that can lag
+          # it. A confirmed push gets the full backoff window to sync.
+          upstream_confirmed ||= release_probe_upstream_published?(candidate)
+          if upstream_confirmed
+            puts("#{candidate.gem_name} #{candidate.version} is published on #{RELEASE_UPSTREAM_SOURCE}; " \
+                 "waiting for #{RELEASE_VALIDATION_SOURCE} to sync (attempt #{attempt}/#{attempts}).")
+          end
           emit_release_probe_event(
             action: "availability",
-            status: (attempt < attempts) ? "retrying" : "failed",
+            status: (attempt < attempts || upstream_confirmed) ? "retrying" : "failed",
             candidate: candidate,
             attempt: attempt,
             attempts: attempts,
-            reason: "exit #{status.exitstatus}"
+            reason: "exit #{status.exitstatus}",
+            upstream: upstream_confirmed ? "confirmed" : "unconfirmed"
           )
-          sleep(release_availability_probe_interval) if attempt < attempts
+          sleep(release_availability_probe_interval(attempt)) if attempt < attempts
+        end
+
+        if upstream_confirmed
+          warn(<<~MSG)
+            WARNING: #{candidate.gem_name} #{candidate.version} is published on #{RELEASE_UPSTREAM_SOURCE}, but #{RELEASE_VALIDATION_SOURCE} has not synced it after #{attempts} attempt(s).
+            Proceeding because the push target is authoritative for the publish; downstream release steps resolve from #{RELEASE_VALIDATION_SOURCE} and retry on their own.
+            If a later step fails to resolve this gem, wait for #{RELEASE_VALIDATION_SOURCE} to sync and resume that member.
+          MSG
+          emit_release_probe_event(
+            action: "availability",
+            status: "ok",
+            candidate: candidate,
+            attempt: attempts,
+            attempts: attempts,
+            reason: "confirmed on #{RELEASE_UPSTREAM_SOURCE}; #{RELEASE_VALIDATION_SOURCE} sync pending",
+            upstream: "confirmed"
+          )
+          return true
         end
 
         diag = last_stderr.to_s.empty? ? "" : "\n--- STDERR ---\n#{last_stderr}".rstrip
-        abort("Published gem availability probe failed for #{candidate.gem_name} #{candidate.version} after #{attempts} attempt(s) (exit #{last_status.exitstatus})#{diag}")
+        abort("Published gem availability probe failed for #{candidate.gem_name} #{candidate.version} after #{attempts} attempt(s) (exit #{last_status.exitstatus}); " \
+              "the version is not visible on #{RELEASE_UPSTREAM_SOURCE} either, so the push itself may have failed#{diag}")
       ensure
         FileUtils.rm_f(script_path) if script_path
       end
 
       def release_availability_probe_attempts
-        15
+        env_positive_integer("KETTLE_DEV_RELEASE_PROBE_ATTEMPTS") || 15
       end
 
       def release_availability_probe_initial_delay
-        5
+        env_positive_integer("KETTLE_DEV_RELEASE_PROBE_INITIAL_DELAY") || 5
       end
 
-      def release_availability_probe_interval
-        10
+      # Exponential backoff between probe attempts: the base interval grows per
+      # attempt, capped, because the consumer-mirror proxy (gem.coop) can lag
+      # the push target (rubygems.org) by minutes. With defaults the worst case
+      # is ~20 minutes across 15 attempts, and it only accrues when the
+      # registry genuinely lags — a fast sync still passes on attempt 1.
+      def release_availability_probe_interval(attempt = 1)
+        base = env_positive_integer("KETTLE_DEV_RELEASE_PROBE_INTERVAL") || 10
+        cap = env_positive_integer("KETTLE_DEV_RELEASE_PROBE_MAX_INTERVAL") || 120
+        [(base * (1.6**(attempt - 1))).round, cap].min
+      end
+
+      # Whether the push target registry already serves the candidate.
+      # confirm: true forces a live registry read, never a stale cache entry,
+      # because this answer decides whether a failed mirror probe is fatal.
+      def release_probe_upstream_published?(candidate)
+        versions = Kettle::Dev::RubyGemsVersions.published_version_numbers(
+          candidate.gem_name,
+          source: RELEASE_UPSTREAM_SOURCE,
+          version: candidate.version,
+          confirm: true
+        )
+        return false if versions.nil?
+
+        versions.include?(candidate.version.to_s)
+      rescue => error
+        warn("Upstream availability check against #{RELEASE_UPSTREAM_SOURCE} failed: #{error.class}: #{error.message}")
+        false
+      end
+
+      def env_positive_integer(name)
+        raw = ENV.fetch(name, nil).to_s.strip
+        return nil if raw.empty?
+
+        value = begin
+          Integer(raw)
+        rescue ArgumentError, TypeError
+          nil
+        end
+        value&.positive? ? value : nil
       end
 
       def with_release_availability_probe_gem_home
@@ -2627,7 +2697,7 @@ module Kettle
         )
       end
 
-      def emit_release_probe_event(action:, status:, candidate:, attempt:, attempts:, reason: nil)
+      def emit_release_probe_event(action:, status:, candidate:, attempt:, attempts:, reason: nil, upstream: nil)
         Kettle::Ndjson.emit_event(
           @event_recorder,
           "release_probe",
@@ -2640,6 +2710,7 @@ module Kettle
           attempt: attempt,
           attempts: attempts,
           reason: reason,
+          upstream: upstream,
           mark: release_progress_mark(status)
         )
       end
