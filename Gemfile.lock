@@ -32,8 +32,8 @@ GEM
       bundler (>= 1.17.3)
       rake (>= 10)
       thor (>= 0.14)
-    appraisal2-rubocop (1.0.4)
-      appraisal2 (>= 3.2.5)
+    appraisal2-rubocop (1.0.5)
+      appraisal2 (>= 3.2.6)
       rubocop (>= 1.0)
       version_gem (~> 1.1, >= 1.1.15)
     ast (2.4.3)
@@ -642,7 +642,7 @@ CHECKSUMS
   anonymous_loader (0.1.3) sha256=084a18e2439144d955447dc11dfc982f41fcd1583ad32d4d55151325dc44cb55
   ansi (1.6.0) sha256=ac9ea0c0ea8d32fb4e271348e609963ac78882f34b73836c2a02b3622e666658
   appraisal2 (3.2.6) sha256=6664d2404b9fe160dfbbed4dd9b78e7b9146402bc3468ff92ba78c1878bc318a
-  appraisal2-rubocop (1.0.4) sha256=d35de99e31b965690cea1e6820ecd78e308d80d5004d768b3d78ec353f181bd9
+  appraisal2-rubocop (1.0.5) sha256=91db38e8585dc2b07491eee6c288764511a6c6a0a5d06c339c91ab6a4164bea8
   ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
   ast-crispr (7.1.15) sha256=1529bf09cd2e57f4dbbd6a69447c0bceb8197276af2e9b9e5d4c28108a29986d
   ast-crispr-markdown-markly (7.1.15) sha256=e8ecb15f21ec0668aebf71c6fb854d7adbbd985447e968dff3f94505ed70780f
