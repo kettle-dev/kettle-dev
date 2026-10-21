@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Release step 18 now attaches the built gem and its checksums to the GitHub release. Standalone releases and family members excluded from the aggregate release (e.g. kettle-jem in structuredmerge-ruby) were previously created assetless; family aggregate members still get assets from the family's closing aggregate and are unaffected
+
 ### Security
 
 ## [3.1.20] - 2026-10-21

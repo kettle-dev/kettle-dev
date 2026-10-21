@@ -590,7 +590,7 @@ module Kettle
         # 18. create GitHub release (optional)
         if run_step?(18)
           version ||= detect_version
-          created, message = maybe_create_github_release!(version)
+          created, message = maybe_create_github_release!(version, assets: github_release_assets(version))
           abort("GitHub release creation failed: #{message}") if github_release_required? && !created
         end
 
@@ -3323,6 +3323,20 @@ module Kettle
           require "digest"
           Digest::SHA256.file(path).hexdigest
         end
+      end
+
+      # Assets attached to the GitHub release: the built gem and its
+      # checksums. Family aggregate members skip this step entirely
+      # (KETTLE_RELEASE_SKIP_GITHUB_RELEASE) and get assets from the family's
+      # closing aggregate; this covers standalone releases and
+      # aggregate-excluded members, whose releases were created assetless.
+      def github_release_assets(version)
+        gem_name = detect_gem_name
+        candidates = [gem_file_for_version(version)]
+        %w[sha256 sha512].each do |algorithm|
+          candidates << File.join(@root, "checksums", "#{gem_name}-#{version}.gem.#{algorithm}")
+        end
+        candidates.compact.select { |path| File.file?(path) }
       end
 
       # If GITHUB_TOKEN is present, create a GitHub release for the given version tag.

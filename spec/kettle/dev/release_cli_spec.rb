@@ -166,6 +166,44 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
       local_cli.send(:run_with_release_environment)
     end
 
+    it "attaches the built gem and its checksums when creating the GitHub release" do
+      local_cli = described_class.new(start_step: 18, skip_steps: [19])
+      expected_assets = [
+        "pkg/mygem-1.2.3.gem",
+        "checksums/mygem-1.2.3.gem.sha256",
+        "checksums/mygem-1.2.3.gem.sha512"
+      ]
+
+      allow(local_cli).to receive_messages(
+        detect_version: "1.2.3",
+        detect_gem_name: "mygem",
+        github_release_assets: expected_assets,
+        close_generated_branch_stack_pull_request!: nil
+      )
+      allow(local_cli).to receive(:maybe_create_github_release!).and_return([true, "ok"])
+
+      local_cli.send(:run_with_release_environment)
+
+      expect(local_cli).to have_received(:maybe_create_github_release!).with("1.2.3", assets: expected_assets)
+    end
+
+    it "collects only the release assets that exist on disk" do
+      Dir.mktmpdir do |root|
+        allow(ci_helpers).to receive(:project_root).and_return(root)
+        FileUtils.mkdir_p(File.join(root, "pkg"))
+        FileUtils.mkdir_p(File.join(root, "checksums"))
+        gem_path = File.join(root, "pkg", "mygem-1.2.3.gem")
+        File.write(gem_path, "gem")
+        sha256_path = File.join(root, "checksums", "mygem-1.2.3.gem.sha256")
+        File.write(sha256_path, "sha")
+        local_cli = described_class.new
+
+        allow(local_cli).to receive(:detect_gem_name).and_return("mygem")
+
+        expect(local_cli.send(:github_release_assets, "1.2.3")).to eq([gem_path, sha256_path])
+      end
+    end
+
     it "maps common release commands to stable command step names" do
       local_cli = described_class.new
 
