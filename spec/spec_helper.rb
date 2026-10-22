@@ -195,7 +195,19 @@ RSpec.configure do |config|
       "KETTLE_RELEASE_1PASSWORD_GEM_SIGNING_PASSPHRASE_FIELD" => nil,
       "KETTLE_RELEASE_1PASSWORD_RUBYGEMS_OTP_FIELD" => nil,
       "KETTLE_RELEASE_1PASSWORD_GEM_SIGNING_PASSPHRASE_REFERENCE" => nil,
-      "KETTLE_RELEASE_1PASSWORD_RUBYGEMS_OTP_REFERENCE" => nil
+      "KETTLE_RELEASE_1PASSWORD_RUBYGEMS_OTP_REFERENCE" => nil,
+      # Local-dev sibling toggles steer release flow behavior (e.g.
+      # KETTLE_DEV_DEV makes run_changelog! inject KETTLE_CHANGELOG_DEV_ROOT),
+      # and the family root mise.toml [env] exports KETTLE_DEV_DEV into every
+      # shell — ambient values must never steer specs. Examples exercising
+      # local-mode behavior stub these explicitly.
+      "KETTLE_DEV_DEV" => nil,
+      "K_JEM_TEMPLATING" => nil,
+      "STRUCTUREDMERGE_DEV" => nil,
+      "TREE_SITTER_LANGUAGE_PACK_DEV" => nil,
+      "RUBOCOP_LTS_LOCAL" => nil,
+      "GALTZO_FLOSS_DEV" => nil,
+      "UR_BRAIN_DEV" => nil
     )
 
     # Speed up polling loops
