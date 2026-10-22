@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- kettle-release: publish-boundary lockfile revalidation no longer commits, pushes, or re-triggers CI from a detached checkout. Family member publishes run in a detached worktree the family orchestrator owns end-to-end (branch state, CI validation, tags, GitHub release), and a bare detached HEAD has no branch to push; lockfile drift now stays local to the checkout in both topologies instead of dying in validation-PR creation against a literal HEAD ref. See https://github.com/kettle-dev/kettle-dev/issues/52
-
 ### Security
+
+## [3.1.23] - 2026-10-22
+
+- TAG: [v3.1.23][3.1.23t]
+- COVERAGE: 91.74% -- 5810/6333 lines in 48 files
+- BRANCH COVERAGE: 75.81% -- 2238/2952 branches in 48 files
+- 53.70% documented
+
+### Fixed
+
+- kettle-release: publish-boundary lockfile revalidation no longer commits, pushes, or re-triggers CI from a detached checkout. Family member publishes run in a detached worktree the family orchestrator owns end-to-end (branch state, CI validation, tags, GitHub release), and a bare detached HEAD has no branch to push; lockfile drift now stays local to the checkout in both topologies instead of dying in validation-PR creation against a literal HEAD ref. See https://github.com/kettle-dev/kettle-dev/issues/52
 
 ## [3.1.22] - 2026-10-21
 
@@ -4224,7 +4233,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.22...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.23...HEAD
+[3.1.23]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.22...v3.1.23
+[3.1.23t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.23
 [3.1.22]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.21...v3.1.22
 [3.1.22t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.22
 [3.1.21]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.20...v3.1.21
