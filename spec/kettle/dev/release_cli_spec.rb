@@ -2580,6 +2580,91 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         end
       end
 
+      describe "publish-boundary dependency upgrades" do
+        def with_publish_upgrade(changed: true, local_ci: false)
+          with_release_root do |root, local_cli|
+            lockfile = File.join(root, "Gemfile.lock")
+            File.write(File.join(root, "Gemfile"), "source 'https://gem.coop'\n")
+            File.write(lockfile, "old matching release\n")
+            old_snapshot = local_cli.send(:release_task_lockfile_path)
+            git = local_cli.instance_variable_get(:@git)
+            allow(git).to receive(:diff_head_quiet?).with(lockfile).and_return(!changed)
+            allow(local_cli).to receive(:reset_release_lockfiles!) do
+              File.write(lockfile, "latest matching release\n") if changed
+            end
+            allow(local_cli).to receive(:validate_release_lockfiles!)
+            allow(local_cli).to receive(:prepare_release_lockfiles_for_release_tasks!)
+            allow(local_cli).to receive(:ensure_git_user!)
+            allow(local_cli).to receive(:commit_bundle_update!).and_return(true)
+            allow(local_cli).to receive(:local_ci?).and_return(local_ci)
+            allow(local_cli).to receive(:detect_trunk_branch).and_return("main")
+            allow(local_cli).to receive(:current_branch).and_return("main")
+            allow(local_cli).to receive(:branch_stack_release_branch?).and_return(false)
+            allow(local_cli).to receive(:ensure_trunk_synced_before_push!)
+            allow(local_cli).to receive(:push!)
+            allow(local_cli).to receive(:monitor_workflows_after_push!)
+            allow(local_cli).to receive(:maybe_run_local_ci_before_push!)
+            allow(local_cli).to receive(:materialize_release_lockfiles_for_release_tasks!) do
+              local_cli.send(:release_task_lockfile_path)
+            end
+            begin
+              yield(local_cli, lockfile, old_snapshot)
+            ensure
+              local_cli.send(:cleanup_release_task_lockfile!)
+            end
+          end
+        end
+
+        it "commits upgrades, validates them, and refreshes the build snapshot after CI" do
+          with_publish_upgrade do |local_cli, lockfile, snapshot|
+            expect(local_cli).to receive(:commit_bundle_update!).ordered.and_return(true)
+            expect(local_cli).to receive(:validate_release_lockfiles!).with(stage: "after publish lockfile update").ordered
+            expect(local_cli).to receive(:push!).ordered
+            expect(local_cli).to receive(:monitor_workflows_after_push!).ordered
+            expect(local_cli).to receive(:materialize_release_lockfiles_for_release_tasks!).ordered do
+              local_cli.send(:release_task_lockfile_path)
+            end
+            local_cli.send(:normalize_release_lockfiles_before_publish_tasks!)
+            expect(File.read(snapshot)).to eq(File.read(lockfile))
+            expect(File.read(snapshot)).to eq("latest matching release\n")
+          end
+        end
+
+        it "does not commit or rerun CI when the reset leaves tracked locks unchanged" do
+          with_publish_upgrade(changed: false) do |local_cli|
+            expect(local_cli).not_to receive(:commit_bundle_update!)
+            expect(local_cli).not_to receive(:push!)
+            expect(local_cli).not_to receive(:monitor_workflows_after_push!)
+            local_cli.send(:normalize_release_lockfiles_before_publish_tasks!)
+          end
+        end
+
+        it "forces local validation for an upgraded local CI release" do
+          with_publish_upgrade(local_ci: true) do |local_cli|
+            expect(local_cli).to receive(:maybe_run_local_ci_before_push!).with(true, force: true)
+            expect(local_cli).not_to receive(:push!)
+            local_cli.send(:normalize_release_lockfiles_before_publish_tasks!)
+          end
+        end
+
+        it "stops before building when the upgrade cannot be committed" do
+          with_publish_upgrade do |local_cli|
+            allow(local_cli).to receive(:commit_bundle_update!).and_return(false)
+            expect(local_cli).not_to receive(:materialize_release_lockfiles_for_release_tasks!)
+            expect { local_cli.send(:normalize_release_lockfiles_before_publish_tasks!) }.to raise_error(MockSystemExit, /Failed to commit/)
+          end
+        end
+
+        it "stops before building when CI rejects the upgraded dependencies" do
+          with_publish_upgrade do |local_cli|
+            allow(local_cli).to receive(:monitor_workflows_after_push!).and_raise(SystemExit.new(1))
+            expect(local_cli).not_to receive(:materialize_release_lockfiles_for_release_tasks!)
+            expect { local_cli.send(:normalize_release_lockfiles_before_publish_tasks!) }.to raise_error(SystemExit)
+            expect(local_cli.instance_variable_get(:@release_lockfiles_normalized_before_publish)).to be_nil
+          end
+        end
+      end
+
       it "skips publish-boundary normalization when the project has no tracked lockfiles" do
         Dir.mktmpdir do |root|
           allow(ci_helpers).to receive(:project_root).and_return(root)

@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Release now detects tracked lockfile changes from the final dependency upgrade, commits them and reruns CI before publication, and refreshes build lockfile snapshots to use the validated versions. Unchanged lockfiles proceed without another CI run.
+
 ### Security
 
 ## [3.1.21] - 2026-10-21

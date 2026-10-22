@@ -828,8 +828,29 @@ module Kettle
         reset_release_lockfiles!(stage: "before publish tasks")
         validate_release_lockfiles!(stage: "before publish tasks")
         prepare_release_lockfiles_for_release_tasks!
+        revalidate_publish_lockfile_changes! unless changed_release_lockfile_paths.empty?
+        # Setup may already have cached task snapshots before a newer matching
+        # release became available. Build against the final canonical locks.
+        cleanup_release_task_lockfile!
         materialize_release_lockfiles_for_release_tasks!
         @release_lockfiles_normalized_before_publish = true
+      end
+
+      def revalidate_publish_lockfile_changes!
+        puts "Release lockfiles changed before publication; committing updates and rerunning CI."
+        ensure_git_user!
+        abort("Failed to commit updated release lockfiles.") unless commit_bundle_update!
+        validate_release_lockfiles!(stage: "after publish lockfile update")
+
+        if local_ci?
+          maybe_run_local_ci_before_push!(true, force: true)
+        else
+          trunk = detect_trunk_branch
+          feature = current_branch
+          ensure_trunk_synced_before_push!(trunk, feature) unless branch_stack_release_branch?(feature, trunk)
+          push!
+          monitor_workflows_after_push!
+        end
       end
 
       # Resetting can select a platform-specific artifact that is not installed
