@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Release now detects tracked lockfile changes from the final dependency upgrade, commits them and reruns CI before publication, and refreshes build lockfile snapshots to use the validated versions. Unchanged lockfiles proceed without another CI run.
-
 ### Security
+
+## [3.1.22] - 2026-10-21
+
+- TAG: [v3.1.22][3.1.22t]
+- COVERAGE: 91.34% -- 5780/6328 lines in 48 files
+- BRANCH COVERAGE: 75.56% -- 2229/2950 branches in 48 files
+- 53.70% documented
+
+### Fixed
+
+- Release now detects tracked lockfile changes from the final dependency upgrade, commits them and reruns CI before publication, and refreshes build lockfile snapshots to use the validated versions. Unchanged lockfiles proceed without another CI run.
 
 ## [3.1.21] - 2026-10-21
 
@@ -4213,7 +4222,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.21...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.22...HEAD
+[3.1.22]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.21...v3.1.22
+[3.1.22t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.22
 [3.1.21]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.20...v3.1.21
 [3.1.21t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.21
 [3.1.20]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.19...v3.1.20
