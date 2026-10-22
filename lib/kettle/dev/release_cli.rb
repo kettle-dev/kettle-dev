@@ -837,6 +837,19 @@ module Kettle
       end
 
       def revalidate_publish_lockfile_changes!
+        # Release checkout topology: a family member publish runs in a
+        # detached worktree owned end-to-end by the family orchestrator (trunk
+        # sync, branch pushes, CI validation, tags, and the GitHub release all
+        # happen on the primary checkout), and a bare detached HEAD has no
+        # branch to push either. Committing or pushing branch state from here
+        # is void-to-meaningless (the worktree is deleted after the run), so
+        # drift stays local to this checkout; the built gem does not embed the
+        # development lockfile.
+        if family_member_publish? || detached_head?
+          puts "Release lockfiles changed before publication; keeping updates local to this checkout (no release branch to push)."
+          return
+        end
+
         puts "Release lockfiles changed before publication; committing updates and rerunning CI."
         ensure_git_user!
         abort("Failed to commit updated release lockfiles.") unless commit_bundle_update!
@@ -851,6 +864,10 @@ module Kettle
           push!
           monitor_workflows_after_push!
         end
+      end
+
+      def detached_head?
+        current_branch == "HEAD"
       end
 
       # Resetting can select a platform-specific artifact that is not installed

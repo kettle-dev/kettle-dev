@@ -2663,6 +2663,31 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
             expect(local_cli.instance_variable_get(:@release_lockfiles_normalized_before_publish)).to be_nil
           end
         end
+
+        it "keeps upgraded locks worktree-local in family member publish mode without committing, pushing, or rerunning CI" do
+          with_publish_upgrade do |local_cli, lockfile, snapshot|
+            allow(local_cli).to receive(:family_member_publish?).and_return(true)
+            expect(local_cli).not_to receive(:commit_bundle_update!)
+            expect(local_cli).not_to receive(:ensure_trunk_synced_before_push!)
+            expect(local_cli).not_to receive(:push!)
+            expect(local_cli).not_to receive(:monitor_workflows_after_push!)
+            expect(local_cli).to receive(:materialize_release_lockfiles_for_release_tasks!).ordered do
+              local_cli.send(:release_task_lockfile_path)
+            end
+            local_cli.send(:normalize_release_lockfiles_before_publish_tasks!)
+            expect(File.read(snapshot)).to eq("latest matching release\n")
+          end
+        end
+
+        it "keeps upgraded locks local on a detached HEAD outside family mode without pushing or rerunning CI" do
+          with_publish_upgrade do |local_cli|
+            allow(local_cli).to receive(:current_branch).and_return("HEAD")
+            expect(local_cli).not_to receive(:commit_bundle_update!)
+            expect(local_cli).not_to receive(:push!)
+            expect(local_cli).not_to receive(:monitor_workflows_after_push!)
+            local_cli.send(:normalize_release_lockfiles_before_publish_tasks!)
+          end
+        end
       end
 
       it "skips publish-boundary normalization when the project has no tracked lockfiles" do

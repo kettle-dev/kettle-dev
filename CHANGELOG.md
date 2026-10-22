@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- kettle-release: publish-boundary lockfile revalidation no longer commits, pushes, or re-triggers CI from a detached checkout. Family member publishes run in a detached worktree the family orchestrator owns end-to-end (branch state, CI validation, tags, GitHub release), and a bare detached HEAD has no branch to push; lockfile drift now stays local to the checkout in both topologies instead of dying in validation-PR creation against a literal HEAD ref. See https://github.com/kettle-dev/kettle-dev/issues/52
+
 ### Security
 
 ## [3.1.22] - 2026-10-21
