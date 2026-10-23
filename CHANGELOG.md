@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Markdown reference validator: keep GitHub's leading hyphen for emoji-led headings (e.g. '## 🔧 Basic Usage' anchors at '#-basic-usage'); previously slugify stripped it and the pre-release check rejected valid README links
+
 ### Security
 
 ## [3.1.23] - 2026-10-22

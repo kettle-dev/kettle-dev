@@ -254,13 +254,10 @@ module Kettle
       end
 
       def slugify(text)
-        text.to_s.gsub(/<[^>]+>/, "").downcase
+        text.to_s.gsub(/<[^>]+>/, "").strip.downcase
           .gsub(/[*_~`]/, "")
           .gsub(/[^\p{Alnum}\s-]/u, "")
           .gsub(/\s+/, "-")
-          .squeeze("-")
-          .sub(/\A-/, "")
-          .sub(/-\z/, "")
       end
     end
   end

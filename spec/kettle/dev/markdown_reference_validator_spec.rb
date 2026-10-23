@@ -98,6 +98,20 @@ RSpec.describe Kettle::Dev::MarkdownReferenceValidator do
     end
   end
 
+  it "keeps the leading hyphen GitHub generates for emoji-led headings" do
+    Dir.mktmpdir do |root|
+      write_markdown(root, "README.md", <<~MD)
+        ## 🔧 Basic Usage
+
+        Following [Basic Usage](#-basic-usage) above.
+      MD
+
+      report = described_class.new(root: root, files: ["README.md"]).validate!
+
+      expect(report.issues).to be_empty
+    end
+  end
+
   it "uses GitHub-style suffixes for duplicate headings" do
     Dir.mktmpdir do |root|
       write_markdown(root, "README.md", <<~MD)
