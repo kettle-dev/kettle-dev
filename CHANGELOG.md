@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- Markdown reference validator: keep GitHub's leading hyphen for emoji-led headings (e.g. '## 🔧 Basic Usage' anchors at '#-basic-usage'); previously slugify stripped it and the pre-release check rejected valid README links
-
 ### Security
+
+## [3.1.24] - 2026-10-23
+
+- TAG: [v3.1.24][3.1.24t]
+- COVERAGE: 91.85% -- 5817/6333 lines in 48 files
+- BRANCH COVERAGE: 75.71% -- 2235/2952 branches in 48 files
+- 53.70% documented
+
+### Fixed
+
+- Markdown reference validator: keep GitHub's leading hyphen for emoji-led headings (e.g. '## 🔧 Basic Usage' anchors at '#-basic-usage'); previously slugify stripped it and the pre-release check rejected valid README links
 
 ## [3.1.23] - 2026-10-22
 
@@ -4235,7 +4244,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.23...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.24...HEAD
+[3.1.24]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.23...v3.1.24
+[3.1.24t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.24
 [3.1.23]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.22...v3.1.23
 [3.1.23t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.23
 [3.1.22]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.21...v3.1.22
