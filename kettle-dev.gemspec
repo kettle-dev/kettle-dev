@@ -136,7 +136,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency("kettle-test", "~> 2.0", ">= 2.0.27")              # ruby >= 2.4
   spec.add_dependency("ruby-progressbar", "~> 1.13")                    # ruby >= 0
   spec.add_dependency("tty-progressbar", "~> 0.18")                     # ruby >= 2.0.0
-  spec.add_dependency("version_gem", "~> 1.1", ">= 1.1.15")              # ruby >= 2.2.0
+  spec.add_dependency("version_gem", "~> 1.1", ">= 1.1.16")              # ruby >= 2.2.0
 
   # NOTE: It is preferable to list development dependencies in the gemspec due to increased
   #       visibility and discoverability.
