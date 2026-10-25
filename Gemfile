@@ -80,7 +80,7 @@ if direct_sibling_gems.any? &&
 
     eval_nomono_gems(
       gems: direct_sibling_gems,
-      requirements: {"kettle-gha-pins" => ["~> 0.3", ">= 0.3.18"], "kettle-ndjson" => ["~> 0.1", ">= 0.1.20"], "kettle-rb" => ["~> 0.1", ">= 0.1.19"], "kettle-test" => ["~> 2.0", ">= 2.0.27"]},
+      requirements: {"kettle-gha-pins" => ["~> 0.3", ">= 0.3.18"], "kettle-ndjson" => ["~> 0.1", ">= 0.1.22"], "kettle-rb" => ["~> 0.1", ">= 0.1.20"], "kettle-test" => ["~> 2.0", ">= 2.0.27"]},
       prefix: "KETTLE_DEV",
       path_env: "KETTLE_DEV_DEV",
       root: ["src", "my", "kettle-dev"]
