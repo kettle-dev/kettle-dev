@@ -771,17 +771,21 @@ RSpec.describe Kettle::Dev::CIHelpers do
       slots = []
       threads = 8.times.map do
         Thread.new do # rubocop:disable ThreadSafety/NewThread -- the hammering scenario is the point: concurrent claimers must serialize through the flock without wedging
-          10.times { slots << described_class.claim_ci_rate_slot }
+          10.times do
+            wait = described_class.claim_ci_rate_slot
+            # Waits shrink as wall time passes, so compare absolute slots. Read
+            # the clock after the claim returns: contention for the lock must
+            # not skew the slot estimate on slow runtimes (TruffleRuby).
+            slots << (Time.now.to_f + wait)
+          end
         end
       end
       threads.each(&:join)
 
-      # 80 claims against one ledger: the waits handed out must be distinct
-      # reserved offsets — 0 for the first, then one interval apart — which is
-      # only possible if every claim serialized through the flock correctly.
-      waits = slots.sort
-      expect(waits.first).to eq(0.0)
-      waits.each_cons(2) do |a, b|
+      # 80 claims against one ledger: the reserved slots must be distinct and
+      # one interval apart, which is only possible if every claim serialized
+      # through the flock correctly.
+      slots.sort.each_cons(2) do |a, b|
         expect(b - a).to be > interval * 0.5
       end
     end
