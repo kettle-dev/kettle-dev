@@ -12,5 +12,7 @@
 # | # ./spec/config/vcr.rb:3:in `<top (required)>'
 # | # ./spec/spec_helper.rb:8:in `require_relative'
 # | # ./spec/spec_helper.rb:8:in `<top (required)>'
-gem "vcr", ">= 6.4.0"
-gem "webmock", ">= 3.34.0"
+# kettle-jem:freeze
+gem "vcr", ">= 6" # 6.4+ requires ruby >= 2.7
+gem "webmock", ">= 3", "< 3.34" # 3.34+ requires ruby >= 2.6
+# kettle-jem:unfreeze
