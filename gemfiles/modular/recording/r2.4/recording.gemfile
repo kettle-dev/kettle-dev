@@ -13,6 +13,6 @@
 # | # ./spec/spec_helper.rb:8:in `require_relative'
 # | # ./spec/spec_helper.rb:8:in `<top (required)>'
 gem "vcr", "< 4"
-gem "webmock", ">= 3.34.0"
+gem "webmock", ">= 3", "< 3.25" # 3.25+ requires ruby >= 2.5
 
 # For now turning off Ruby 2.4 testing.
