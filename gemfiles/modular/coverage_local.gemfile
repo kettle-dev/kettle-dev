@@ -6,7 +6,7 @@
 # Bootstrapping nomono here cannot rely on a plain `gem "nomono", ...` line.
 # Bundler records that dependency during Gemfile evaluation, but it does not
 # activate that exact version before the immediate `require "nomono/bundler"`.
-nomono_activation_requirements = ["~> 1.1", ">= 1.1.15"]
+nomono_activation_requirements = ["~> 1.1", ">= 1.1.16"]
 nomono_requirement = Gem::Requirement.new(nomono_activation_requirements)
 nomono_already_activated = Gem.loaded_specs["nomono"]
 nomono_lockfile = File.expand_path("../../Gemfile.lock", __dir__)
@@ -39,7 +39,7 @@ else
   require "nomono/bundler"
 end
 
-local_gem_requirements = {"anonymous_loader" => ["~> 0.1", ">= 0.1.4"], "appraisal2" => ["~> 3.2", ">= 3.2.6"], "bundler-audit" => ["~> 0.9.3"], "emoji_regex" => [">= 15.0"], "gitmoji-regex" => ["~> 2.0", ">= 2.0.15"], "kettle-gha-pins" => ["~> 0.3", ">= 0.3.18"], "kettle-ndjson" => ["~> 0.1", ">= 0.1.22"], "kettle-rb" => ["~> 0.1", ">= 0.1.20"], "kettle-test" => ["~> 2.0", ">= 2.0.27"], "rake" => ["~> 13.0"], "require_bench" => ["~> 1.0", ">= 1.0.4"], "ruby-progressbar" => ["~> 1.13"], "stone_checksums" => ["~> 1.0", ">= 1.0.9"], "tty-progressbar" => ["~> 0.18"], "turbo_tests2" => ["~> 4.0", ">= 4.0.0"], "version_gem" => ["~> 1.1", ">= 1.1.16"]}
+local_gem_requirements = {"anonymous_loader" => ["~> 0.1", ">= 0.1.5"], "appraisal2" => ["~> 3.2", ">= 3.2.6"], "bundler-audit" => ["~> 0.9.3"], "emoji_regex" => [">= 15.0"], "gitmoji-regex" => ["~> 2.0", ">= 2.0.15"], "kettle-gha-pins" => ["~> 0.3", ">= 0.3.19"], "kettle-ndjson" => ["~> 0.1", ">= 0.1.22"], "kettle-rb" => ["~> 0.1", ">= 0.1.20"], "kettle-test" => ["~> 2.0", ">= 2.0.28"], "rake" => ["~> 13.0"], "require_bench" => ["~> 1.0", ">= 1.0.4"], "ruby-progressbar" => ["~> 1.13"], "stone_checksums" => ["~> 1.0", ">= 1.0.9"], "tty-progressbar" => ["~> 0.18"], "turbo_tests2" => ["~> 4.0", ">= 4.0.0"], "version_gem" => ["~> 1.1", ">= 1.1.17"]}
 
 local_gems = %w[kettle-deps-floor kettle-family kettle-rb kettle-test kettle-soup-cover kettle-changelog kettle-drift]
 kettle_dev_nomono_options = {
