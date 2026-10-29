@@ -22,6 +22,23 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [3.1.26] - 2026-10-28
+
+- TAG: [v3.1.26][3.1.26t]
+- COVERAGE: 92.03% -- 5828/6333 lines in 48 files
+- BRANCH COVERAGE: 75.91% -- 2241/2952 branches in 48 files
+- 53.70% documented
+
+### Changed
+
 - [kc] kettle-jem/prepare: updated 10 project files:
   - configuration (1)
   - dependencies (9)
@@ -32,14 +49,6 @@ Please file a bug if you notice a violation of semantic versioning.
   - documentation (1)
   - other (2)
   - workflows (2)
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [3.1.25] - 2026-10-25
 
@@ -4273,7 +4282,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.25...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.26...HEAD
+[3.1.26]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.25...v3.1.26
+[3.1.26t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.26
 [3.1.25]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.24...v3.1.25
 [3.1.25t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.25
 [3.1.24]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.23...v3.1.24
