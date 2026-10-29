@@ -134,7 +134,7 @@ Gem::Specification.new do |spec|
 
   # Utilities
   spec.add_dependency("emoji_regex", ">= 15.0")                         # ruby 2.4
-  spec.add_dependency("kettle-gha-pins", "~> 0.3", ">= 0.3.19")           # ruby >= 2.4.0
+  spec.add_dependency("kettle-gha-pins", "~> 0.3", ">= 0.3.20")           # ruby >= 2.4.0
   spec.add_dependency("kettle-ndjson", "~> 0.1", ">= 0.1.22")             # ruby >= 2.4.0
   spec.add_dependency("kettle-rb", "~> 0.1", ">= 0.1.20")                  # ruby >= 1.8.7
   spec.add_dependency("kettle-test", "~> 2.0", ">= 2.0.28")              # ruby >= 2.4
