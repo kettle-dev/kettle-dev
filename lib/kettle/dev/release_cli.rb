@@ -2044,7 +2044,7 @@ module Kettle
 
       def changed_bundle_lockfile_paths
         tracked, tracked_ok = git_output(["diff", "--name-only", "HEAD", "--"])
-        untracked, untracked_ok = git_output(["ls-files", "--others", "--exclude-standard"])
+        untracked, untracked_ok = git_output(["ls-files", "--others", "--exclude-standard", "--full-name"])
         return [] unless tracked_ok && untracked_ok
 
         (tracked.lines + untracked.lines).map(&:strip).reject(&:empty?).select { |path| bundle_lockfile_path?(path) }.uniq
@@ -2058,7 +2058,8 @@ module Kettle
       end
 
       def bundle_lockfile_path?(path)
-        path == "Gemfile.lock" || File.basename(path).end_with?(".lock")
+        basename = File.basename(path)
+        basename == "Gemfile.lock" || basename.end_with?(".gemfile.lock")
       end
 
       def reconcile_bundle_update_commit!
