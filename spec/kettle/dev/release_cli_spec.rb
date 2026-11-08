@@ -936,6 +936,27 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           /unrelated files are already staged.*release_cli\.rb/m
         )
       end
+
+      it "finds Bundler lockfiles without including generated locks in a nested package" do
+        Dir.mktmpdir do |root|
+          package = File.join(root, "packages", "ruby")
+          FileUtils.mkdir_p(File.join(package, "coverage"))
+          FileUtils.mkdir_p(File.join(package, "gemfiles"))
+          system("git", "init", "-q", root, exception: true)
+          system("git", "-C", root, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-q", "--allow-empty", "-m", "Initial", exception: true)
+          File.write(File.join(package, "Gemfile.lock"), "bundler lock\n")
+          File.write(File.join(package, "gemfiles", "ruby_3.gemfile.lock"), "appraisal lock\n")
+          File.write(File.join(package, "coverage", ".resultset.json.lock"), "coverage lock\n")
+          File.write(File.join(package, ".kettle-drift.lock"), "other lock\n")
+
+          allow(Kettle::Dev::GitAdapter).to receive(:new).and_call_original
+          local_cli = described_class.new
+          local_cli.instance_variable_set(:@git, Kettle::Dev::GitAdapter.new(package))
+          expect(local_cli.send(:changed_bundle_lockfile_paths)).to contain_exactly(
+            "packages/ruby/Gemfile.lock", "packages/ruby/gemfiles/ruby_3.gemfile.lock"
+          )
+        end
+      end
     end
 
     describe "#latest_released_versions" do
