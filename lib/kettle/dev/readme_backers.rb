@@ -20,7 +20,7 @@ module Kettle
       # Default README is the one in the current working directory of the host project
       README_PATH = File.expand_path("README.md", Dir.pwd)
       README_OSC_TAG_DEFAULT = "OPENCOLLECTIVE"
-      COMMIT_SUBJECT_DEFAULT = "💸 Thanks 🙏 to our new backers 🎒 and subscribers 📜"
+      COMMIT_SUBJECT_DEFAULT = "chore(readme): 💸 thank new backers and subscribers"
       # Deprecated constant maintained for backwards compatibility in tests/specs.
       # Prefer OpenCollectiveConfig.yaml_path going forward, but resolve to the host project root.
       OC_YML_PATH = OpenCollectiveConfig.yaml_path(Dir.pwd)

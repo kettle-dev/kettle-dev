@@ -2037,7 +2037,7 @@ module Kettle
 
         puts "Committing Bundler update in #{paths.length} lockfile(s)."
         abort("Failed to stage Bundler update lockfiles.") unless @git.add_repository_paths(paths)
-        abort("Failed to commit Bundler update lockfiles.") unless @git.commit_staged("🔒️ Update bundle", env: release_git_hook_environment)
+        abort("Failed to commit Bundler update lockfiles.") unless @git.commit_staged("chore(deps): 🔒️ update Bundler lockfiles", env: release_git_hook_environment)
         reconcile_bundle_update_commit!
         true
       end
@@ -2492,7 +2492,7 @@ module Kettle
       end
 
       def commit_release_prep!(version)
-        msg = "🔖 Prepare release v#{version}#{release_prep_ci_marker}"
+        msg = "chore(release): 🔖 prepare release v#{version}#{release_prep_ci_marker}"
         # Stage all changes (including new/untracked files) prior to committing
         abort("Failed to stage release prep changes.") unless @git.add_all
         out, _ = git_output(["status", "--porcelain"])

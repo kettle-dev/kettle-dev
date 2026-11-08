@@ -400,8 +400,8 @@ What it does:
     - Validates Markdown reference definitions and local heading anchors across releasable documentation before network checks.
       Markdown fixtures under `spec/` and `test/`, along with `tmp/`, are intentionally excluded.
     - Skips pre-release checks for any `start_step` greater than `0`, so resumptions begin directly at the requested numbered step.
-    - Verifies Bundler >= 2.7, updates the primary and appraisal bundles with `bundle update --bundler`, and commits those lockfiles separately as `🔒️ Update bundle` before release preparation.
-    - Runs sanity checks (`bin/setup`, `bin/rake`), confirms version/changelog, optionally updates Appraisals, regenerates docs via `bin/rake yard`, and commits “🔖 Prepare release vX.Y.Z”. Use `--skip-appraisals` only to omit appraisal generation while retaining documentation generation.
+    - Verifies Bundler >= 2.7, updates the primary and appraisal bundles with `bundle update --bundler`, and commits those lockfiles separately as `chore(deps): 🔒️ update Bundler lockfiles` before release preparation.
+    - Runs sanity checks (`bin/setup`, `bin/rake`), confirms version/changelog, optionally updates Appraisals, regenerates docs via `bin/rake yard`, and commits `chore(release): 🔖 prepare release vX.Y.Z`. Use `--skip-appraisals` only to omit appraisal generation while retaining documentation generation.
     - Optionally runs your CI locally with `act` before any push:
         - Enable with env: `K_RELEASE_LOCAL_CI="true"` (run automatically) or `K_RELEASE_LOCAL_CI="ask"` (prompt \[Y/n\]).
         - Select workflow with `K_RELEASE_LOCAL_CI_WORKFLOW` (with or without .yml/.yaml). Defaults to `locked_deps.yml` if present; otherwise the first workflow discovered.
@@ -476,7 +476,7 @@ What it does:
     - At release step 1, `kettle-release` runs the equivalent of
       `kettle-family bupb`: it updates the primary lockfile and, when present,
       `Appraisal.root.gemfile.lock`, resets appraisal locks, and commits only
-      those lockfiles as `🔒️ Update bundle`. This keeps Bundler maintenance in
+      those lockfiles as `chore(deps): 🔒️ update Bundler lockfiles`. This keeps Bundler maintenance in
       its own atomic commit. `kettle-changelog` writes changelog content but
       does not own this commit; the release helper commits release metadata
       separately.
@@ -743,10 +743,10 @@ versions that are newer than the latest released version.
     - If neither the backers nor sponsors tags are present, prints a helpful warning and exits with status 2.
     - When there are no entries, inserts a friendly placeholder: "No backers yet. Be the first\!" or "No sponsors yet. Be the first\!".
     - When updates are written and the repository is a git work tree, the script stages README.md and commits with a message thanking new backers and subscribers, including mentions for any newly added backers and subscribers (GitHub @handles when their website/profile is a github.com URL; otherwise their name).
-    - Customize the commit subject via env var: `KETTLE_README_BACKERS_COMMIT_SUBJECT="💸 Thanks 🙏 to our new backers 🎒 and subscribers 📜"`.
-        - Or via .opencollective.yml: set `readme-backers-commit-subject: "💸 Thanks 🙏 to our new backers 🎒 and subscribers 📜"`.
+    - Customize the commit subject via env var: `KETTLE_README_BACKERS_COMMIT_SUBJECT="chore(readme): 💸 thank new backers and subscribers"`.
+        - Or via .opencollective.yml: set `readme-backers-commit-subject: "chore(readme): 💸 thank new backers and subscribers"`.
         - Precedence: ENV overrides .opencollective.yml; if neither is set, a sensible default is used.
-        - Note: When used with the provided `.git-hooks`, the subject should start with a gitmoji character (see [gitmoji][📌gitmoji]).
+        - Use the format `type(scope): Gitmoji subject` (see [gitmoji][📌gitmoji]).
 - Tip:
     - Run this locally before committing to keep your README current, or schedule it in CI to refresh periodically.
     - It runs automatically on a once-a-week schedule by the .github/workflows/opencollective.yml workflow that is part of the kettle-jem template.

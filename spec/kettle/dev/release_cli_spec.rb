@@ -878,7 +878,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
           expect(local_cli).to receive(:run_cmd!).with("release bundle exec rake appraisal:reset").ordered
           expect(git).to receive(:add_repository_paths).with(paths).and_return(true)
           expect(git).to receive(:commit_staged)
-            .with("🔒️ Update bundle", env: hash_including("KETTLE_DEV_DEV" => "false"))
+            .with("chore(deps): 🔒️ update Bundler lockfiles", env: hash_including("KETTLE_DEV_DEV" => "false"))
             .and_return(true)
           expect(local_cli).to receive(:reconcile_bundle_update_commit!)
 
@@ -1170,7 +1170,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         allow(cli).to receive(:git_output).with(%w[status --porcelain]).and_return([" M file", true], ["", true])
         expect(git).to receive(:add_all).and_return(true)
         expect(git).to receive(:commit_all)
-          .with("🔖 Prepare release v1.0.0", env: hash_including("KETTLE_DEV_DEV" => "false"))
+          .with("chore(release): 🔖 prepare release v1.0.0", env: hash_including("KETTLE_DEV_DEV" => "false"))
           .and_return(true)
         expect(git).not_to receive(:commit_amend_no_edit)
         expect(cli.send(:commit_release_prep!, "1.0.0")).to be true

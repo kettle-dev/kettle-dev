@@ -701,8 +701,8 @@ Examples:</li>
       <li>Validates Markdown reference definitions and local heading anchors across releasable documentation before network checks.<br>
 Markdown fixtures under <code>spec/</code> and <code>test/</code>, along with <code>tmp/</code>, are intentionally excluded.</li>
       <li>Skips pre-release checks for any <code>start_step</code> greater than <code>0</code>, so resumptions begin directly at the requested numbered step.</li>
-      <li>Verifies Bundler &gt;= 2.7, updates the primary and appraisal bundles with <code>bundle update --bundler</code>, and commits those lockfiles separately as <code>🔒️ Update bundle</code> before release preparation.</li>
-      <li>Runs sanity checks (<code>bin/setup</code>, <code>bin/rake</code>), confirms version/changelog, optionally updates Appraisals, regenerates docs via <code>bin/rake yard</code>, and commits “🔖 Prepare release vX.Y.Z”. Use <code>--skip-appraisals</code> only to omit appraisal generation while retaining documentation generation.</li>
+      <li>Verifies Bundler &gt;= 2.7, updates the primary and appraisal bundles with <code>bundle update --bundler</code>, and commits those lockfiles separately as <code>chore(deps): 🔒️ update Bundler lockfiles</code> before release preparation.</li>
+      <li>Runs sanity checks (<code>bin/setup</code>, <code>bin/rake</code>), confirms version/changelog, optionally updates Appraisals, regenerates docs via <code>bin/rake yard</code>, and commits <code>chore(release): 🔖 prepare release vX.Y.Z</code>. Use <code>--skip-appraisals</code> only to omit appraisal generation while retaining documentation generation.</li>
       <li>Optionally runs your CI locally with <code>act</code> before any push:
         <ul>
           <li>Enable with env: <code>K_RELEASE_LOCAL_CI="true"</code> (run automatically) or <code>K_RELEASE_LOCAL_CI="ask"</code> (prompt [Y/n]).</li>
@@ -802,7 +802,7 @@ tracked development lockfiles.</li>
       <li>At release step 1, <code>kettle-release</code> runs the equivalent of<br>
 <code>kettle-family bupb</code>: it updates the primary lockfile and, when present,<br>
 <code>Appraisal.root.gemfile.lock</code>, resets appraisal locks, and commits only<br>
-those lockfiles as <code>🔒️ Update bundle</code>. This keeps Bundler maintenance in<br>
+those lockfiles as <code>chore(deps): 🔒️ update Bundler lockfiles</code>. This keeps Bundler maintenance in<br>
 its own atomic commit. <code>kettle-changelog</code> writes changelog content but<br>
 does not own this commit; the release helper commits release metadata<br>
 separately.</li>
@@ -1192,11 +1192,11 @@ prints a recommended <code>kettle-gha-sha-pins --write --upgrade patch</code> co
       <li>If neither the backers nor sponsors tags are present, prints a helpful warning and exits with status 2.</li>
       <li>When there are no entries, inserts a friendly placeholder: “No backers yet. Be the first!” or “No sponsors yet. Be the first!”.</li>
       <li>When updates are written and the repository is a git work tree, the script stages README.md and commits with a message thanking new backers and subscribers, including mentions for any newly added backers and subscribers (GitHub @handles when their website/profile is a github.com URL; otherwise their name).</li>
-      <li>Customize the commit subject via env var: <code>KETTLE_README_BACKERS_COMMIT_SUBJECT="💸 Thanks 🙏 to our new backers 🎒 and subscribers 📜"</code>.
+      <li>Customize the commit subject via env var: <code>KETTLE_README_BACKERS_COMMIT_SUBJECT="chore(readme): 💸 thank new backers and subscribers"</code>.
         <ul>
-          <li>Or via .opencollective.yml: set <code>readme-backers-commit-subject: "💸 Thanks 🙏 to our new backers 🎒 and subscribers 📜"</code>.</li>
+          <li>Or via .opencollective.yml: set <code>readme-backers-commit-subject: "chore(readme): 💸 thank new backers and subscribers"</code>.</li>
           <li>Precedence: ENV overrides .opencollective.yml; if neither is set, a sensible default is used.</li>
-          <li>Note: When used with the provided <code>.git-hooks</code>, the subject should start with a gitmoji character (see <a href="https://gitmoji.dev">gitmoji</a>).</li>
+          <li>Use the format <code>type(scope): Gitmoji subject</code> (see <a href="https://gitmoji.dev">gitmoji</a>).</li>
         </ul>
       </li>
     </ul>

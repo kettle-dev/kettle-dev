@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- kettle-release and readme-backers: use `type(scope): Gitmoji subject` messages for generated commits, compatible with Poly and Kettle Jem hooks.
+
 ### Security
 
 ## [3.1.27] - 2026-11-08

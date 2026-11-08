@@ -24,7 +24,7 @@ Follow these instructions:
 2. Fork the repository
 3. Create your feature branch (`git checkout -b my-new-feature`)
 4. Make some fixes.
-5. Commit your changes (`git commit -am 'Added some feature'`)
+5. Commit your changes with a Conventional Commit prefix followed by a Gitmoji (for example, `git commit -am 'feat(core): ✨ add feature'`)
 6. Push to the branch (`git push origin my-new-feature`)
 7. Make sure to add tests for it. This is important, so it doesn't break in a future release.
 8. Create new Pull Request.
@@ -244,7 +244,7 @@ NOTE: To build without signing the gem set `SKIP_GEM_SIGNING` to any value in th
 2. Update the version number in `version.rb`, and ensure `CHANGELOG.md` reflects changes
 3. Run `bin/setup && bin/rake` again as a secondary check, and to update `Gemfile.lock`
 4. Run `bin/rake yard` to regenerate the docs site using the canonical docs task
-5. Run `git commit -am "🔖 Prepare release v<VERSION>"` to commit the changes
+5. Run `git commit -am "chore(release): 🔖 prepare release v<VERSION>"` to commit the changes
 6. Run `git push` to trigger the final CI pipeline before release, and merge PRs
     - NOTE: Remember to [check the build][🧪build].
 7. Run `export GIT_TRUNK_BRANCH_NAME="$(git remote show origin | grep 'HEAD branch' | cut -d ' ' -f5)" && echo $GIT_TRUNK_BRANCH_NAME`

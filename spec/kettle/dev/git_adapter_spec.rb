@@ -48,7 +48,7 @@ RSpec.describe Kettle::Dev::GitAdapter, :real_git_adapter do
         adapter = described_class.new(root)
         environment = {"KETTLE_DEV_DEV" => "false", "BUNDLE_GEMFILE" => nil}
 
-        expect(adapter.commit_staged("🔒️ Update bundle", env: environment)).to be(true)
+        expect(adapter.commit_staged("chore(deps): 🔒️ update Bundler lockfiles", env: environment)).to be(true)
         expect(File.read(File.join(root, "hook-environment.txt"))).to eq("false|unset")
       end
     end
@@ -296,19 +296,19 @@ RSpec.describe Kettle::Dev::GitAdapter, :real_git_adapter do
 
     it "commits only changes already staged by the caller" do
       adapter = described_class.new
-      allow(adapter).to receive(:system).with("git", "commit", "-m", "🔒️ Update bundle").and_return(true)
+      allow(adapter).to receive(:system).with("git", "commit", "-m", "chore(deps): 🔒️ update Bundler lockfiles").and_return(true)
 
-      expect(adapter.commit_staged("🔒️ Update bundle")).to be true
-      expect(adapter).to have_received(:system).with("git", "commit", "-m", "🔒️ Update bundle")
+      expect(adapter.commit_staged("chore(deps): 🔒️ update Bundler lockfiles")).to be true
+      expect(adapter).to have_received(:system).with("git", "commit", "-m", "chore(deps): 🔒️ update Bundler lockfiles")
     end
 
     it "passes an explicit environment to commit hooks" do
       adapter = described_class.new
       environment = {"KETTLE_DEV_DEV" => "false"}
-      allow(adapter).to receive(:system).with(environment, "git", "commit", "-m", "🔒️ Update bundle").and_return(true)
+      allow(adapter).to receive(:system).with(environment, "git", "commit", "-m", "chore(deps): 🔒️ update Bundler lockfiles").and_return(true)
 
-      expect(adapter.commit_staged("🔒️ Update bundle", env: environment)).to be true
-      expect(adapter).to have_received(:system).with(environment, "git", "commit", "-m", "🔒️ Update bundle")
+      expect(adapter.commit_staged("chore(deps): 🔒️ update Bundler lockfiles", env: environment)).to be true
+      expect(adapter).to have_received(:system).with(environment, "git", "commit", "-m", "chore(deps): 🔒️ update Bundler lockfiles")
     end
 
     it "uses env -u for nil-valued hook environment overrides on Unix" do
@@ -317,12 +317,12 @@ RSpec.describe Kettle::Dev::GitAdapter, :real_git_adapter do
       adapter = described_class.new
       environment = {"KETTLE_DEV_DEV" => "false", "BUNDLE_GEMFILE" => nil}
       allow(adapter).to receive(:system)
-        .with({}, "env", "-u", "BUNDLE_GEMFILE", "KETTLE_DEV_DEV=false", "git", "commit", "-m", "🔒️ Update bundle")
+        .with({}, "env", "-u", "BUNDLE_GEMFILE", "KETTLE_DEV_DEV=false", "git", "commit", "-m", "chore(deps): 🔒️ update Bundler lockfiles")
         .and_return(true)
 
-      expect(adapter.commit_staged("🔒️ Update bundle", env: environment)).to be(true)
+      expect(adapter.commit_staged("chore(deps): 🔒️ update Bundler lockfiles", env: environment)).to be(true)
       expect(adapter).to have_received(:system)
-        .with({}, "env", "-u", "BUNDLE_GEMFILE", "KETTLE_DEV_DEV=false", "git", "commit", "-m", "🔒️ Update bundle")
+        .with({}, "env", "-u", "BUNDLE_GEMFILE", "KETTLE_DEV_DEV=false", "git", "commit", "-m", "chore(deps): 🔒️ update Bundler lockfiles")
     end
 
     it "stages repository-root-relative paths from a monorepo subdirectory" do
