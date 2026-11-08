@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- kettle-release and readme-backers: use `type(scope): Gitmoji subject` messages for generated commits, compatible with Poly and Kettle Jem hooks.
-
 ### Security
+
+## [3.1.28] - 2026-11-08
+
+- TAG: [v3.1.28][3.1.28t]
+- COVERAGE: 91.76% -- 5812/6334 lines in 48 files
+- BRANCH COVERAGE: 75.58% -- 2231/2952 branches in 48 files
+- 53.70% documented
+
+### Fixed
+
+- kettle-release and readme-backers: use `type(scope): Gitmoji subject` messages for generated commits, compatible with Poly and Kettle Jem hooks.
 
 ## [3.1.27] - 2026-11-08
 
@@ -4295,7 +4304,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.27...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.28...HEAD
+[3.1.28]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.27...v3.1.28
+[3.1.28t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.28
 [3.1.27]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.26...v3.1.27
 [3.1.27t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.27
 [3.1.26]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.25...v3.1.26
