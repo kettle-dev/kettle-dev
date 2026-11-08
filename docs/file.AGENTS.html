@@ -260,6 +260,12 @@ Use the <code>K_SOUP_COV_MIN_HARD=false</code> environment variable to disable h
 <pre class="code language-bash"><code class="language-bash">mise exec -C /path/to/project -- env K_SOUP_COV_MIN_HARD=false bundle exec kettle-test spec/path/to/spec.rb
 </code></pre>
 
+<h3 id="changelog">Changelog</h3>
+
+<p>For every user-visible fix or feature, add an entry under <code>Unreleased</code> before<br>
+opening the PR. Use <code>bundle exec kettle-changelog --add-unreleased-entry</code> with<br>
+the appropriate <code>--section</code> and <code>--entry</code>; check the diff for the entry.</p>
+
 <h3 id="template-management-kettle-jem">Template Management (kettle-jem)</h3>
 
 <p>Run the full kettle-jem installer to sync project files with the latest template<br>

@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- kettle-release: exclude coverage and other non-Bundler lockfiles from Bundler update commits, and stage untracked Bundler lockfiles correctly in nested packages. Fixes #53.
-
 ### Security
+
+## [3.1.27] - 2026-11-08
+
+- TAG: [v3.1.27][3.1.27t]
+- COVERAGE: 92.00% -- 5827/6334 lines in 48 files
+- BRANCH COVERAGE: 75.91% -- 2241/2952 branches in 48 files
+- 53.70% documented
+
+### Fixed
+
+- kettle-release: exclude coverage and other non-Bundler lockfiles from Bundler update commits, and stage untracked Bundler lockfiles correctly in nested packages. Fixes #53.
 
 ## [3.1.26] - 2026-10-28
 
@@ -4284,7 +4293,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.26...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.27...HEAD
+[3.1.27]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.26...v3.1.27
+[3.1.27t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.27
 [3.1.26]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.25...v3.1.26
 [3.1.26t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.26
 [3.1.25]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.24...v3.1.25
