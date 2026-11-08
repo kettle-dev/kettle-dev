@@ -155,6 +155,12 @@ Use the `K_SOUP_COV_MIN_HARD=false` environment variable to disable hard failure
 mise exec -C /path/to/project -- env K_SOUP_COV_MIN_HARD=false bundle exec kettle-test spec/path/to/spec.rb
 ```
 
+### Changelog
+
+For every user-visible fix or feature, add an entry under `Unreleased` before
+opening the PR. Use `bundle exec kettle-changelog --add-unreleased-entry` with
+the appropriate `--section` and `--entry`; check the diff for the entry.
+
 ### Template Management (kettle-jem)
 
 Run the full kettle-jem installer to sync project files with the latest template

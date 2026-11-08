@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- kettle-release: exclude coverage and other non-Bundler lockfiles from Bundler update commits, and stage untracked Bundler lockfiles correctly in nested packages. Fixes #53.
+
 ### Security
 
 ## [3.1.26] - 2026-10-28
