@@ -137,6 +137,8 @@ if ARGV.include?("-h") || ARGV.include?("--help")
                                   # Use slower appraisal:update instead of default appraisal:generate
       KETTLE_DEV_SKIP_BUNDLE_AUDIT=true
                                   # Skip bundle:audit/update during release rake checks
+      KETTLE_DEV_SKIP_AUDIT_UPDATE=true
+                                  # Skip only bundle:audit:update (advisory-db pull); bundle:audit still runs
       GITHUB_TOKEN / GH_TOKEN     # Optional; enables GitHub release creation and API queries
       GITLAB_TOKEN / GL_TOKEN     # Optional; enables GitLab API queries when applicable
       DEBUG=true                  # Print backtraces on errors
