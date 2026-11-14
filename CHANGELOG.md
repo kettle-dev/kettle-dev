@@ -28,6 +28,11 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- `bundle:audit:update` is serialized across processes with a blocking `flock`
+  on a lock file next to the shared ruby-advisory-db, and a failed update is a
+  warning (audit uses the existing copy) when a local database exists. Fixes
+  `cannot lock ref 'refs/remotes/origin/master'` in parallel releases ([#57](https://github.com/kettle-dev/kettle-dev/issues/57)).
+
 ### Security
 
 ## [3.1.28] - 2026-11-08
@@ -1900,6 +1905,10 @@ Please file a bug if you notice a violation of semantic versioning.
 - 57.30% documented
 
 ### Added
+
+- `KETTLE_DEV_SKIP_AUDIT_UPDATE=true` (also `1`/`yes`/`on`) skips only
+  `bundle:audit:update` while `bundle:audit` still runs, so a coordinator such
+  as kettle-family can update the shared advisory database once ([#57](https://github.com/kettle-dev/kettle-dev/issues/57)).
 
 - `kettle-pre-release` now skips volatile star-history image URLs by default
   during Markdown image validation, and accepts additional
