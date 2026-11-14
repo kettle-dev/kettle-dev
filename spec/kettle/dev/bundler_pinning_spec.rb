@@ -95,6 +95,37 @@ RSpec.describe Kettle::Dev::BundlerPinning do
         .with(domain: :remote, prerelease: false, document: [])
         .and_return(installer)
       allow(Gem::Specification).to receive(:reset)
+      allow(described_class).to receive(:version_installed?).and_return(false)
+    end
+
+    it "does not reinstall an exact version that is already installed" do
+      allow(described_class).to receive(:version_installed?).with("4.0.23").and_return(true)
+
+      expect(described_class.install_stable("4.0.23")).to be_empty
+      expect(installer).not_to have_received(:install)
+    end
+
+    it "skips the install when another process installed it while waiting for the lock" do
+      allow(described_class).to receive(:version_installed?).with("4.0.23").and_return(false, true)
+
+      expect(described_class.install_stable("4.0.23")).to be_empty
+      expect(installer).not_to have_received(:install)
+    end
+
+    it "holds an exclusive flock on a lock file in the gem dir while installing" do
+      home = gem_home_with_specs
+      allow(Gem).to receive(:dir).and_return(home)
+      held = nil
+      allow(installer).to receive(:install) do
+        File.open(File.join(home, ".kettle-bundler-install.lock"), File::RDWR) do |f|
+          held = f.flock(File::LOCK_EX | File::LOCK_NB) == false
+        end
+        [gem_spec_double("4.0.23")]
+      end
+
+      described_class.install_stable("4.0.23")
+
+      expect(held).to be true
     end
 
     it "installs the exact version given and resets the specification index" do
@@ -116,6 +147,16 @@ RSpec.describe Kettle::Dev::BundlerPinning do
       described_class.install_stable("4.0.23")
 
       expect(Gem.sources.to_a).to eq(original)
+    end
+  end
+
+  describe ".version_installed?" do
+    it "is true only when the gemspec for that exact version is on disk" do
+      home = gem_home_with_specs("bundler-4.0.23.gemspec")
+      allow(Gem).to receive(:path).and_return([home])
+
+      expect(described_class.version_installed?("4.0.23")).to be true
+      expect(described_class.version_installed?("4.0.24")).to be false
     end
   end
 

@@ -28,6 +28,12 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- `BundlerPinning.install_stable` no longer reinstalls an exact Bundler version
+  that is already installed, and serializes installs with a blocking `flock` in
+  the gem dir. Rewriting an installed Bundler in place made parallel family
+  members that were loading it fail with `LoadError` for files under
+  `bundler-X/lib/bundler`.
+
 ### Security
 
 ## [3.1.28] - 2026-11-08
