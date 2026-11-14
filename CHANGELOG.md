@@ -28,6 +28,12 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- `BundlerPinning.install_stable` no longer reinstalls an exact Bundler version
+  that is already installed, and serializes installs with a blocking `flock` in
+  the gem dir. Rewriting an installed Bundler in place made parallel family
+  members that were loading it fail with `LoadError` for files under
+  `bundler-X/lib/bundler`.
+
 - `bundle:audit:update` is serialized across processes with a blocking `flock`
   on a lock file next to the shared ruby-advisory-db, and a failed update is a
   warning (audit uses the existing copy) when a local database exists. Fixes

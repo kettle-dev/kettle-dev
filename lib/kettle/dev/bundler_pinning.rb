@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "bundler"
+require "fileutils"
 require "rubygems/dependency_installer"
 
 module Kettle
@@ -58,15 +59,49 @@ module Kettle
       # stable when nil. rubygems.org only, never prereleases, and a spec
       # reset so the just-installed version is visible to later gem lookups
       # in this process. Returns the installed specs.
+      #
+      # An exact version that is already installed is NOT reinstalled:
+      # RubyGems rewrites an installed gem's files in place, and parallel
+      # family members that are loading that Bundler at the time die with
+      # LoadError for random files under bundler-X/lib/bundler. Installs are
+      # also serialized across processes with a blocking flock in the gem dir,
+      # and the installed check is repeated once the lock is held, so only the
+      # first of several concurrent members actually installs.
       def install_stable(version = nil)
-        original_sources = Gem.sources.to_a
-        Gem.sources = [RUBYGEMS_SOURCE]
-        requirements = version ? ["= #{version}"] : []
-        specs = Gem::DependencyInstaller.new(domain: :remote, prerelease: false, document: []).install("bundler", *requirements)
-        Gem::Specification.reset
-        specs
-      ensure
-        Gem.sources = original_sources if original_sources
+        return [] if version && version_installed?(version)
+
+        with_install_lock do
+          next [] if version && version_installed?(version)
+
+          original_sources = Gem.sources.to_a
+          begin
+            Gem.sources = [RUBYGEMS_SOURCE]
+            requirements = version ? ["= #{version}"] : []
+            specs = Gem::DependencyInstaller.new(domain: :remote, prerelease: false, document: []).install("bundler", *requirements)
+            Gem::Specification.reset
+            specs
+          ensure
+            Gem.sources = original_sources if original_sources
+          end
+        end
+      end
+
+      # True when bundler-VERSION's gemspec is on disk in any Gem.path entry.
+      # Reads the specifications dir directly (see installed_stable) so a
+      # bundle-scoped spec index cannot hide an installed version.
+      def version_installed?(version)
+        Array(Gem.path).any? do |base|
+          File.file?(File.join(base, "specifications", "bundler-#{version}.gemspec"))
+        end
+      end
+
+      def with_install_lock(&block)
+        dir = Gem.dir
+        FileUtils.mkdir_p(dir)
+        File.open(File.join(dir, ".kettle-bundler-install.lock"), File::RDWR | File::CREAT, 0o644) do |lock|
+          lock.flock(File::LOCK_EX)
+          block.call
+        end
       end
 
       # The version a release should pin BUNDLED WITH to: the registry's
