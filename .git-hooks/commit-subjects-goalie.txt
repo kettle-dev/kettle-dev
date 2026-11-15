@@ -1,8 +1,8 @@
+🔖 Prepare release v
+🔒️ Checksums for v
 chore(release): 🔖 prepare release v
 chore(checksums): 🔒️ update checksums for v
 chore(deps): 🔒️ update Bundler lockfiles
-🔖 Prepare release v
-🔒️ Checksums for v
 
 # Lines beginning with # are ignored.
 # This file is read by .git-hooks/prepare-commit-msg in each project.
