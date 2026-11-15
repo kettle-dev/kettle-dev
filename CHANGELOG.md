@@ -22,6 +22,23 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [3.1.29] - 2026-11-15
+
+- TAG: [v3.1.29][3.1.29t]
+- COVERAGE: 91.95% -- 5856/6369 lines in 48 files
+- BRANCH COVERAGE: 75.81% -- 2247/2964 branches in 48 files
+- 53.68% documented
+
+### Changed
+
 - [kc] kettle-jem/prepare: updated 14 project files:
   - dependencies (14)
 
@@ -30,10 +47,6 @@ Please file a bug if you notice a violation of semantic versioning.
   - dependencies (3)
   - other (3)
   - workflows (9)
-
-### Deprecated
-
-### Removed
 
 ### Fixed
 
@@ -47,8 +60,6 @@ Please file a bug if you notice a violation of semantic versioning.
   on a lock file next to the shared ruby-advisory-db, and a failed update is a
   warning (audit uses the existing copy) when a local database exists. Fixes
   `cannot lock ref 'refs/remotes/origin/master'` in parallel releases ([#57](https://github.com/kettle-dev/kettle-dev/issues/57)).
-
-### Security
 
 ## [3.1.28] - 2026-11-08
 
@@ -4328,7 +4339,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.28...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.29...HEAD
+[3.1.29]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.28...v3.1.29
+[3.1.29t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.29
 [3.1.28]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.27...v3.1.28
 [3.1.28t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.28
 [3.1.27]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.26...v3.1.27

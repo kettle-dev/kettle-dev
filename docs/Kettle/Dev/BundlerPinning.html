@@ -273,6 +273,52 @@ beta in BUNDLED WITH reinfects every child that boots the bundle.</p>
 </li>
 
       
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#version_installed%3F-class_method" title="version_installed? (class method)">.<strong>version_installed?</strong>(version)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>True when bundler-VERSION’s gemspec is on disk in any Gem.path entry.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#with_install_lock-class_method" title="with_install_lock (class method)">.<strong>with_install_lock</strong>(&amp;block)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
     </ul>
     
   
@@ -311,17 +357,17 @@ blocking the release.</p>
       <pre class="lines">
 
 
-76
-77
-78
-79
-80
-81
-82
-83</pre>
+111
+112
+113
+114
+115
+116
+117
+118</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 76</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 111</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_ensure_latest_stable'>ensure_latest_stable</span><span class='lparen'>(</span><span class='label'>executing:</span> <span class='const'>Bundler</span><span class='op'>::</span><span class='const'>VERSION</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_current'>current</span> <span class='op'>=</span> <span class='const'>Gem</span><span class='op'>::</span><span class='const'>Version</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_executing'>executing</span><span class='rparen'>)</span>
@@ -352,6 +398,14 @@ stable when nil. rubygems.org only, never prereleases, and a spec<br />
 reset so the just-installed version is visible to later gem lookups<br />
 in this process. Returns the installed specs.</p>
 
+<p>An exact version that is already installed is NOT reinstalled:<br />
+RubyGems rewrites an installed gem’s files in place, and parallel<br />
+family members that are loading that Bundler at the time die with<br />
+LoadError for random files under bundler-X/lib/bundler. Installs are<br />
+also serialized across processes with a blocking flock in the gem dir,<br />
+and the installed check is repeated once the lock is held, so only the<br />
+first of several concurrent members actually installs.</p>
+
 
   </div>
 </div>
@@ -364,29 +418,45 @@ in this process. Returns the installed specs.</p>
       <pre class="lines">
 
 
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70</pre>
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 61</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 70</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_install_stable'>install_stable</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_original_sources'>original_sources</span> <span class='op'>=</span> <span class='const'>Gem</span><span class='period'>.</span><span class='id identifier rubyid_sources'>sources</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span>
-  <span class='const'>Gem</span><span class='period'>.</span><span class='id identifier rubyid_sources'>sources</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="#RUBYGEMS_SOURCE-constant" title="Kettle::Dev::BundlerPinning::RUBYGEMS_SOURCE (constant)">RUBYGEMS_SOURCE</a></span></span><span class='rbracket'>]</span>
-  <span class='id identifier rubyid_requirements'>requirements</span> <span class='op'>=</span> <span class='id identifier rubyid_version'>version</span> <span class='op'>?</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>= </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
-  <span class='id identifier rubyid_specs'>specs</span> <span class='op'>=</span> <span class='const'>Gem</span><span class='op'>::</span><span class='const'>DependencyInstaller</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>domain:</span> <span class='symbol'>:remote</span><span class='comma'>,</span> <span class='label'>prerelease:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>document:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_install'>install</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bundler</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_requirements'>requirements</span><span class='rparen'>)</span>
-  <span class='const'>Gem</span><span class='op'>::</span><span class='const'>Specification</span><span class='period'>.</span><span class='id identifier rubyid_reset'>reset</span>
-  <span class='id identifier rubyid_specs'>specs</span>
-<span class='kw'>ensure</span>
-  <span class='const'>Gem</span><span class='period'>.</span><span class='id identifier rubyid_sources'>sources</span> <span class='op'>=</span> <span class='id identifier rubyid_original_sources'>original_sources</span> <span class='kw'>if</span> <span class='id identifier rubyid_original_sources'>original_sources</span>
+  <span class='kw'>return</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_version'>version</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_version_installed?'>version_installed?</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_with_install_lock'>with_install_lock</span> <span class='kw'>do</span>
+    <span class='kw'>next</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_version'>version</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_version_installed?'>version_installed?</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
+
+    <span class='id identifier rubyid_original_sources'>original_sources</span> <span class='op'>=</span> <span class='const'>Gem</span><span class='period'>.</span><span class='id identifier rubyid_sources'>sources</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span>
+    <span class='kw'>begin</span>
+      <span class='const'>Gem</span><span class='period'>.</span><span class='id identifier rubyid_sources'>sources</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="#RUBYGEMS_SOURCE-constant" title="Kettle::Dev::BundlerPinning::RUBYGEMS_SOURCE (constant)">RUBYGEMS_SOURCE</a></span></span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_requirements'>requirements</span> <span class='op'>=</span> <span class='id identifier rubyid_version'>version</span> <span class='op'>?</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>= </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_specs'>specs</span> <span class='op'>=</span> <span class='const'>Gem</span><span class='op'>::</span><span class='const'>DependencyInstaller</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>domain:</span> <span class='symbol'>:remote</span><span class='comma'>,</span> <span class='label'>prerelease:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>document:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_install'>install</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bundler</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_requirements'>requirements</span><span class='rparen'>)</span>
+      <span class='const'>Gem</span><span class='op'>::</span><span class='const'>Specification</span><span class='period'>.</span><span class='id identifier rubyid_reset'>reset</span>
+      <span class='id identifier rubyid_specs'>specs</span>
+    <span class='kw'>ensure</span>
+      <span class='const'>Gem</span><span class='period'>.</span><span class='id identifier rubyid_sources'>sources</span> <span class='op'>=</span> <span class='id identifier rubyid_original_sources'>original_sources</span> <span class='kw'>if</span> <span class='id identifier rubyid_original_sources'>original_sources</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -427,7 +497,6 @@ escape that scoping.</p>
       <pre class="lines">
 
 
-32
 33
 34
 35
@@ -441,10 +510,11 @@ escape that scoping.</p>
 43
 44
 45
-46</pre>
+46
+47</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 32</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 33</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_installed_stable'>installed_stable</span>
   <span class='id identifier rubyid_active'>active</span> <span class='op'>=</span> <span class='const'>Gem</span><span class='period'>.</span><span class='id identifier rubyid_loaded_specs'>loaded_specs</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bundler</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='op'>&amp;.</span><span class='id identifier rubyid_version'>version</span>
@@ -481,15 +551,15 @@ escape that scoping.</p>
       <pre class="lines">
 
 
-93
-94
-95
-96
-97
-98</pre>
+128
+129
+130
+131
+132
+133</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 93</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 128</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_published_candidate'>published_candidate</span><span class='lparen'>(</span><span class='id identifier rubyid_number'>number</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_candidate'>candidate</span> <span class='op'>=</span> <span class='const'>Gem</span><span class='op'>::</span><span class='const'>Version</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_number'>number</span><span class='rparen'>)</span>
@@ -528,15 +598,15 @@ cannot be consulted, so callers can fail open to local state.</p>
       <pre class="lines">
 
 
-50
 51
 52
 53
 54
-55</pre>
+55
+56</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 50</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 51</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_published_stable'>published_stable</span>
   <span class='id identifier rubyid_numbers'>numbers</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Kettle.html" title="Kettle (module)">Kettle</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Dev.html" title="Kettle::Dev (module)">Dev</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="RubyGemsVersions.html" title="Kettle::Dev::RubyGemsVersions (module)">RubyGemsVersions</a></span></span><span class='period'>.</span><span class='id identifier rubyid_published_version_numbers'><span class='object_link'><a href="RubyGemsVersions.html#published_version_numbers-class_method" title="Kettle::Dev::RubyGemsVersions.published_version_numbers (method)">published_version_numbers</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bundler</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -577,15 +647,114 @@ both the executable selector and the flag.</p>
       <pre class="lines">
 
 
-89
-90
-91</pre>
+124
+125
+126</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 89</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 124</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_update_argv'>update_argv</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='comma'>,</span> <span class='label'>extra_gems:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span>
   <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bundle</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_content'>_</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>update</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_extra_gems'>extra_gems</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>--bundler=</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="version_installed?-class_method">
+  
+    .<strong>version_installed?</strong>(version)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>True when bundler-VERSION’s gemspec is on disk in any Gem.path entry.<br />
+Reads the specifications dir directly (see installed_stable) so a<br />
+bundle-scoped spec index cannot hide an installed version.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+92
+93
+94
+95
+96</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 92</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_version_installed?'>version_installed?</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
+  <span class='const'>Array</span><span class='lparen'>(</span><span class='const'>Gem</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_base'>base</span><span class='op'>|</span>
+    <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_file?'>file?</span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='id identifier rubyid_base'>base</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>specifications</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bundler-</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_content'>.gemspec</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="with_install_lock-class_method">
+  
+    .<strong>with_install_lock</strong>(&amp;block)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+98
+99
+100
+101
+102
+103
+104
+105</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 98</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_with_install_lock'>with_install_lock</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_dir'>dir</span> <span class='op'>=</span> <span class='const'>Gem</span><span class='period'>.</span><span class='id identifier rubyid_dir'>dir</span>
+  <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_mkdir_p'>mkdir_p</span><span class='lparen'>(</span><span class='id identifier rubyid_dir'>dir</span><span class='rparen'>)</span>
+  <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='id identifier rubyid_dir'>dir</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>.kettle-bundler-install.lock</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span> <span class='const'>File</span><span class='op'>::</span><span class='const'>RDWR</span> <span class='op'>|</span> <span class='const'>File</span><span class='op'>::</span><span class='const'>CREAT</span><span class='comma'>,</span> <span class='int'>0o644</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_lock'>lock</span><span class='op'>|</span>
+    <span class='id identifier rubyid_lock'>lock</span><span class='period'>.</span><span class='id identifier rubyid_flock'>flock</span><span class='lparen'>(</span><span class='const'>File</span><span class='op'>::</span><span class='const'>LOCK_EX</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_block'>block</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
