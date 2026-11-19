@@ -54,6 +54,8 @@ module Kettle
     autoload :ReleaseGraphContract, "kettle/dev/release_graph_contract"
     autoload :ReleaseSecrets, "kettle/dev/release_secrets"
     autoload :ReleaseSecretsDoctor, "kettle/dev/release_secrets_doctor"
+    autoload :Rebase, "kettle/dev/rebase"
+    autoload :RebaseCLI, "kettle/dev/rebase_cli"
     autoload :ResetCLI, "kettle/dev/reset_cli"
     autoload :PreReleaseCLI, "kettle/dev/pre_release_cli"
     autoload :Version, "kettle/dev/version"

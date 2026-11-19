@@ -22,6 +22,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - Kettle::Dev::BundlerPinning known-bad stable holds: HELD_VERSIONS (version => reason), held?, and held_reason, with published_stable excluding held versions so update-bundler, bupb, and kettle-release never select a known-bad stable Bundler
 
+- Add kettle-rebase tool (Kettle::Dev::Rebase module + kettle-rebase executable): sync a checkout to its upstream with git pull --rebase --autostash; aborts cleanly and restores the pre-pull state (including dirty worktree changes) on conflict, skips when nested inside an outer kettle command (KETTLE_REBASE_NESTED), and fails open for missing or unreachable upstreams
+
 ### Changed
 
 - kettle-release no longer checks, waits for, or monitors macOS, Windows, heads, or dep-heads workflows (#62)
