@@ -20,6 +20,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
+- Kettle::Dev::BundlerPinning known-bad stable holds: HELD_VERSIONS (version => reason), held?, and held_reason, with published_stable excluding held versions so update-bundler, bupb, and kettle-release never select a known-bad stable Bundler
+
 ### Changed
 
 - kettle-release no longer checks, waits for, or monitors macOS, Windows, heads, or dep-heads workflows (#62)

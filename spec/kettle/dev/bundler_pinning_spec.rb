@@ -85,6 +85,41 @@ RSpec.describe Kettle::Dev::BundlerPinning do
 
       expect(described_class.published_stable).to be_nil
     end
+
+    it "skips held versions" do
+      stub_const("Kettle::Dev::BundlerPinning::HELD_VERSIONS", {"4.0.23" => "known bad"})
+      allow(Kettle::Dev::RubyGemsVersions).to receive(:published_version_numbers)
+        .with("bundler")
+        .and_return(["4.0.22", "4.0.23"])
+
+      expect(described_class.published_stable).to eq(Gem::Version.new("4.0.22"))
+    end
+
+    it "returns nil when every published stable is held" do
+      stub_const("Kettle::Dev::BundlerPinning::HELD_VERSIONS", {"4.0.23" => "known bad"})
+      allow(Kettle::Dev::RubyGemsVersions).to receive(:published_version_numbers)
+        .with("bundler")
+        .and_return(["4.0.23", "4.1.0.beta1"])
+
+      expect(described_class.published_stable).to be_nil
+    end
+  end
+
+  describe ".held? and .held_reason" do
+    it "is false and reasonless for every version when no holds are registered" do
+      expect(described_class.held?("4.1.0")).to be(false)
+      expect(described_class.held?(Gem::Version.new("4.0.23"))).to be(false)
+      expect(described_class.held_reason("4.1.0")).to be_nil
+    end
+
+    it "is true with the reason for a registered hold, whatever the version object" do
+      stub_const("Kettle::Dev::BundlerPinning::HELD_VERSIONS", {"4.1.0" => "breaks nested Bundler loads"})
+
+      expect(described_class.held?("4.1.0")).to be(true)
+      expect(described_class.held?(Gem::Version.new("4.1.0"))).to be(true)
+      expect(described_class.held_reason("4.1.0")).to eq("breaks nested Bundler loads")
+      expect(described_class.held?("4.0.23")).to be(false)
+    end
   end
 
   describe ".install_stable" do

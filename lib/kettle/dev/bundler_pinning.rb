@@ -18,7 +18,26 @@ module Kettle
     module BundlerPinning
       RUBYGEMS_SOURCE = "https://rubygems.org"
 
+      # Known-bad STABLE Bundler versions the toolchain must never select, as
+      # version String => reason. Prereleases need no entries — every lookup
+      # already rejects them (the 4.1.0.betaN infection vector). Add an entry
+      # when a stable release breaks the toolchain, and remove it once a fixed
+      # release supersedes it. FLOOR_HOLDS in bin/kettle-jem-deps-floor is the
+      # same idea for dependency floors.
+      HELD_VERSIONS = {}.freeze
+
       module_function
+
+      # True when the version (String or Gem::Version) is a registered
+      # known-bad stable hold.
+      def held?(version)
+        HELD_VERSIONS.key?(version.to_s)
+      end
+
+      # The registered reason a version is held; nil when it is not.
+      def held_reason(version)
+        HELD_VERSIONS[version.to_s]
+      end
 
       # Newest stable Bundler installed locally. Consults BOTH sources —
       # the activated spec and every installed spec — because bundler/setup
@@ -48,11 +67,15 @@ module Kettle
 
       # Newest stable Bundler the registry serves; nil when the registry
       # cannot be consulted, so callers can fail open to local state.
+      #
+      # Held versions (HELD_VERSIONS) are excluded: a known-bad stable is not
+      # a candidate no matter how new. When every published stable is held
+      # this returns nil, the same fail-open shape as a registry outage.
       def published_stable
         numbers = Kettle::Dev::RubyGemsVersions.published_version_numbers("bundler")
         return nil unless numbers
 
-        numbers.filter_map { |number| published_candidate(number) }.max
+        numbers.filter_map { |number| published_candidate(number) }.reject { |candidate| held?(candidate) }.max
       end
 
       # Install a stable Bundler — the exact version given, or the latest
