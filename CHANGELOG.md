@@ -24,6 +24,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - kettle-release no longer checks, waits for, or monitors macOS, Windows, heads, or dep-heads workflows (#62)
 
+- kettle-release judges workflow runs by non-macOS/Windows jobs, so slow matrix lanes no longer gate or delay CI validation (#62)
+
 ### Deprecated
 
 ### Removed

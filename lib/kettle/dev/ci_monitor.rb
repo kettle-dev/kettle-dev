@@ -405,7 +405,19 @@ module Kettle
                   started: started.size
                 )
               end
-              if Kettle::Dev::CIHelpers.success?(run)
+              # macOS/Windows matrix lanes are slow and must not gate a release:
+              # judge the run by its remaining jobs when it hasn't succeeded outright.
+              verdict = nil
+              verdict_job = nil
+              unless Kettle::Dev::CIHelpers.success?(run) || passed[wf] || failed[wf]
+                run_done = run["status"] == "completed"
+                if run_done || monotonic_time - last_jobs_poll >= jobs_poll_interval
+                  last_jobs_poll = monotonic_time unless run_done
+                  jobs = Kettle::Dev::CIHelpers.run_jobs(owner: owner, repo: repo, run_id: run["id"])
+                  verdict, verdict_job = Kettle::Dev::CIHelpers.release_jobs_verdict(jobs, run_completed: run_done)
+                end
+              end
+              if Kettle::Dev::CIHelpers.success?(run) || verdict == :passed
                 unless passed[wf] || failed[wf]
                   passed[wf] = true
                   completed_workflow = wf
@@ -431,19 +443,10 @@ module Kettle
                 # sees the red job immediately. Abort as soon as any job is
                 # definitively red so the release stops burning minutes that
                 # a re-run will have to spend anyway.
-                run_failed = Kettle::Dev::CIHelpers.failed?(run)
-                failed_job = nil
-                jobs_poll_due = monotonic_time - last_jobs_poll >= jobs_poll_interval
-                if !passed[wf] && !run_failed && run["status"] != "completed" && jobs_poll_due
-                  last_jobs_poll = monotonic_time
-                  # Run still in flight: poll its jobs so a single red job in
-                  # a large matrix aborts immediately instead of waiting for
-                  # the whole workflow to conclude.
-                  jobs = Kettle::Dev::CIHelpers.run_jobs(owner: owner, repo: repo, run_id: run["id"])
-                  failed_job = jobs.find do |job|
-                    job["status"] == "completed" && job["conclusion"] && job["conclusion"] != "success" && job["conclusion"] != "skipped"
-                  end
-                end
+                # Verdict :failed comes from non-slow jobs only; with no verdict a
+                # completed-failed run is only fatal if it has no job detail at all.
+                run_failed = Kettle::Dev::CIHelpers.failed?(run) && verdict.nil?
+                failed_job = verdict_job
                 next unless run_failed || failed_job
 
                 puts

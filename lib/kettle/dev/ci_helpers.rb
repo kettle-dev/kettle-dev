@@ -382,6 +382,35 @@ module Kettle
         []
       end
 
+      # Matrix lanes (macOS, Windows) live inside ordinary workflows as jobs named
+      # after matrix.os, so filename filtering can't skip them; filter by job name.
+      SLOW_JOB_PATTERN = /macos|windows/i
+
+      # @param name [String]
+      # @return [Boolean]
+      def slow_job?(name)
+        name.to_s.match?(SLOW_JOB_PATTERN) || slow_workflow?(name)
+      end
+
+      # Judge a run from its jobs, ignoring slow (macOS/Windows/heads) jobs.
+      # @param jobs [Array<Hash>, nil] result of {#run_jobs}
+      # @param run_completed [Boolean] whether the run itself has completed
+      # @return [Array(Symbol, Hash)] [:failed, job] | [:passed, nil] | [nil, nil] (undecided)
+      def release_jobs_verdict(jobs, run_completed: false)
+        relevant = Array(jobs).reject { |job| slow_job?(job["name"]) }
+        return [nil, nil] if relevant.empty?
+
+        bad = relevant.find do |job|
+          job["status"] == "completed" && job["conclusion"] && !%w[success skipped].include?(job["conclusion"])
+        end
+        return [:failed, bad] if bad
+
+        # The jobs endpoint is capped at 100 per page; a truncated list can't prove success early.
+        truncated = Array(jobs).size >= 100 && !run_completed
+        all_done = relevant.all? { |job| job["status"] == "completed" }
+        (all_done && !truncated) ? [:passed, nil] : [nil, nil]
+      end
+
       # Default GitHub token sourced from environment.
       # @return [String, nil]
       def default_token

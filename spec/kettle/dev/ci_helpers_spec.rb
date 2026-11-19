@@ -142,6 +142,32 @@ RSpec.describe Kettle::Dev::CIHelpers do
     end
   end
 
+  describe "::release_jobs_verdict" do
+    def job(name, status, conclusion = nil)
+      {"name" => name, "status" => status, "conclusion" => conclusion}
+    end
+
+    it "passes when only macOS/Windows jobs are still pending" do
+      jobs = [job("Specs ubuntu-latest 3.4", "completed", "success"), job("Specs macos-latest 3.4", "queued"), job("Specs windows-latest 3.4", "queued")]
+      expect(described_class.release_jobs_verdict(jobs)).to eq([:passed, nil])
+    end
+
+    it "ignores a failed macOS job" do
+      jobs = [job("Specs ubuntu-latest 3.4", "completed", "success"), job("Specs macos-latest 3.4", "completed", "failure")]
+      expect(described_class.release_jobs_verdict(jobs, run_completed: true)).to eq([:passed, nil])
+    end
+
+    it "fails on a red non-slow job" do
+      bad = job("Specs ubuntu-latest 3.4", "completed", "failure")
+      expect(described_class.release_jobs_verdict([bad, job("Specs macos-latest", "queued")])).to eq([:failed, bad])
+    end
+
+    it "is undecided while a non-slow job is running, or with no jobs" do
+      expect(described_class.release_jobs_verdict([job("Specs ubuntu-latest", "in_progress")])).to eq([nil, nil])
+      expect(described_class.release_jobs_verdict([])).to eq([nil, nil])
+    end
+  end
+
   describe "::latest_run / ::success? / ::failed?" do
     let(:owner) { "owner" }
     let(:repo) { "repo" }
