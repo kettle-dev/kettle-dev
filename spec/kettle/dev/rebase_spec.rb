@@ -203,7 +203,7 @@ RSpec.describe Kettle::Dev::Rebase do
     result = described_class.call(root: root)
 
     expect(result.status).to eq(:conflict)
-    expect(result.conflicts).to eq([])
+    expect(result.conflicts).to be_empty
     expect(result.message).not_to include("conflicts:")
     expect(File.directory?(File.join(root, ".git", "rebase-merge"))).to be(false)
   end
