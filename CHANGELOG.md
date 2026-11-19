@@ -22,6 +22,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
+- kettle-release no longer checks, waits for, or monitors macOS, Windows, heads, or dep-heads workflows (#62)
+
 ### Deprecated
 
 ### Removed

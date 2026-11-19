@@ -124,6 +124,17 @@ RSpec.describe Kettle::Dev::CIHelpers do
       end
     end
 
+    it "excludes macOS, Windows, and heads workflows" do
+      Dir.mktmpdir("root") do |root|
+        dir = File.join(root, ".github", "workflows")
+        FileUtils.mkdir_p(dir)
+        %w[ci.yml macos.yml windows.yml heads.yml dep-heads.yml jruby-head.yml ruby-3.4-macos.yml].each do |f|
+          File.write(File.join(dir, f), "name: test\n")
+        end
+        expect(described_class.workflows_list(root)).to eq(%w[ci.yml jruby-head.yml])
+      end
+    end
+
     it "returns [] when dir missing" do
       Dir.mktmpdir("root") do |root|
         expect(described_class.workflows_list(root)).to be_empty

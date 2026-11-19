@@ -87,7 +87,18 @@ module Kettle
         end
         basenames = files.map { |p| File.basename(p) }
         basenames = basenames.uniq - exclusions
-        basenames.sort
+        basenames.reject { |name| slow_workflow?(name) }.sort
+      end
+
+      # Workflows that are slow or resource constrained (macOS runner pool, Windows,
+      # dependency/engine "heads") and must never gate or delay a release.
+      # Matched on basename rather than a fixed list because templates vary the exact names.
+      SLOW_WORKFLOW_PATTERN = /mac|windows|heads/i
+
+      # @param name [String] workflow basename
+      # @return [Boolean]
+      def slow_workflow?(name)
+        name.to_s.match?(SLOW_WORKFLOW_PATTERN)
       end
 
       # List of workflow files to exclude from interactive menus and checks.
