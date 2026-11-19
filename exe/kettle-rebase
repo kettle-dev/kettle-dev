@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+$stdout.sync = true
+$stderr.sync = true
+
+begin
+  require "rubygems"
+rescue LoadError
+end
+
+script_basename = File.basename(__FILE__)
+repo_lib = File.expand_path("../lib", __dir__)
+$LOAD_PATH.unshift(repo_lib) if File.directory?(repo_lib) && !$LOAD_PATH.include?(repo_lib)
+
+begin
+  require "kettle/dev"
+  require "kettle/dev/executable_version"
+  Kettle::Dev::ExecutableVersion.print_and_exit!(script_basename, ARGV)
+  Kettle::Dev::ExecutableVersion.print_header(script_basename)
+rescue LoadError => e
+  warn("#{script_basename}: could not load dependency: #{e.class}: #{e.message}")
+  warn("Hint: Ensure the host project has kettle-dev as a dependency and run bundle install.")
+  exit(1)
+end
+
+begin
+  exit(Kettle::Dev::RebaseCLI.new(ARGV).run!)
+rescue SystemExit
+  raise
+rescue => e
+  warn("#{script_basename}: #{e.message}")
+  warn(e.backtrace.join("\n")) if ENV["DEBUG"]
+  exit(1)
+end
