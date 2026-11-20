@@ -20,8 +20,6 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
-- BundlerPinning RubyGems pair lookups: installed_rubygems (gem -v) and published_stable_rubygems (latest stable rubygems-update the registry serves, prereleases rejected, fail-open on outage), with a RUBYGEMS_HELD_VERSIONS registry mirroring HELD_VERSIONS — the RubyGems half of the matched Bundler/RubyGems pair
-
 ### Changed
 
 ### Deprecated
@@ -30,10 +28,23 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+### Security
+
+## [3.1.31] - 2026-11-20
+
+- TAG: [v3.1.31][3.1.31t]
+- COVERAGE: 91.71% -- 5963/6502 lines in 50 files
+- BRANCH COVERAGE: 75.95% -- 2289/3014 branches in 50 files
+- 55.84% documented
+
+### Added
+
+- BundlerPinning RubyGems pair lookups: installed_rubygems (gem -v) and published_stable_rubygems (latest stable rubygems-update the registry serves, prereleases rejected, fail-open on outage), with a RUBYGEMS_HELD_VERSIONS registry mirroring HELD_VERSIONS — the RubyGems half of the matched Bundler/RubyGems pair
+
+### Fixed
+
 - Stop requiring Bundler at load time in BundlerPinning (require it at the point of use): loading Bundler activates the default Bundler, whose vendored uri clashes with RubyGems' own vendored copy and floods stderr with Gem::URI double-initialization warnings on every CLI invocation once Bundler 4.x is the machine default
 - GitHub CI monitoring events now report a consistent `completed` count (passed + failed) within a run, including the failure event itself.
-
-### Security
 
 ## [3.1.30] - 2026-11-19
 
@@ -4373,7 +4384,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.30...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.31...HEAD
+[3.1.31]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.30...v3.1.31
+[3.1.31t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.31
 [3.1.30]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.29...v3.1.30
 [3.1.30t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.30
 [3.1.29]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.28...v3.1.29
