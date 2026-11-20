@@ -20,6 +20,25 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [3.1.30] - 2026-11-19
+
+- TAG: [v3.1.30][3.1.30t]
+- COVERAGE: 92.17% -- 5981/6489 lines in 50 files
+- BRANCH COVERAGE: 76.20% -- 2295/3012 branches in 50 files
+- 55.31% documented
+
+### Added
+
 - Kettle::Dev::BundlerPinning known-bad stable holds: HELD_VERSIONS (version => reason), held?, and held_reason, with published_stable excluding held versions so update-bundler, bupb, and kettle-release never select a known-bad stable Bundler
 
 - Add kettle-rebase tool (Kettle::Dev::Rebase module + kettle-rebase executable): sync a checkout to its upstream with git pull --rebase --autostash; aborts cleanly and restores the pre-pull state (including dirty worktree changes) on conflict, skips when nested inside an outer kettle command (KETTLE_REBASE_NESTED), and fails open for missing or unreachable upstreams
@@ -39,14 +58,6 @@ Please file a bug if you notice a violation of semantic versioning.
   - documentation (1)
   - other (1)
   - workflows (2)
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [3.1.29] - 2026-11-15
 
@@ -4357,7 +4368,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.29...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.30...HEAD
+[3.1.30]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.29...v3.1.30
+[3.1.30t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.30
 [3.1.29]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.28...v3.1.29
 [3.1.29t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.29
 [3.1.28]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.27...v3.1.28

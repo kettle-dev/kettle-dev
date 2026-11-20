@@ -118,6 +118,26 @@ beta in BUNDLED WITH reinfects every child that boots the bundle.</p>
         </dt>
         <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>https://rubygems.org</span><span class='tstring_end'>&quot;</span></span></pre></dd>
       
+        <dt id="HELD_VERSIONS-constant" class="">HELD_VERSIONS =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Known-bad STABLE Bundler versions the toolchain must never select, as<br />
+version String =&gt; reason. Prereleases need no entries — every lookup<br />
+already rejects them (the 4.1.0.betaN infection vector). Add an entry<br />
+when a stable release breaks the toolchain, and remove it once a fixed<br />
+release supersedes it. FLOOR_HOLDS in bin/kettle-jem-deps-floor is the<br />
+same idea for dependency floors.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
+      
     </dl>
   
 
@@ -153,6 +173,52 @@ beta in BUNDLED WITH reinfects every child that boots the bundle.</p>
 
   
     <span class="summary_desc"><div class='inline'><p>The version a release should pin BUNDLED WITH to: the registry’s newest stable, installing it first when the executing Bundler lags.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#held%3F-class_method" title="held? (class method)">.<strong>held?</strong>(version)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>True when the version (String or Gem::Version) is a registered known-bad stable hold.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#held_reason-class_method" title="held_reason (class method)">.<strong>held_reason</strong>(version)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The registered reason a version is held; nil when it is not.</p>
 </div></span>
   
 </li>
@@ -357,17 +423,17 @@ blocking the release.</p>
       <pre class="lines">
 
 
-111
-112
-113
-114
-115
-116
-117
-118</pre>
+134
+135
+136
+137
+138
+139
+140
+141</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 111</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 134</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_ensure_latest_stable'>ensure_latest_stable</span><span class='lparen'>(</span><span class='label'>executing:</span> <span class='const'>Bundler</span><span class='op'>::</span><span class='const'>VERSION</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_current'>current</span> <span class='op'>=</span> <span class='const'>Gem</span><span class='op'>::</span><span class='const'>Version</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_executing'>executing</span><span class='rparen'>)</span>
@@ -376,6 +442,100 @@ blocking the release.</p>
 
   <span class='id identifier rubyid_install_stable'>install_stable</span><span class='lparen'>(</span><span class='id identifier rubyid_latest'>latest</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_latest'>latest</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="held?-class_method">
+  
+    .<strong>held?</strong>(version)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>True when the version (String or Gem::Version) is a registered<br />
+known-bad stable hold.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+33
+34
+35</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 33</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_held?'>held?</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="#HELD_VERSIONS-constant" title="Kettle::Dev::BundlerPinning::HELD_VERSIONS (constant)">HELD_VERSIONS</a></span></span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="held_reason-class_method">
+  
+    .<strong>held_reason</strong>(version)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>The registered reason a version is held; nil when it is not.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+38
+39
+40</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 38</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_held_reason'>held_reason</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="#HELD_VERSIONS-constant" title="Kettle::Dev::BundlerPinning::HELD_VERSIONS (constant)">HELD_VERSIONS</a></span></span><span class='lbracket'>[</span><span class='id identifier rubyid_version'>version</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rbracket'>]</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -418,27 +578,27 @@ first of several concurrent members actually installs.</p>
       <pre class="lines">
 
 
-70
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87</pre>
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 70</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 93</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_install_stable'>install_stable</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_version'>version</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_version_installed?'>version_installed?</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
@@ -497,24 +657,24 @@ escape that scoping.</p>
       <pre class="lines">
 
 
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47</pre>
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 33</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 52</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_installed_stable'>installed_stable</span>
   <span class='id identifier rubyid_active'>active</span> <span class='op'>=</span> <span class='const'>Gem</span><span class='period'>.</span><span class='id identifier rubyid_loaded_specs'>loaded_specs</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bundler</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='op'>&amp;.</span><span class='id identifier rubyid_version'>version</span>
@@ -551,15 +711,15 @@ escape that scoping.</p>
       <pre class="lines">
 
 
-128
-129
-130
-131
-132
-133</pre>
+151
+152
+153
+154
+155
+156</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 128</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 151</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_published_candidate'>published_candidate</span><span class='lparen'>(</span><span class='id identifier rubyid_number'>number</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_candidate'>candidate</span> <span class='op'>=</span> <span class='const'>Gem</span><span class='op'>::</span><span class='const'>Version</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_number'>number</span><span class='rparen'>)</span>
@@ -586,6 +746,10 @@ escape that scoping.</p>
     <p>Newest stable Bundler the registry serves; nil when the registry<br />
 cannot be consulted, so callers can fail open to local state.</p>
 
+<p>Held versions (HELD_VERSIONS) are excluded: a known-bad stable is not<br />
+a candidate no matter how new. When every published stable is held<br />
+this returns nil, the same fail-open shape as a registry outage.</p>
+
 
   </div>
 </div>
@@ -598,21 +762,21 @@ cannot be consulted, so callers can fail open to local state.</p>
       <pre class="lines">
 
 
-51
-52
-53
-54
-55
-56</pre>
+74
+75
+76
+77
+78
+79</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 51</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 74</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_published_stable'>published_stable</span>
   <span class='id identifier rubyid_numbers'>numbers</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Kettle.html" title="Kettle (module)">Kettle</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Dev.html" title="Kettle::Dev (module)">Dev</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="RubyGemsVersions.html" title="Kettle::Dev::RubyGemsVersions (module)">RubyGemsVersions</a></span></span><span class='period'>.</span><span class='id identifier rubyid_published_version_numbers'><span class='object_link'><a href="RubyGemsVersions.html#published_version_numbers-class_method" title="Kettle::Dev::RubyGemsVersions.published_version_numbers (method)">published_version_numbers</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bundler</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>unless</span> <span class='id identifier rubyid_numbers'>numbers</span>
 
-  <span class='id identifier rubyid_numbers'>numbers</span><span class='period'>.</span><span class='id identifier rubyid_filter_map'>filter_map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_number'>number</span><span class='op'>|</span> <span class='id identifier rubyid_published_candidate'>published_candidate</span><span class='lparen'>(</span><span class='id identifier rubyid_number'>number</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_max'>max</span>
+  <span class='id identifier rubyid_numbers'>numbers</span><span class='period'>.</span><span class='id identifier rubyid_filter_map'>filter_map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_number'>number</span><span class='op'>|</span> <span class='id identifier rubyid_published_candidate'>published_candidate</span><span class='lparen'>(</span><span class='id identifier rubyid_number'>number</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_candidate'>candidate</span><span class='op'>|</span> <span class='id identifier rubyid_held?'>held?</span><span class='lparen'>(</span><span class='id identifier rubyid_candidate'>candidate</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_max'>max</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -647,12 +811,12 @@ both the executable selector and the flag.</p>
       <pre class="lines">
 
 
-124
-125
-126</pre>
+147
+148
+149</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 124</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 147</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_update_argv'>update_argv</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='comma'>,</span> <span class='label'>extra_gems:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span>
   <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bundle</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_content'>_</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>update</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_extra_gems'>extra_gems</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>--bundler=</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
@@ -702,14 +866,14 @@ bundle-scoped spec index cannot hide an installed version.</p>
       <pre class="lines">
 
 
-92
-93
-94
-95
-96</pre>
+115
+116
+117
+118
+119</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 92</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 115</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_version_installed?'>version_installed?</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
   <span class='const'>Array</span><span class='lparen'>(</span><span class='const'>Gem</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_base'>base</span><span class='op'>|</span>
@@ -736,17 +900,17 @@ bundle-scoped spec index cannot hide an installed version.</p>
       <pre class="lines">
 
 
-98
-99
-100
-101
-102
-103
-104
-105</pre>
+121
+122
+123
+124
+125
+126
+127
+128</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 98</span>
+      <pre class="code"><span class="info file"># File 'lib/kettle/dev/bundler_pinning.rb', line 121</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_install_lock'>with_install_lock</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_dir'>dir</span> <span class='op'>=</span> <span class='const'>Gem</span><span class='period'>.</span><span class='id identifier rubyid_dir'>dir</span>
