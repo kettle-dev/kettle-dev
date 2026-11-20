@@ -389,7 +389,7 @@ module Kettle
                   url: run["html_url"],
                   run_status: run["status"],
                   conclusion: run["conclusion"],
-                  completed: passed.size,
+                  completed: passed.size + failed.size,
                   total: total
                 )
               end
@@ -400,7 +400,7 @@ module Kettle
                   action: "github_started",
                   status: "ok",
                   provider: "github",
-                  completed: passed.size,
+                  completed: passed.size + failed.size,
                   total: total,
                   started: started.size
                 )
@@ -431,7 +431,7 @@ module Kettle
                     url: run["html_url"],
                     run_status: run["status"],
                     conclusion: run["conclusion"],
-                    completed: passed.size,
+                    completed: passed.size + failed.size,
                     total: total
                   )
                 end
@@ -463,7 +463,9 @@ module Kettle
                   run_status: run["status"],
                   conclusion: run["conclusion"],
                   failed_job: failed_job && failed_job["name"],
-                  completed: passed.size,
+                  # Count this failure as completed so the progress count never
+                  # moves backwards relative to the following tick/complete events.
+                  completed: passed.size + failed.size + 1,
                   total: total,
                   reason: "Workflow failed#{failed_job_note}"
                 )
@@ -503,7 +505,7 @@ module Kettle
               missing: workflows - started.keys,
               head_sha: head_sha,
               total: total,
-              completed: passed.size,
+              completed: passed.size + failed.size,
               reason: "Timed out waiting for workflows to start"
             )
             abort("Timed out after #{start_timeout}s waiting for GitHub Actions workflows to start for HEAD #{head_sha[0, 12]}: #{missing}. Confirm GitHub Actions started, then restart this tool from CI validation with: #{restart_hint}")

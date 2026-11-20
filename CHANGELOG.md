@@ -31,6 +31,7 @@ Please file a bug if you notice a violation of semantic versioning.
 ### Fixed
 
 - Stop requiring Bundler at load time in BundlerPinning (require it at the point of use): loading Bundler activates the default Bundler, whose vendored uri clashes with RubyGems' own vendored copy and floods stderr with Gem::URI double-initialization warnings on every CLI invocation once Bundler 4.x is the machine default
+- GitHub CI monitoring events now report a consistent `completed` count (passed + failed) within a run, including the failure event itself.
 
 ### Security
 
