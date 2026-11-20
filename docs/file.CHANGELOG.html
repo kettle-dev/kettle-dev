@@ -90,8 +90,8 @@ Please file a bug if you notice a violation of semantic versioning.</p>
 <ul>
   <li>TAG: <a href="https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.31">v3.1.31</a>
 </li>
-  <li>COVERAGE: 91.71% – 5963/6502 lines in 50 files</li>
-  <li>BRANCH COVERAGE: 75.95% – 2289/3014 branches in 50 files</li>
+  <li>COVERAGE: 91.93% – 5994/6520 lines in 50 files</li>
+  <li>BRANCH COVERAGE: 76.01% – 2294/3018 branches in 50 files</li>
   <li>55.84% documented</li>
 </ul>
 
@@ -105,7 +105,10 @@ Please file a bug if you notice a violation of semantic versioning.</p>
 
 <ul>
   <li>Stop requiring Bundler at load time in BundlerPinning (require it at the point of use): loading Bundler activates the default Bundler, whose vendored uri clashes with RubyGems’ own vendored copy and floods stderr with Gem::URI double-initialization warnings on every CLI invocation once Bundler 4.x is the machine default</li>
-  <li>GitHub CI monitoring events now report a consistent <code>completed</code> count (passed + failed) within a run, including the failure event itself.</li>
+  <li>
+    <p>GitHub CI monitoring events now report a consistent <code>completed</code> count (passed + failed) within a run, including the failure event itself.</p>
+  </li>
+  <li>Release is now cold-start safe for borrowed bundles: the changelog step’s tool bundle (kettle-changelog’s release gemfile) and the member coverage bundle are installed via bundle install before the changelog exec, each against a disposable lockfile under tmp/kettle-release/lockfiles so canonical lockfiles never change. Previously a fresh gem home (e.g. after a Ruby upgrade) died mid-publish with Bundler::GemNotFound for gems those borrowed bundles pin. Fixes #67</li>
 </ul>
 
 <h2 id="3130---2026-11-19">
