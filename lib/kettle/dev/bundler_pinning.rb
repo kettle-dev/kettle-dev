@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
-require "bundler"
+# NOTE: `bundler` is deliberately NOT required at load time. This file is on
+# the kettle CLI load path (kettle-family requires it eagerly), and loading
+# Bundler activates the DEFAULT Bundler — whose vendored `uri` clashes with
+# RubyGems' own vendored copy (the Gem::URI double-initialization warning
+# wall on stderr) whenever the default Bundler is 4.x. Methods require it at
+# the point of use instead, so plain CLI invocations never load Bundler.
 require "fileutils"
 require "rubygems/dependency_installer"
 
@@ -131,7 +136,9 @@ module Kettle
       # newest stable, installing it first when the executing Bundler lags.
       # A registry outage fails open to the executing Bundler rather than
       # blocking the release.
-      def ensure_latest_stable(executing: Bundler::VERSION)
+      def ensure_latest_stable(executing: nil)
+        require "bundler"
+        executing ||= Bundler::VERSION
         current = Gem::Version.new(executing)
         latest = published_stable
         return current.to_s if latest.nil? || latest <= current
