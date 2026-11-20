@@ -700,6 +700,94 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         end
       end
 
+      it "installs the borrowed changelog bundles before the changelog exec" do
+        Dir.mktmpdir do |root|
+          allow(ci_helpers).to receive(:project_root).and_return(root)
+          release_gemfile = File.join(root, "Gemfile")
+          coverage_gemfile = File.join(root, "gemfiles", "coverage.gemfile")
+          FileUtils.mkdir_p(File.dirname(coverage_gemfile))
+          File.write(release_gemfile, "source 'https://gem.coop'\n")
+          File.write("#{release_gemfile}.lock", "PLATFORMS\n  x86_64-linux\n")
+          File.write(coverage_gemfile, "source 'https://gem.coop'\n")
+          stub_env("K_RELEASE_CHANGELOG_GEMFILE" => release_gemfile)
+          pre_release = instance_double(Kettle::Dev::PreReleaseCLI, run: nil)
+          allow(Kettle::Dev::PreReleaseCLI).to receive(:new).and_return(pre_release)
+          local_cli = described_class.new
+          commands = []
+          allow(local_cli).to receive(:run_cmd!) { |cmd| commands << cmd }
+
+          local_cli.send(:run_pre_release_checks!)
+
+          installs = commands.select { |cmd| cmd.end_with?(" bundle install") }
+          changelog = commands.find { |cmd| cmd.include?("bundle exec kettle-changelog") }
+          expect(changelog).not_to be_nil
+          expect(installs.size).to eq(2)
+          expect(installs.join("\n")).to include("BUNDLE_GEMFILE=#{Shellwords.escape(release_gemfile)}")
+          expect(installs.join("\n")).to include("BUNDLE_GEMFILE=#{Shellwords.escape(coverage_gemfile)}")
+          # Both installs run before the changelog exec
+          expect(commands.index(changelog)).to be > commands.rindex { |cmd| cmd.end_with?(" bundle install") }
+          # Installs use disposable lockfiles under tmp/, never the canonical ones
+          expect(installs.join("\n")).to include(File.join("tmp", "kettle-release", "lockfiles"))
+          expect(installs.join("\n")).not_to include("BUNDLE_LOCKFILE=#{Shellwords.escape(release_gemfile)}.lock")
+        end
+      end
+
+      it "installs a borrowed bundle with no lockfile against a tmp lockfile, leaving the repo clean" do
+        Dir.mktmpdir do |root|
+          allow(ci_helpers).to receive(:project_root).and_return(root)
+          release_gemfile = File.join(root, "Gemfile")
+          File.write(release_gemfile, "source 'https://gem.coop'\n")
+          stub_env("K_RELEASE_CHANGELOG_GEMFILE" => release_gemfile)
+          pre_release = instance_double(Kettle::Dev::PreReleaseCLI, run: nil)
+          allow(Kettle::Dev::PreReleaseCLI).to receive(:new).and_return(pre_release)
+          local_cli = described_class.new
+          commands = []
+          allow(local_cli).to receive(:run_cmd!) { |cmd| commands << cmd }
+
+          local_cli.send(:run_pre_release_checks!)
+
+          installs = commands.select { |cmd| cmd.end_with?(" bundle install") }
+          expect(installs.size).to eq(1)
+          expect(installs.first).to include(File.join("tmp", "kettle-release", "lockfiles"))
+          expect(File).not_to exist("#{release_gemfile}.lock")
+        end
+      end
+
+      it "installs no borrowed bundles when the changelog runs from the ambient bundle" do
+        Dir.mktmpdir do |root|
+          allow(ci_helpers).to receive(:project_root).and_return(root)
+          stub_env("KETTLE_DEV_DEV" => "false", "K_RELEASE_CHANGELOG_GEMFILE" => nil)
+          pre_release = instance_double(Kettle::Dev::PreReleaseCLI, run: nil)
+          allow(Kettle::Dev::PreReleaseCLI).to receive(:new).and_return(pre_release)
+          local_cli = described_class.new
+          commands = []
+          allow(local_cli).to receive(:run_cmd!) { |cmd| commands << cmd }
+
+          local_cli.send(:run_pre_release_checks!)
+
+          expect(commands.grep(/ bundle install\z/)).to be_empty
+          expect(commands.find { |cmd| cmd.include?("bundle exec kettle-changelog") }).not_to be_nil
+        end
+      end
+
+      it "installs no borrowed bundles when the changelog step is skipped" do
+        Dir.mktmpdir do |root|
+          allow(ci_helpers).to receive(:project_root).and_return(root)
+          release_gemfile = File.join(root, "Gemfile")
+          File.write(release_gemfile, "source 'https://gem.coop'\n")
+          stub_env("K_RELEASE_CHANGELOG_GEMFILE" => release_gemfile)
+          pre_release = instance_double(Kettle::Dev::PreReleaseCLI, run: nil)
+          allow(Kettle::Dev::PreReleaseCLI).to receive(:new).and_return(pre_release)
+          local_cli = described_class.new(skip_changelog: true)
+          commands = []
+          allow(local_cli).to receive(:run_cmd!) { |cmd| commands << cmd }
+
+          local_cli.send(:run_pre_release_checks!)
+
+          expect(commands.grep(/ bundle install\z/)).to be_empty
+        end
+      end
+
       it "keeps the full default task for resumed releases that did not run changelog coverage" do
         local_cli = described_class.new(start_step: 4)
 
@@ -1099,6 +1187,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
       it "runs kettle-pre-release checks from the beginning and invokes kettle-changelog" do
         pre_release = instance_double(Kettle::Dev::PreReleaseCLI, run: nil)
         expect(Kettle::Dev::PreReleaseCLI).to receive(:new).with(check_num: 1, event_recorder: anything).and_return(pre_release)
+        allow(cli).to receive(:run_cmd!)
         expect(cli).to receive(:run_cmd!).with(a_string_ending_with("bundle exec kettle-changelog"))
 
         cli.send(:run_pre_release_checks!)
@@ -1108,6 +1197,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         versioned_cli = described_class.new(version: "3.2.1")
         pre_release = instance_double(Kettle::Dev::PreReleaseCLI, run: nil)
         expect(Kettle::Dev::PreReleaseCLI).to receive(:new).with(check_num: 1, event_recorder: anything).and_return(pre_release)
+        allow(versioned_cli).to receive(:run_cmd!)
         expect(versioned_cli).to receive(:run_cmd!).with(a_string_ending_with("bundle exec kettle-changelog --version 3.2.1"))
 
         versioned_cli.send(:run_pre_release_checks!)
@@ -1117,6 +1207,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         yes_cli = described_class.new(yes: true)
         pre_release = instance_double(Kettle::Dev::PreReleaseCLI, run: nil)
         expect(Kettle::Dev::PreReleaseCLI).to receive(:new).with(check_num: 1, event_recorder: anything).and_return(pre_release)
+        allow(yes_cli).to receive(:run_cmd!)
         expect(yes_cli).to receive(:run_cmd!).with(a_string_ending_with("bundle exec kettle-changelog --yes"))
 
         yes_cli.send(:run_pre_release_checks!)
@@ -1128,6 +1219,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         evented_cli = described_class.new(yes: true, event_stream: event_stream)
         pre_release = instance_double(Kettle::Dev::PreReleaseCLI, run: nil)
         expect(Kettle::Dev::PreReleaseCLI).to receive(:new).with(check_num: 1, event_recorder: anything).and_return(pre_release)
+        allow(evented_cli).to receive(:run_cmd!)
         expect(evented_cli).to receive(:run_cmd!).with(a_string_ending_with("bundle exec kettle-changelog --yes --events=changelog"))
 
         evented_cli.send(:run_pre_release_checks!)

@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Release is now cold-start safe for borrowed bundles: the changelog step's tool bundle (kettle-changelog's release gemfile) and the member coverage bundle are installed via bundle install before the changelog exec, each against a disposable lockfile under tmp/kettle-release/lockfiles so canonical lockfiles never change. Previously a fresh gem home (e.g. after a Ruby upgrade) died mid-publish with Bundler::GemNotFound for gems those borrowed bundles pin. Fixes #67
+
 ### Security
 
 ## [3.1.31] - 2026-11-20

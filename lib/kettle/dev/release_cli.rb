@@ -787,6 +787,7 @@ module Kettle
         if skip_changelog?
           puts "Skipping kettle-changelog because --skip-changelog was provided."
         else
+          materialize_borrowed_changelog_bundles!
           run_changelog!
         end
       end
@@ -1133,6 +1134,44 @@ module Kettle
         cmd = "#{cmd} --events=changelog" if @event_stream
         with_project_changelog_coverage_policy { run_cmd!(cmd) }
         @changelog_generated_coverage = true
+      end
+
+      # The changelog step borrows bundles the release does not otherwise
+      # install: the tool bundle kettle-changelog runs from
+      # (release_changelog_gemfile) and the coverage bundle its coverage step
+      # execs against (changelog_coverage_gemfile). `bundle exec` never
+      # auto-installs, so a cold gem home (e.g. right after a Ruby upgrade
+      # emptied it) dies mid-publish with Bundler::GemNotFound. Install both
+      # before the exec; `bundle install` is a fast no-op on a warm machine.
+      def materialize_borrowed_changelog_bundles!
+        borrowed_changelog_gemfiles.each do |gemfile|
+          environment = {"BUNDLE_GEMFILE" => gemfile}
+          if (lockfile = release_borrowed_bundle_lockfile(gemfile))
+            environment["BUNDLE_LOCKFILE"] = lockfile
+          end
+          puts "Installing changelog bundle for #{gemfile}..."
+          run_cmd!(release_child_command("bundle install", environment: environment))
+        end
+      end
+
+      def borrowed_changelog_gemfiles
+        [release_changelog_gemfile, changelog_coverage_gemfile].compact.uniq.select { |gemfile| File.file?(gemfile) }
+      end
+
+      # A disposable BUNDLE_LOCKFILE for a borrowed-bundle install: the
+      # existing release-task copy of the bundle's canonical lockfile when one
+      # exists, otherwise a fresh tmp path so `bundle install` resolves there
+      # and never writes a new lockfile into the repo. Registered for cleanup
+      # with the other release task lockfiles.
+      def release_borrowed_bundle_lockfile(gemfile)
+        task_lockfile = release_task_lockfile_path(gemfile: gemfile)
+        return task_lockfile if task_lockfile
+
+        directory = File.join(@root, "tmp", "kettle-release", "lockfiles")
+        FileUtils.mkdir_p(directory)
+        path = File.join(directory, "#{File.basename(gemfile)}-#{$$}.lock")
+        @release_task_lockfile_paths[gemfile] = path
+        path
       end
 
       # The changelog executable is owned by kettle-changelog, not kettle-dev.
