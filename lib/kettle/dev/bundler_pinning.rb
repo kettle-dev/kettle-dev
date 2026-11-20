@@ -18,6 +18,11 @@ module Kettle
     module BundlerPinning
       RUBYGEMS_SOURCE = "https://rubygems.org"
 
+      # The gem whose versions track RubyGems itself. Bundler and RubyGems
+      # release as a matched pair (same version, same day), so this is the
+      # other half of every Bundler version question.
+      RUBYGEMS_UPDATE_GEM = "rubygems-update"
+
       # Known-bad STABLE Bundler versions the toolchain must never select, as
       # version String => reason. Prereleases need no entries — every lookup
       # already rejects them (the 4.1.0.betaN infection vector). Add an entry
@@ -25,6 +30,10 @@ module Kettle
       # release supersedes it. FLOOR_HOLDS in bin/kettle-jem-deps-floor is the
       # same idea for dependency floors.
       HELD_VERSIONS = {}.freeze
+
+      # Known-bad STABLE RubyGems versions, same shape and policy as
+      # HELD_VERSIONS.
+      RUBYGEMS_HELD_VERSIONS = {}.freeze
 
       module_function
 
@@ -153,6 +162,36 @@ module Kettle
         candidate unless candidate.prerelease?
       rescue ArgumentError
         nil
+      end
+
+      # True when the RubyGems version (String or Gem::Version) is a
+      # registered known-bad stable hold.
+      def rubygems_held?(version)
+        RUBYGEMS_HELD_VERSIONS.key?(version.to_s)
+      end
+
+      # The registered reason a RubyGems version is held; nil when it is not.
+      def rubygems_held_reason(version)
+        RUBYGEMS_HELD_VERSIONS[version.to_s]
+      end
+
+      # The RubyGems running this process (`gem -v`). RubyGems is not a gem in
+      # the gem home — it IS the runtime's package manager — so there is no
+      # spec-index fallback to make; this is the only installed version that
+      # matters.
+      def installed_rubygems
+        Gem.rubygems_version
+      end
+
+      # Newest stable RubyGems the registry serves (tracked via the
+      # rubygems-update gem); nil when the registry cannot be consulted, so
+      # callers fail open. Held versions (RUBYGEMS_HELD_VERSIONS) are
+      # excluded, exactly like the Bundler lookup.
+      def published_stable_rubygems
+        numbers = Kettle::Dev::RubyGemsVersions.published_version_numbers(RUBYGEMS_UPDATE_GEM)
+        return nil unless numbers
+
+        numbers.filter_map { |number| published_candidate(number) }.reject { |candidate| rubygems_held?(candidate) }.max
       end
     end
   end

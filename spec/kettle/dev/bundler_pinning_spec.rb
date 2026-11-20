@@ -231,4 +231,52 @@ RSpec.describe Kettle::Dev::BundlerPinning do
         .to eq(["bundle", "_4.0.23_", "update", "nomono", "--bundler=4.0.23"])
     end
   end
+
+  describe ".installed_rubygems" do
+    it "returns the running RubyGems version (gem -v)" do
+      expect(described_class.installed_rubygems).to eq(Gem.rubygems_version)
+    end
+  end
+
+  describe ".published_stable_rubygems" do
+    it "returns the newest non-prerelease rubygems-update version the registry serves" do
+      allow(Kettle::Dev::RubyGemsVersions).to receive(:published_version_numbers)
+        .with("rubygems-update")
+        .and_return(["4.1.0.beta1", "4.1.0", "4.0.24"])
+
+      expect(described_class.published_stable_rubygems).to eq(Gem::Version.new("4.1.0"))
+    end
+
+    it "returns nil when the registry cannot be consulted" do
+      allow(Kettle::Dev::RubyGemsVersions).to receive(:published_version_numbers).with("rubygems-update").and_return(nil)
+
+      expect(described_class.published_stable_rubygems).to be_nil
+    end
+
+    it "excludes versions registered as known-bad stables" do
+      stub_const("Kettle::Dev::BundlerPinning::RUBYGEMS_HELD_VERSIONS", {"4.1.0" => "breaks vendored uri"})
+      allow(Kettle::Dev::RubyGemsVersions).to receive(:published_version_numbers)
+        .with("rubygems-update")
+        .and_return(["4.1.0", "4.0.24"])
+
+      expect(described_class.published_stable_rubygems).to eq(Gem::Version.new("4.0.24"))
+    end
+
+    it "returns nil when every published stable is held" do
+      stub_const("Kettle::Dev::BundlerPinning::RUBYGEMS_HELD_VERSIONS", {"4.1.0" => "breaks vendored uri"})
+      allow(Kettle::Dev::RubyGemsVersions).to receive(:published_version_numbers)
+        .with("rubygems-update")
+        .and_return(["4.1.0"])
+
+      expect(described_class.published_stable_rubygems).to be_nil
+    end
+
+    it "reports a held RubyGems version with its reason" do
+      stub_const("Kettle::Dev::BundlerPinning::RUBYGEMS_HELD_VERSIONS", {"4.1.0" => "breaks vendored uri"})
+
+      expect(described_class.rubygems_held?(Gem::Version.new("4.1.0"))).to be(true)
+      expect(described_class.rubygems_held_reason("4.1.0")).to eq("breaks vendored uri")
+      expect(described_class.rubygems_held?(Gem::Version.new("4.0.24"))).to be(false)
+    end
+  end
 end

@@ -20,6 +20,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
+- BundlerPinning RubyGems pair lookups: installed_rubygems (gem -v) and published_stable_rubygems (latest stable rubygems-update the registry serves, prereleases rejected, fail-open on outage), with a RUBYGEMS_HELD_VERSIONS registry mirroring HELD_VERSIONS — the RubyGems half of the matched Bundler/RubyGems pair
+
 ### Changed
 
 ### Deprecated
