@@ -30,6 +30,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- Stop requiring Bundler at load time in BundlerPinning (require it at the point of use): loading Bundler activates the default Bundler, whose vendored uri clashes with RubyGems' own vendored copy and floods stderr with Gem::URI double-initialization warnings on every CLI invocation once Bundler 4.x is the machine default
+
 ### Security
 
 ## [3.1.30] - 2026-11-19
