@@ -407,6 +407,11 @@ RSpec.describe Kettle::Dev::CIMonitor do
         include("type" => "ci_monitor", "action" => "github_workflow", "status" => "ok", "workflow" => "style.yml"),
         include("type" => "ci_monitor", "action" => "github_complete", "status" => "failed", "completed" => 2, "failed" => ["current.yml"])
       )
+      # Progress never moves backwards within a run, including the failure event.
+      counts = events.select { |e| e["provider"] == "github" && e.key?("completed") }.map { |e| e["completed"] }
+      expect(counts).to eq(counts.sort)
+      failure = events.find { |e| e["action"] == "github_workflow" && e["status"] == "failed" }
+      expect(failure).to include("completed" => 1, "reason" => "Workflow failed")
     end
 
     it "rate-limits release secret keepalive callbacks during CI polling" do
