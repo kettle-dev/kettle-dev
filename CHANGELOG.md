@@ -30,6 +30,16 @@ Please file a bug if you notice a violation of semantic versioning.
 
 - kettle-release judges workflow runs by non-macOS/Windows jobs, so slow matrix lanes no longer gate or delay CI validation (#62)
 
+- [kc] kettle-jem/prepare: updated 14 project files:
+  - dependencies (14)
+
+- [kc] kettle-jem/template: updated 9 project files:
+  - code and tests (2)
+  - dependencies (3)
+  - documentation (1)
+  - other (1)
+  - workflows (2)
+
 ### Deprecated
 
 ### Removed
