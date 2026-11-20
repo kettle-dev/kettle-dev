@@ -834,13 +834,17 @@ RSpec.describe Kettle::Dev::CIHelpers do
         20.times { Kettle::Dev::CIHelpers.claim_ci_rate_slot }
         puts "done"
       RUBY
+      # Seed a far-future slot so the queue stays chained no matter how slowly
+      # each child boots (JVM startup on TruffleRuby exceeds the 20-claim window).
+      seed = Time.now.to_f + 600
+      File.write(@ledger, JSON.generate({"next_slot" => seed}))
       3.times do
         # stub_env is in-process only; the child needs the real env var.
         `K_RELEASE_CI_RATE_STATE_FILE=#{Shellwords.escape(@ledger)} #{Gem.ruby} -e #{Shellwords.escape(script)} 2>&1`
       end
       # Subprocess claims must have reserved 60 strictly spaced future slots.
       final_slot = read_ledger["next_slot"]
-      expect(final_slot - Time.now.to_f).to be > 50 * interval
+      expect(final_slot - seed).to be > 55 * interval
     end
 
     it "in-process fallback reserves spaced slots" do
