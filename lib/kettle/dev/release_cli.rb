@@ -30,6 +30,9 @@ module Kettle
     class ReleaseCLI
       RUBYGEMS_INVALID_OTP = /Your OTP code is incorrect\. Please check it and retry\./.freeze
       OTP_RETRY_DELAY_SECONDS = 2
+      # Fresh-OTP retries for a plain `gem push` that RubyGems rejects (a mistyped code, a code
+      # from the wrong window). Each retry asks the secrets provider again, which re-prompts.
+      GEM_PUSH_OTP_RETRIES = 3
       GITHUB_RELEASE_ASSET_UPLOAD_ATTEMPTS = 3
       GITHUB_RELEASE_ASSET_UPLOAD_RETRY_DELAY_SECONDS = 1
       QUIET_ENV = {
@@ -1792,19 +1795,35 @@ module Kettle
         return self.class.run_cmd!(cmd) unless release_secret_command?(cmd) && release_secrets_configured?
 
         keep_release_secrets_alive!("prompt-bearing command")
-        puts "$ #{cmd}"
-        stdout_str, stderr_str, status = Kettle::Dev::InteractiveReleaseCommand.new(
-          secrets_provider: @secrets_provider,
-          secret_event_handler: ->(payload) { emit_secret_event(payload) }
-        ).call(
-          self.class.send(:command_env_for, cmd),
-          cmd
-        )
-        return if status.success?
+        otp_retries = 0
+        stdout_str = stderr_str = status = nil
+        loop do
+          puts "$ #{cmd}"
+          stdout_str, stderr_str, status = Kettle::Dev::InteractiveReleaseCommand.new(
+            secrets_provider: @secrets_provider,
+            secret_event_handler: ->(payload) { emit_secret_event(payload) }
+          ).call(
+            self.class.send(:command_env_for, cmd),
+            cmd
+          )
+          return if status.success?
 
-        if gem_release_command?(cmd) && rubygems_invalid_otp?(stdout_str, stderr_str)
-          retry_gem_push_after_invalid_otp!
-          return
+          if gem_release_command?(cmd) && rubygems_invalid_otp?(stdout_str, stderr_str)
+            retry_gem_push_after_invalid_otp!
+            return
+          end
+          break unless gem_push_command?(cmd) && rubygems_invalid_otp?(stdout_str, stderr_str) &&
+            otp_retries < GEM_PUSH_OTP_RETRIES
+
+          otp_retries += 1
+          puts "RubyGems rejected the OTP; asking for a fresh one (attempt #{otp_retries}/#{GEM_PUSH_OTP_RETRIES})..."
+          emit_secret_event(
+            source: release_secrets_provider_label,
+            action: "otp_retry",
+            status: "started",
+            reason: "RubyGems rejected the OTP for gem push (retry #{otp_retries}/#{GEM_PUSH_OTP_RETRIES})"
+          )
+          sleep(OTP_RETRY_DELAY_SECONDS)
         end
 
         exit_code = status.respond_to?(:exitstatus) ? status.exitstatus : 1
@@ -1824,6 +1843,10 @@ module Kettle
 
       def gem_release_command?(cmd)
         effective_command_words(cmd).first(4) == ["bundle", "exec", "rake", "release"]
+      end
+
+      def gem_push_command?(cmd)
+        effective_command_words(cmd).first(2) == ["gem", "push"]
       end
 
       def rubygems_invalid_otp?(*output)

@@ -524,6 +524,40 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         expect(provider).to have_received(:keepalive!).with(elapsed: nil)
       end
 
+      it "asks for a fresh OTP and re-runs a plain gem push that RubyGems rejected, up to three times" do
+        provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword)
+        local_cli = described_class.new(secrets_provider: provider)
+        runner = instance_double(Kettle::Dev::InteractiveReleaseCommand)
+        failed = instance_double(Process::Status, success?: false, exitstatus: 1)
+        ok = instance_double(Process::Status, success?: true, exitstatus: 0)
+        rejected = "Your OTP code is incorrect. Please check it and retry."
+        allow(provider).to receive(:keepalive!).with(elapsed: nil).and_return(true)
+        allow(Kettle::Dev::InteractiveReleaseCommand).to receive(:new)
+          .with(secrets_provider: provider, secret_event_handler: kind_of(Proc))
+          .and_return(runner)
+        allow(local_cli).to receive(:sleep)
+        allow(runner).to receive(:call).and_return([rejected, "", failed], [rejected, "", failed], ["", "", ok])
+
+        expect { local_cli.send(:run_cmd!, "gem push pkg/example-1.2.3.gem") }.not_to raise_error
+        expect(runner).to have_received(:call).exactly(3).times
+      end
+
+      it "gives up after three fresh-OTP retries of a rejected gem push" do
+        provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword)
+        local_cli = described_class.new(secrets_provider: provider)
+        runner = instance_double(Kettle::Dev::InteractiveReleaseCommand)
+        failed = instance_double(Process::Status, success?: false, exitstatus: 1)
+        allow(provider).to receive(:keepalive!).with(elapsed: nil).and_return(true)
+        allow(Kettle::Dev::InteractiveReleaseCommand).to receive(:new)
+          .with(secrets_provider: provider, secret_event_handler: kind_of(Proc))
+          .and_return(runner)
+        allow(local_cli).to receive(:sleep)
+        allow(runner).to receive(:call).and_return(["Your OTP code is incorrect. Please check it and retry.", "", failed])
+
+        expect { local_cli.send(:run_cmd!, "gem push pkg/example-1.2.3.gem") }.to raise_error(MockSystemExit, /Command failed: gem push/)
+        expect(runner).to have_received(:call).exactly(4).times
+      end
+
       it "retries the existing gem when RubyGems rejects an expired-edge OTP" do
         provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword)
         local_cli = described_class.new(secrets_provider: provider)

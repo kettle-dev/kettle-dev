@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- release: a plain `gem push` that RubyGems rejects for an invalid OTP is retried up to three times, each time asking the secrets provider (and so the user) for a fresh code, instead of aborting after RubyGems' own single re-prompt; only the `bundle exec rake release` path had a kettle-level retry before
+
 ### Security
 
 ## [3.1.31] - 2026-11-20
