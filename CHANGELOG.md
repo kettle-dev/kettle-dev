@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- release: a plain `gem push` that RubyGems rejects for an invalid OTP is retried up to three times, each time asking the secrets provider (and so the user) for a fresh code, instead of aborting after RubyGems' own single re-prompt; only the `bundle exec rake release` path had a kettle-level retry before
-
 ### Security
+
+## [3.1.32] - 2026-11-26
+
+- TAG: [v3.1.32][3.1.32t]
+- COVERAGE: 92.07% -- 6013/6531 lines in 50 files
+- BRANCH COVERAGE: 76.16% -- 2300/3020 branches in 50 files
+- 55.92% documented
+
+### Fixed
+
+- release: a plain `gem push` that RubyGems rejects for an invalid OTP is retried up to three times, each time asking the secrets provider (and so the user) for a fresh code, instead of aborting after RubyGems' own single re-prompt; only the `bundle exec rake release` path had a kettle-level retry before
 
 ## [3.1.31] - 2026-11-20
 
@@ -4388,7 +4397,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.31...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.32...HEAD
+[3.1.32]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.31...v3.1.32
+[3.1.32t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.32
 [3.1.31]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.30...v3.1.31
 [3.1.31t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.31
 [3.1.30]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.29...v3.1.30
