@@ -28,6 +28,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- release interactive command: compute scrubbed prompt text before `scrub_secrets_from_chunk` mutates `@secret_scrub_carryover` (preventing held-back carryover bytes from being re-fed into a cleared prompt buffer) and require a prompt delimiter (`:`/`?`) in `otp_response_prompt?` so RubyGems' intro sentence (`Please enter OTP code.`) and `Code:   ` prompt no longer trigger two consecutive OTP requests; also stop `call_with_open3` from waiting on an open TTY stdin after child stdout/stderr close
+
 ### Security
 
 ## [3.1.32] - 2026-11-26
