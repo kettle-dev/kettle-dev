@@ -50,6 +50,7 @@ module Kettle
       # @param restart_hint [String] guidance command shown on failure
       # @return [Boolean] whether all configured CI providers passed
       def monitor_all!(restart_hint: "bundle exec kettle-release --start-step 10", workflows: nil, keepalive: nil, event_recorder: nil, **options)
+        clear_warnings!
         # Rate limiting is recoverable: when the GitHub monitor parks for the
         # quota reset it returns :rate_limited and we re-enter it. GitLab has
         # no equivalent, so only the GitHub result drives the retry.
@@ -65,6 +66,28 @@ module Kettle
 
         results.all? { |result| result != false }
       end
+
+      WARNINGS_THREAD_KEY = :kettle_dev_ci_monitor_warnings
+
+      def clear_warnings!
+        Thread.current[WARNINGS_THREAD_KEY] = []
+      end
+      module_function :clear_warnings!
+
+      def record_warning(kind:, message:)
+        warnings = (Thread.current[WARNINGS_THREAD_KEY] ||= [])
+        entry = {kind: kind.to_s, message: message.to_s}
+        warnings << entry unless warnings.include?(entry)
+        entry
+      end
+      module_function :record_warning
+
+      def take_warnings
+        warnings = Array(Thread.current[WARNINGS_THREAD_KEY]).dup
+        Thread.current[WARNINGS_THREAD_KEY] = []
+        warnings
+      end
+      module_function :take_warnings
 
       def continue_ci_failures?
         !!(Kettle::Dev::ENV_TRUE_RE =~ ENV.fetch("K_RELEASE_CI_CONTINUE", "false"))
@@ -303,6 +326,19 @@ module Kettle
 
         head_sha = Kettle::Dev::CIHelpers.current_head_sha
         abort("Could not determine local HEAD SHA for GitHub Actions checks.") unless head_sha && !head_sha.empty?
+
+        owner, repo = preflight_github_ci!(
+          root: root,
+          workflows: workflows,
+          gh_remote: gh_remote,
+          url: url,
+          owner: owner,
+          repo: repo,
+          branch: branch,
+          head_sha: head_sha,
+          restart_hint: restart_hint,
+          event_recorder: event_recorder
+        )
 
         passed = {}
         failed = {}
@@ -549,8 +585,141 @@ module Kettle
         )
         sleep(wait)
         :rate_limited
+      rescue Kettle::Dev::CIConfigurationError => error
+        pbar&.finish unless pbar&.finished?
+        emit_ci_monitor_event(
+          event_recorder,
+          action: "github_preflight",
+          status: "failed",
+          provider: "github",
+          head_sha: head_sha,
+          reason: error.message
+        )
+        abort(error.message)
       end
       module_function :monitor_github_internal!
+
+      # Run fast preflight checks before entering the 300s workflow-start poll
+      # loop so expected irrecoverable states (broken workflow YAML, unpushed
+      # commits, nonexistent 404 repo, redirected remote, branch trigger
+      # mismatch, disabled Actions or workflows) are handled immediately.
+      # Returns the canonical [owner, repo] pair (following permanent redirects).
+      def preflight_github_ci!(root:, workflows:, gh_remote:, url:, owner:, repo:, branch:, head_sha:, restart_hint:, event_recorder: nil, **options)
+        workflow_docs = Kettle::Dev::CIHelpers.validate_workflow_yaml!(root: root, workflows: workflows)
+        remote_commit_confirmed = check_github_commit_pushed!(gh_remote: gh_remote, branch: branch, head_sha: head_sha)
+
+        repo_info = Kettle::Dev::CIHelpers.github_repo_info(owner: owner, repo: repo)
+        if repo_info && repo_info["redirected"]
+          canonical_full_name = repo_info["full_name"].to_s
+          new_owner, new_repo = canonical_full_name.split("/", 2)
+          if new_owner && new_repo && !new_owner.empty? && !new_repo.empty? &&
+              canonical_full_name.casecmp("#{owner}/#{repo}") != 0
+            canonical_url = Kettle::Dev::CIHelpers.rewrite_github_remote_url(url, new_owner, new_repo)
+            fix_cmd = "git remote set-url #{gh_remote} #{canonical_url}"
+            msg = "Remote '#{gh_remote}' points to #{owner}/#{repo}, which permanently redirected to #{new_owner}/#{new_repo}. " \
+              "Update it with: #{fix_cmd}"
+            warn("WARNING: #{msg}")
+            record_warning(kind: "ci_remote_redirect", message: msg)
+            emit_ci_monitor_event(
+              event_recorder,
+              action: "github_remote_redirect",
+              status: "warning",
+              provider: "github",
+              remote: gh_remote,
+              from: "#{owner}/#{repo}",
+              to: "#{new_owner}/#{new_repo}",
+              recommended_command: fix_cmd,
+              reason: msg
+            )
+            owner = new_owner
+            repo = new_repo
+          end
+        end
+
+        default_branch = repo_info && repo_info["default_branch"]
+        Kettle::Dev::CIHelpers.validate_workflow_triggers!(
+          documents: workflow_docs,
+          branch: branch,
+          default_branch: default_branch
+        )
+
+        if repo_info
+          unless remote_commit_confirmed
+            commit_exists = Kettle::Dev::CIHelpers.github_commit_exists?(owner: owner, repo: repo, head_sha: head_sha)
+            if commit_exists == false
+              raise(
+                Kettle::Dev::CIConfigurationError,
+                "Commit #{head_sha[0, 12]} does not exist on GitHub (#{owner}/#{repo}). " \
+                  "Push branch '#{branch}' to '#{gh_remote}' (or resume from step 9: bundle exec kettle-release --start-step 9) before monitoring CI."
+              )
+            end
+          end
+
+          perms = Kettle::Dev::CIHelpers.github_actions_permissions(owner: owner, repo: repo)
+          if perms.is_a?(Hash) && perms["enabled"] == false
+            raise(
+              Kettle::Dev::CIConfigurationError,
+              "GitHub Actions is disabled for #{owner}/#{repo}. " \
+                "Enable Actions in repository settings, then restart from CI validation with: #{restart_hint}"
+            )
+          end
+
+          remote_workflows = Kettle::Dev::CIHelpers.github_actions_workflows(owner: owner, repo: repo)
+          if remote_workflows.is_a?(Array)
+            by_path = {}
+            remote_workflows.each { |entry| by_path[entry["path"].to_s] = entry if entry.is_a?(Hash) }
+            disabled = workflows.each_with_object([]) do |wf, list|
+              entry = by_path[".github/workflows/#{wf}"]
+              next unless entry
+
+              state = entry["state"].to_s
+              list << "#{wf} (#{state})" if !state.empty? && state != "active"
+            end
+            unless disabled.empty?
+              raise(
+                Kettle::Dev::CIConfigurationError,
+                "GitHub Actions workflow(s) are disabled for #{owner}/#{repo}: #{disabled.join(", ")}. " \
+                  "Re-enable them in GitHub Actions, then restart from CI validation with: #{restart_hint}"
+              )
+            end
+          end
+        end
+
+        [owner, repo]
+      end
+      module_function :preflight_github_ci!
+
+      # Check via git ls-remote + rev-list whether local HEAD has unpushed commits
+      # relative to gh_remote/branch. Returns true when remote_sha == head_sha,
+      # false when unknown, and raises CIConfigurationError when definitively ahead.
+      def check_github_commit_pushed!(gh_remote:, branch:, head_sha:)
+        adapter = Kettle::Dev::GitAdapter.new
+        out, ok = adapter.capture(["ls-remote", gh_remote, "refs/heads/#{branch}"])
+        return false unless ok
+
+        remote_sha = out.to_s.strip.split(/\s+/).first
+        return false unless remote_sha&.match?(/\A[0-9a-f]{40}\z/i)
+        return true if remote_sha == head_sha
+
+        ahead_out, ahead_ok = adapter.capture(["rev-list", "--count", "#{remote_sha}..#{head_sha}"])
+        ahead_count = ahead_out.to_s.strip.to_i
+        if ahead_ok && ahead_count.positive?
+          raise(
+            Kettle::Dev::CIConfigurationError,
+            "Local HEAD #{head_sha[0, 12]} is #{ahead_count} commit(s) ahead of #{gh_remote}/#{branch} " \
+              "(#{remote_sha[0, 12]}) and has not been pushed. " \
+              "Push your commits or resume from step 9 (bundle exec kettle-release --start-step 9) before monitoring CI."
+          )
+        end
+
+        false
+      rescue Kettle::Dev::CIConfigurationError
+        raise
+      rescue => error
+        Kettle::Dev.debug_error(error, __method__)
+        false
+      end
+      module_function :check_github_commit_pushed!
 
       def monotonic_time
         Process.clock_gettime(Process::CLOCK_MONOTONIC)
@@ -730,7 +899,7 @@ module Kettle
           ">"
         when "ok", "skipped", "continued"
           "."
-        when "failed"
+        when "failed", "warning"
           "!"
         else
           "?"

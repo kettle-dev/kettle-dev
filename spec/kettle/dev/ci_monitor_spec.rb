@@ -710,4 +710,170 @@ RSpec.describe Kettle::Dev::CIMonitor do
       expect(res[:status]).to eq("blocked")
     end
   end
+
+  describe "GitHub CI preflight checks and redirect handling" do
+    let(:head_sha) { "a" * 40 }
+    let(:remote_sha) { "b" * 40 }
+
+    before do
+      stub_env("K_RELEASE_CI_INITIAL_SLEEP" => "0", "K_RELEASE_CI_POLL_INTERVAL" => "0")
+      allow(described_class).to receive(:sleep)
+      allow(described_class).to receive_messages(
+        preferred_github_remote: "origin",
+        remote_url: "git@github.com:pboling/kettle-paths.git"
+      )
+      allow(helpers).to receive_messages(
+        project_root: Dir.pwd,
+        current_branch: "main",
+        current_head_sha: head_sha,
+        workflows_list: ["ci.yml"]
+      )
+    end
+
+    it "follows a permanent remote redirect, switches polling to canonical owner/repo, and records a warning", :check_output do
+      io = StringIO.new
+      event_recorder = Kettle::Ndjson.event_stream(io, types: "ci_monitor")
+      allow(helpers).to receive(:github_repo_info).with(owner: "pboling", repo: "kettle-paths").and_return(
+        "full_name" => "kettle-dev/kettle-paths",
+        "default_branch" => "main",
+        "redirected" => true,
+        "redirects" => [{from: "https://api.github.com/repos/pboling/kettle-paths", to: "https://api.github.com/repositories/1", code: 301}]
+      )
+      allow(helpers).to receive(:github_commit_exists?).with(owner: "kettle-dev", repo: "kettle-paths", head_sha: head_sha).and_return(true)
+      allow(helpers).to receive(:github_actions_permissions).with(owner: "kettle-dev", repo: "kettle-paths").and_return("enabled" => true)
+      allow(helpers).to receive(:github_actions_workflows).with(owner: "kettle-dev", repo: "kettle-paths").and_return(
+        [{"path" => ".github/workflows/ci.yml", "state" => "active"}]
+      )
+      allow(helpers).to receive(:latest_run).with(
+        owner: "kettle-dev",
+        repo: "kettle-paths",
+        workflow_file: "ci.yml",
+        branch: "main",
+        require_head: true,
+        head_sha: head_sha
+      ).and_return({"status" => "completed", "conclusion" => "success", "html_url" => "https://github.com/kettle-dev/kettle-paths/actions/runs/1", "id" => 1, "head_sha" => head_sha})
+
+      expect {
+        described_class.monitor_all!(restart_hint: "bundle exec kettle-release --start-step 10", event_recorder: event_recorder)
+      }.not_to raise_error
+
+      warnings = described_class.take_warnings
+      expect(warnings).to include(
+        include(
+          kind: "ci_remote_redirect",
+          message: include("git remote set-url origin git@github.com:kettle-dev/kettle-paths.git")
+        )
+      )
+      events = io.string.lines.map { |line| JSON.parse(line) }
+      expect(events).to include(
+        include(
+          "type" => "ci_monitor",
+          "action" => "github_remote_redirect",
+          "status" => "warning",
+          "from" => "pboling/kettle-paths",
+          "to" => "kettle-dev/kettle-paths",
+          "recommended_command" => "git remote set-url origin git@github.com:kettle-dev/kettle-paths.git"
+        )
+      )
+    end
+
+    it "fails fast on a 404 repository without entering the poll loop", :check_output do
+      allow(helpers).to receive(:github_repo_info).and_raise(
+        Kettle::Dev::CIConfigurationError,
+        "GitHub repository pboling/kettle-paths not found (HTTP 404)."
+      )
+      expect(helpers).not_to receive(:latest_run)
+
+      expect {
+        described_class.monitor_all!(restart_hint: "bundle exec kettle-release --start-step 10")
+      }.to raise_error(MockSystemExit, /not found \(HTTP 404\)/)
+    end
+
+    it "fails fast when local HEAD is ahead of the remote branch (unpushed commits)", :check_output do
+      adapter = Kettle::Dev::GitAdapter.new
+      allow(adapter).to receive(:capture).with(["ls-remote", "origin", "refs/heads/main"]).and_return(["#{remote_sha}\trefs/heads/main", true])
+      allow(adapter).to receive(:capture).with(["rev-list", "--count", "#{remote_sha}..#{head_sha}"]).and_return(["2", true])
+      expect(helpers).not_to receive(:latest_run)
+
+      expect {
+        described_class.monitor_all!(restart_hint: "bundle exec kettle-release --start-step 10")
+      }.to raise_error(MockSystemExit, /2 commit\(s\) ahead of origin\/main.*--start-step 9/)
+    end
+
+    it "fails fast when GitHub reports the commit SHA does not exist", :check_output do
+      allow(helpers).to receive_messages(
+        github_repo_info: {"full_name" => "pboling/kettle-paths", "default_branch" => "main", "redirected" => false},
+        github_commit_exists?: false
+      )
+      expect(helpers).not_to receive(:latest_run)
+
+      expect {
+        described_class.monitor_all!(restart_hint: "bundle exec kettle-release --start-step 10")
+      }.to raise_error(MockSystemExit, /does not exist on GitHub.*--start-step 9/)
+    end
+
+    it "fails fast when GitHub Actions is disabled on the repository", :check_output do
+      allow(helpers).to receive_messages(
+        github_repo_info: {"full_name" => "pboling/kettle-paths", "default_branch" => "main", "redirected" => false},
+        github_commit_exists?: true,
+        github_actions_permissions: {"enabled" => false}
+      )
+      expect(helpers).not_to receive(:latest_run)
+
+      expect {
+        described_class.monitor_all!(restart_hint: "bundle exec kettle-release --start-step 10")
+      }.to raise_error(MockSystemExit, /GitHub Actions is disabled for pboling\/kettle-paths/)
+    end
+
+    it "fails fast when a monitored workflow is disabled on GitHub", :check_output do
+      allow(helpers).to receive_messages(
+        github_repo_info: {"full_name" => "pboling/kettle-paths", "default_branch" => "main", "redirected" => false},
+        github_commit_exists?: true,
+        github_actions_permissions: {"enabled" => true},
+        github_actions_workflows: [{"path" => ".github/workflows/ci.yml", "state" => "disabled_inactivity"}]
+      )
+      expect(helpers).not_to receive(:latest_run)
+
+      expect {
+        described_class.monitor_all!(restart_hint: "bundle exec kettle-release --start-step 10")
+      }.to raise_error(MockSystemExit, /workflow\(s\) are disabled.*ci\.yml \(disabled_inactivity\)/)
+    end
+
+    it "fails fast on broken workflow YAML before polling", :check_output do
+      Dir.mktmpdir("broken-wf") do |root|
+        wf_dir = File.join(root, ".github", "workflows")
+        FileUtils.mkdir_p(wf_dir)
+        File.write(File.join(wf_dir, "ci.yml"), "name: Broken\non: [push\n")
+        allow(helpers).to receive(:project_root).and_return(root)
+        expect(helpers).not_to receive(:latest_run)
+
+        expect {
+          described_class.monitor_all!(restart_hint: "bundle exec kettle-release --start-step 10")
+        }.to raise_error(MockSystemExit, /YAML syntax error.*ci\.yml/)
+      end
+    end
+
+    it "fails fast on branch trigger mismatch before polling", :check_output do
+      Dir.mktmpdir("mismatch-wf") do |root|
+        wf_dir = File.join(root, ".github", "workflows")
+        FileUtils.mkdir_p(wf_dir)
+        File.write(File.join(wf_dir, "ci.yml"), <<~YAML)
+          name: Only Develop
+          on:
+            push:
+              branches: ['develop']
+          jobs: {}
+        YAML
+        allow(helpers).to receive_messages(
+          project_root: root,
+          github_repo_info: {"full_name" => "pboling/kettle-paths", "default_branch" => "main", "redirected" => false}
+        )
+        expect(helpers).not_to receive(:latest_run)
+
+        expect {
+          described_class.monitor_all!(restart_hint: "bundle exec kettle-release --start-step 10")
+        }.to raise_error(MockSystemExit, /trigger mismatch for branch 'main'.*ci\.yml/)
+      end
+    end
+  end
 end

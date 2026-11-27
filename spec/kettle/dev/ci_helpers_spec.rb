@@ -860,4 +860,225 @@ RSpec.describe Kettle::Dev::CIHelpers do
       end
     end
   end
+
+  describe "GitHub redirect handling and preflight helpers" do
+    before do
+      allow(described_class).to receive(:github_rate_limit_wait!)
+    end
+
+    def redirect_response(code:, location:)
+      klass = (code == 308) ? Net::HTTPPermanentRedirect : Net::HTTPMovedPermanently
+      res = klass.new("1.1", code.to_s, "Moved Permanently")
+      res["location"] = location
+      res
+    end
+
+    def ok_response(body_hash)
+      res = Net::HTTPOK.new("1.1", "200", "OK")
+      allow(res).to receive(:body).and_return(JSON.dump(body_hash))
+      res
+    end
+
+    it "follows HTTP 301 redirects in github_get_json, preserves same-host auth, and warns when unhandled" do
+      requests = []
+      responses = [
+        redirect_response(code: 301, location: "https://api.github.com/repositories/1405940447/actions/runs"),
+        ok_response("workflow_runs" => [{"id" => 42}])
+      ]
+      http = instance_double(Net::HTTP)
+      allow(http).to receive(:request) do |req|
+        requests << {uri: req.uri.to_s, auth: req["Authorization"]}
+        responses.shift
+      end
+      allow(Net::HTTP).to receive(:start).and_yield(http)
+
+      warnings = []
+      allow(described_class).to receive(:warn) { |msg| warnings << msg }
+
+      data = described_class.github_get_json(
+        "https://api.github.com/repos/pboling/kettle-paths/actions/runs",
+        token: "secret-token"
+      )
+
+      expect(data).to eq("workflow_runs" => [{"id" => 42}])
+      expect(requests.map { |r| r[:auth] }).to eq(["token secret-token", "token secret-token"])
+      expect(warnings.first).to include("permanently redirected", "HTTP 301")
+    end
+
+    it "strips Authorization when redirected to a different host" do
+      requests = []
+      responses = [
+        redirect_response(code: 301, location: "https://other.example.com/data"),
+        ok_response("ok" => true)
+      ]
+      http = instance_double(Net::HTTP)
+      allow(http).to receive(:request) do |req|
+        requests << {host: req.uri.hostname, auth: req["Authorization"]}
+        responses.shift
+      end
+      allow(Net::HTTP).to receive(:start).and_yield(http)
+
+      described_class.github_get_json(
+        "https://api.github.com/repos/old/repo",
+        token: "secret-token",
+        on_redirect: ->(_hop) {}
+      )
+
+      expect(requests).to eq([
+        {host: "api.github.com", auth: "token secret-token"},
+        {host: "other.example.com", auth: nil}
+      ])
+    end
+
+    it "raises CIConfigurationError when redirect count exceeds the limit" do
+      http = instance_double(Net::HTTP)
+      allow(http).to receive(:request).and_return(
+        redirect_response(code: 301, location: "https://api.github.com/repos/loop/repo")
+      )
+      allow(Net::HTTP).to receive(:start).and_yield(http)
+
+      expect {
+        described_class.github_get_json("https://api.github.com/repos/loop/repo", token: "tok")
+      }.to raise_error(Kettle::Dev::CIConfigurationError, /exceeded 5 redirects/)
+    end
+
+    it "returns canonical full_name, default_branch, and redirected flag from github_repo_info" do
+      responses = [
+        redirect_response(code: 301, location: "https://api.github.com/repositories/1405940447"),
+        ok_response("full_name" => "kettle-dev/kettle-paths", "default_branch" => "main", "archived" => false)
+      ]
+      http = instance_double(Net::HTTP)
+      allow(http).to receive(:request) { responses.shift }
+      allow(Net::HTTP).to receive(:start).and_yield(http)
+
+      info = described_class.github_repo_info(owner: "pboling", repo: "kettle-paths", token: "tok")
+      expect(info).to include(
+        "full_name" => "kettle-dev/kettle-paths",
+        "default_branch" => "main",
+        "redirected" => true
+      )
+    end
+
+    it "raises CIConfigurationError from github_repo_info on HTTP 404" do
+      not_found = Net::HTTPNotFound.new("1.1", "404", "Not Found")
+      allow(Net::HTTP).to receive(:start).and_return(not_found)
+
+      expect {
+        described_class.github_repo_info(owner: "missing", repo: "nope", token: "tok")
+      }.to raise_error(Kettle::Dev::CIConfigurationError, /not found \(HTTP 404\)/)
+    end
+
+    it "detects missing commits on HTTP 422/404 and present commits on HTTP 200 in github_commit_exists?" do
+      allow(Net::HTTP).to receive(:start).and_return(ok_response("sha" => "abc"))
+      expect(described_class.github_commit_exists?(owner: "me", repo: "repo", head_sha: "abc", token: "tok")).to be(true)
+
+      allow(Net::HTTP).to receive(:start).and_return(Net::HTTPUnprocessableEntity.new("1.1", "422", "Unprocessable Entity"))
+      expect(described_class.github_commit_exists?(owner: "me", repo: "repo", head_sha: "deadbeef", token: "tok")).to be(false)
+
+      allow(Net::HTTP).to receive(:start).and_return(Net::HTTPNotFound.new("1.1", "404", "Not Found"))
+      expect(described_class.github_commit_exists?(owner: "me", repo: "repo", head_sha: "deadbeef", token: "tok")).to be(false)
+    end
+
+    it "rewrites GitHub remote URLs preserving SSH and HTTPS schemes" do
+      expect(described_class.rewrite_github_remote_url("git@github.com:pboling/kettle-paths.git", "kettle-dev", "kettle-paths"))
+        .to eq("git@github.com:kettle-dev/kettle-paths.git")
+      expect(described_class.rewrite_github_remote_url("https://github.com/pboling/kettle-paths", "kettle-dev", "kettle-paths"))
+        .to eq("https://github.com/kettle-dev/kettle-paths")
+      expect(described_class.rewrite_github_remote_url("ssh://git@github.com/pboling/kettle-paths.git", "kettle-dev", "kettle-paths"))
+        .to eq("ssh://git@github.com/kettle-dev/kettle-paths.git")
+    end
+
+    it "fails fast on broken workflow YAML and non-mapping workflow files" do
+      Dir.mktmpdir("wf-yaml") do |root|
+        wf_dir = File.join(root, ".github", "workflows")
+        FileUtils.mkdir_p(wf_dir)
+        File.write(File.join(wf_dir, "broken.yml"), "name: Broken\non: [push\n")
+
+        expect {
+          described_class.validate_workflow_yaml!(root: root, workflows: ["broken.yml"])
+        }.to raise_error(Kettle::Dev::CIConfigurationError, /YAML syntax error.*broken\.yml/)
+
+        File.write(File.join(wf_dir, "scalar.yml"), "just-a-string\n")
+        expect {
+          described_class.validate_workflow_yaml!(root: root, workflows: ["scalar.yml"])
+        }.to raise_error(Kettle::Dev::CIConfigurationError, /scalar\.yml.*not a valid YAML mapping/)
+      end
+    end
+
+    it "validates workflow triggers across push, branches-ignore, globs, pull_request, and default_branch" do
+      Dir.mktmpdir("wf-triggers") do |root|
+        wf_dir = File.join(root, ".github", "workflows")
+        FileUtils.mkdir_p(wf_dir)
+        File.write(File.join(wf_dir, "standard.yml"), <<~YAML)
+          name: Standard
+          on:
+            push:
+              branches: ['main', '*-stable']
+              tags: ['!*']
+            pull_request:
+              branches: ['*']
+            workflow_dispatch:
+          jobs: {}
+        YAML
+        File.write(File.join(wf_dir, "develop_only.yml"), <<~YAML)
+          name: Develop Only
+          on:
+            push:
+              branches: ['develop']
+            pull_request:
+              branches: ['develop']
+          jobs: {}
+        YAML
+        File.write(File.join(wf_dir, "schedule_only.yml"), <<~YAML)
+          name: Nightly
+          on:
+            schedule:
+              - cron: '0 0 * * *'
+          jobs: {}
+        YAML
+        File.write(File.join(wf_dir, "tags_only.yml"), <<~YAML)
+          name: Release Tag
+          on:
+            push:
+              tags: ['v*']
+          jobs: {}
+        YAML
+        File.write(File.join(wf_dir, "ignore_main.yml"), <<~YAML)
+          name: Ignore Main
+          on:
+            push:
+              branches-ignore: ['main', 'wip/**']
+          jobs: {}
+        YAML
+
+        docs = described_class.validate_workflow_yaml!(root: root, workflows: ["standard.yml"])
+        expect { described_class.validate_workflow_triggers!(documents: docs, branch: "main", default_branch: "main") }.not_to raise_error
+        expect { described_class.validate_workflow_triggers!(documents: docs, branch: "2-3-stable", default_branch: "main") }.not_to raise_error
+        expect { described_class.validate_workflow_triggers!(documents: docs, branch: "feat/foo", default_branch: "main") }.not_to raise_error
+
+        dev_docs = described_class.validate_workflow_yaml!(root: root, workflows: ["develop_only.yml"])
+        expect {
+          described_class.validate_workflow_triggers!(documents: dev_docs, branch: "main", default_branch: "main")
+        }.to raise_error(Kettle::Dev::CIConfigurationError, /trigger mismatch for branch 'main'.*develop_only\.yml/)
+
+        sched_docs = described_class.validate_workflow_yaml!(root: root, workflows: ["schedule_only.yml"])
+        expect {
+          described_class.validate_workflow_triggers!(documents: sched_docs, branch: "feat/foo", default_branch: "main")
+        }.to raise_error(Kettle::Dev::CIConfigurationError, /schedule_only\.yml/)
+
+        tag_docs = described_class.validate_workflow_yaml!(root: root, workflows: ["tags_only.yml"])
+        expect {
+          described_class.validate_workflow_triggers!(documents: tag_docs, branch: "main", default_branch: "main")
+        }.to raise_error(Kettle::Dev::CIConfigurationError, /tags_only\.yml/)
+
+        ignore_docs = described_class.validate_workflow_yaml!(root: root, workflows: ["ignore_main.yml"])
+        expect {
+          described_class.validate_workflow_triggers!(documents: ignore_docs, branch: "main", default_branch: "main")
+        }.to raise_error(Kettle::Dev::CIConfigurationError, /ignore_main\.yml/)
+        expect {
+          described_class.validate_workflow_triggers!(documents: ignore_docs, branch: "feat/ok", default_branch: "main")
+        }.not_to raise_error
+      end
+    end
+  end
 end

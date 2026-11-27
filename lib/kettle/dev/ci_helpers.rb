@@ -12,6 +12,11 @@ module Kettle
     # GitHub API rejected the request because the token is invalid/revoked.
     class CIAuthError < StandardError; end
 
+    # Non-retryable CI setup/configuration failure (wrong remote / 404,
+    # unpushed commit, Actions disabled, broken workflow YAML, trigger mismatch,
+    # or redirect loop) that must fail fast rather than waiting for timeout.
+    class CIConfigurationError < StandardError; end
+
     # GitHub API quota exhausted. Recoverable: retry after the reset time.
     class CIRateLimitError < StandardError
       attr_reader :reset_at
@@ -155,12 +160,10 @@ module Kettle
           "id" => run["id"],
           "head_sha" => run["head_sha"]
         }
-      rescue Kettle::Dev::CIAuthError, Kettle::Dev::CIRateLimitError
-        # Auth failures are fatal; rate limits are recoverable but must reach
-        # the monitor (which parks until the reset) — swallowing either turns
-        # the poll into an infinite 0/N tick.
-        # fail the same way, so swallowing this turns the monitor into an
-        # infinite 0/N tick. Re-raise for the caller to abort with guidance.
+      rescue Kettle::Dev::CIAuthError, Kettle::Dev::CIRateLimitError, Kettle::Dev::CIConfigurationError
+        # Auth and configuration failures are fatal; rate limits are recoverable
+        # but must reach the monitor (which parks until the reset) — swallowing
+        # any of them turns the poll into an infinite 0/N tick.
         raise
       rescue => e
         Kettle::Dev.debug_error(e, __method__)
@@ -290,17 +293,63 @@ module Kettle
       end
       # rubocop:enable ThreadSafety/ClassInstanceVariable
 
-      def github_get_json(url, token:)
-        github_rate_limit_wait!
-        uri = URI(url)
-        req = Net::HTTP::Get.new(uri)
-        req["User-Agent"] = "kettle-dev/ci-helpers"
-        req["Authorization"] = "token #{token}" if token && !token.empty?
-        res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-        # Dispatch on is_a? rather than `case`/===: verifying doubles
-        # (instance_double(Net::HTTPOK)) used in specs do not reliably match
-        # `Net::HTTPSuccess === res`, which silently degraded every stubbed
-        # response to "no data".
+      MAX_GITHUB_REDIRECTS = 5
+      PERMANENT_REDIRECT_CODES = [301, 308].freeze
+
+      def github_request(url, token:, on_redirect: nil, max_redirects: MAX_GITHUB_REDIRECTS)
+        current_url = url.to_s
+        initial_host = URI(current_url).hostname
+        redirects = []
+
+        (max_redirects + 1).times do
+          github_rate_limit_wait!
+          uri = URI(current_url)
+          req = Net::HTTP::Get.new(uri)
+          req["User-Agent"] = "kettle-dev/ci-helpers"
+          if token && !token.empty? && uri.hostname == initial_host
+            req["Authorization"] = "token #{token}"
+          end
+          res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+          # Dispatch on is_a? rather than `case`/===: verifying doubles
+          # (instance_double(Net::HTTPOK)) used in specs do not reliably match
+          # `Net::HTTPSuccess === res`, which silently degraded every stubbed
+          # response to "no data".
+          return [res, redirects] if res.is_a?(Net::HTTPSuccess)
+
+          if res.is_a?(Net::HTTPRedirection)
+            location = res["location"] || res["Location"]
+            return [res, redirects] if location.nil? || location.empty?
+
+            next_url = URI.join(current_url, location).to_s
+            hop = {from: current_url, to: next_url, code: res.code.to_i}
+            redirects << hop
+            on_redirect&.call(hop)
+            current_url = next_url
+            next
+          end
+
+          return [res, redirects]
+        end
+
+        raise(
+          Kettle::Dev::CIConfigurationError,
+          "GitHub API exceeded #{max_redirects} redirects starting from #{url}."
+        )
+      end
+
+      def github_get_json(url, token:, on_redirect: nil, **options)
+        res, redirects = github_request(url, token: token, on_redirect: on_redirect)
+        if on_redirect.nil?
+          permanent = redirects.find { |hop| PERMANENT_REDIRECT_CODES.include?(hop[:code]) }
+          if permanent
+            warn(
+              "[kettle-dev] WARNING: GitHub API permanently redirected #{permanent[:from]} -> " \
+                "#{redirects.last[:to]} (HTTP #{permanent[:code]}). Update your git remote URL to the canonical repository."
+            )
+          end
+        end
+
         if res.is_a?(Net::HTTPSuccess)
           JSON.parse(res.body)
         elsif res.is_a?(Net::HTTPUnauthorized)
@@ -317,9 +366,9 @@ module Kettle
             # Rate limited: recoverable. Honor the reset time, then let the
             # caller retry the poll cycle.
             reset_at = Time.at(res["X-RateLimit-Reset"].to_i).utc
-            raise(
-              Kettle::Dev::CIRateLimitError,
-              "GitHub API rate limit exceeded; resets at #{reset_at.strftime("%H:%M:%SZ")}"
+            raise Kettle::Dev::CIRateLimitError.new(
+              "GitHub API rate limit exceeded; resets at #{reset_at.strftime("%H:%M:%SZ")}",
+              reset_at: reset_at
             )
           end
 
@@ -328,6 +377,344 @@ module Kettle
           nil
         else
           nil
+        end
+      end
+
+      # Fetch GitHub repository metadata, following redirects and detecting 404.
+      # Returns nil on transient/network errors so callers can fail open when offline.
+      # @param owner [String]
+      # @param repo [String]
+      # @param token [String, nil]
+      # @return [Hash, nil]
+      def github_repo_info(owner:, repo:, token: default_token, **options)
+        return unless owner && repo
+
+        url = "https://api.github.com/repos/#{owner}/#{repo}"
+        res, redirects = github_request(url, token: token)
+        if res.is_a?(Net::HTTPSuccess)
+          data = JSON.parse(res.body)
+          {
+            "data" => data,
+            "full_name" => data["full_name"],
+            "default_branch" => data["default_branch"],
+            "archived" => data["archived"],
+            "redirected" => redirects.any? { |hop| PERMANENT_REDIRECT_CODES.include?(hop[:code]) },
+            "redirects" => redirects
+          }
+        elsif res.is_a?(Net::HTTPNotFound)
+          raise(
+            Kettle::Dev::CIConfigurationError,
+            "GitHub repository #{owner}/#{repo} not found (HTTP 404). " \
+              "Check the git remote URL and ensure GITHUB_TOKEN / GH_TOKEN has access to this repository."
+          )
+        elsif res.is_a?(Net::HTTPUnauthorized)
+          raise(
+            Kettle::Dev::CIAuthError,
+            "GitHub API rejected the request (401: invalid or revoked token) for #{url}. " \
+              "Check GITHUB_TOKEN / GH_TOKEN."
+          )
+        elsif res.is_a?(Net::HTTPForbidden) && res["X-RateLimit-Remaining"].to_i.zero?
+          reset_at = Time.at(res["X-RateLimit-Reset"].to_i).utc
+          raise Kettle::Dev::CIRateLimitError.new(
+            "GitHub API rate limit exceeded; resets at #{reset_at.strftime("%H:%M:%SZ")}",
+            reset_at: reset_at
+          )
+        end
+      rescue Kettle::Dev::CIAuthError, Kettle::Dev::CIRateLimitError, Kettle::Dev::CIConfigurationError
+        raise
+      rescue => e
+        Kettle::Dev.debug_error(e, __method__)
+        nil
+      end
+
+      # Check whether a commit SHA exists on GitHub for the given repository.
+      # Returns true when present, false on 404/422 (missing commit), or nil on unknown/network error.
+      # @param owner [String]
+      # @param repo [String]
+      # @param head_sha [String]
+      # @param token [String, nil]
+      # @return [Boolean, nil]
+      def github_commit_exists?(owner:, repo:, head_sha:, token: default_token, **options)
+        return nil unless owner && repo && head_sha && !head_sha.empty?
+
+        url = "https://api.github.com/repos/#{owner}/#{repo}/commits/#{URI.encode_www_form_component(head_sha)}"
+        res, _redirects = github_request(url, token: token)
+        return true if res.is_a?(Net::HTTPSuccess)
+        return false if res.is_a?(Net::HTTPNotFound) || res.is_a?(Net::HTTPUnprocessableEntity)
+
+        if res.is_a?(Net::HTTPUnauthorized)
+          raise(
+            Kettle::Dev::CIAuthError,
+            "GitHub API rejected the request (401: invalid or revoked token) for #{url}. " \
+              "Check GITHUB_TOKEN / GH_TOKEN."
+          )
+        elsif res.is_a?(Net::HTTPForbidden) && res["X-RateLimit-Remaining"].to_i.zero?
+          reset_at = Time.at(res["X-RateLimit-Reset"].to_i).utc
+          raise Kettle::Dev::CIRateLimitError.new(
+            "GitHub API rate limit exceeded; resets at #{reset_at.strftime("%H:%M:%SZ")}",
+            reset_at: reset_at
+          )
+        end
+        nil
+      rescue Kettle::Dev::CIAuthError, Kettle::Dev::CIRateLimitError, Kettle::Dev::CIConfigurationError
+        raise
+      rescue => e
+        Kettle::Dev.debug_error(e, __method__)
+        nil
+      end
+
+      # Fetch GitHub Actions repository permissions (e.g. {"enabled" => true/false}).
+      # Returns nil when unavailable (e.g., 403/404 or network error).
+      # @param owner [String]
+      # @param repo [String]
+      # @param token [String, nil]
+      # @return [Hash, nil]
+      def github_actions_permissions(owner:, repo:, token: default_token, **options)
+        return nil unless owner && repo
+
+        github_get_json(
+          "https://api.github.com/repos/#{owner}/#{repo}/actions/permissions",
+          token: token
+        )
+      rescue Kettle::Dev::CIAuthError, Kettle::Dev::CIRateLimitError, Kettle::Dev::CIConfigurationError
+        raise
+      rescue => e
+        Kettle::Dev.debug_error(e, __method__)
+        nil
+      end
+
+      # Fetch GitHub Actions workflow definitions registered on GitHub.
+      # Returns nil when unavailable.
+      # @param owner [String]
+      # @param repo [String]
+      # @param token [String, nil]
+      # @return [Array<Hash>, nil]
+      def github_actions_workflows(owner:, repo:, token: default_token, **options)
+        return nil unless owner && repo
+
+        data = github_get_json(
+          "https://api.github.com/repos/#{owner}/#{repo}/actions/workflows?per_page=100",
+          token: token
+        )
+        return nil unless data.is_a?(Hash) && data.key?("workflows")
+
+        Array(data["workflows"])
+      rescue Kettle::Dev::CIAuthError, Kettle::Dev::CIRateLimitError, Kettle::Dev::CIConfigurationError
+        raise
+      rescue => e
+        Kettle::Dev.debug_error(e, __method__)
+        nil
+      end
+
+      # Rewrite a GitHub remote URL to point at a new owner/repo while preserving
+      # SSH vs HTTPS scheme and optional .git suffix.
+      # @param url [String]
+      # @param new_owner [String]
+      # @param new_repo [String]
+      # @return [String]
+      def rewrite_github_remote_url(url, new_owner, new_repo)
+        raw = url.to_s.strip
+        suffix = raw.end_with?(".git") ? ".git" : ""
+        if raw.start_with?("git@github.com:")
+          "git@github.com:#{new_owner}/#{new_repo}#{suffix}"
+        elsif raw =~ %r{\A((?:git\+)?ssh://[^/]+/)}
+          "#{Regexp.last_match(1)}#{new_owner}/#{new_repo}#{suffix}"
+        else
+          "https://github.com/#{new_owner}/#{new_repo}#{suffix}"
+        end
+      end
+
+      # Parse monitored local workflow YAML files and fail fast on syntax or structure errors.
+      # @param root [String]
+      # @param workflows [Array<String>]
+      # @return [Hash{String => Hash}] parsed workflow documents keyed by filename
+      def validate_workflow_yaml!(root:, workflows:, **options)
+        documents = {}
+        Array(workflows).each do |wf|
+          path = File.join(root.to_s, ".github", "workflows", wf)
+          next unless File.file?(path)
+
+          begin
+            doc = Kettle::Dev.safe_load_yaml(File.read(path), aliases: true)
+          rescue Psych::Exception => error
+            raise(
+              Kettle::Dev::CIConfigurationError,
+              "Workflow YAML syntax error in .github/workflows/#{wf}: #{error.message}. " \
+                "Fix the workflow file before releasing."
+            )
+          end
+
+          unless doc.is_a?(Hash)
+            raise(
+              Kettle::Dev::CIConfigurationError,
+              "Workflow .github/workflows/#{wf} is not a valid YAML mapping. " \
+                "Fix the workflow file before releasing."
+            )
+          end
+
+          documents[wf] = doc
+        end
+        documents
+      end
+
+      # Validate that each parsed workflow document can actually trigger on the
+      # target branch. Raises CIConfigurationError when one or more workflows
+      # have incompatible triggers.
+      # @param documents [Hash{String => Hash}]
+      # @param branch [String]
+      # @param default_branch [String, nil]
+      # @return [void]
+      def validate_workflow_triggers!(documents:, branch:, default_branch: nil, **options)
+        mismatched = []
+        documents.each do |wf, doc|
+          next if workflow_can_trigger_for_branch?(doc, branch: branch, default_branch: default_branch)
+
+          triggers = workflow_triggers(doc)
+          mismatched << "#{wf} (#{describe_workflow_triggers(triggers)})"
+        end
+        return if mismatched.empty?
+
+        raise(
+          Kettle::Dev::CIConfigurationError,
+          "GitHub Actions workflow trigger mismatch for branch '#{branch}': #{mismatched.join(", ")}. " \
+            "Update the workflow `on:` triggers for '#{branch}' or select runnable workflows with --ci-workflows."
+        )
+      end
+
+      # Extract the `on:` trigger block from a parsed workflow document.
+      # Psych (YAML 1.1) parses an unquoted `on:` key as boolean `true`.
+      # @param document [Hash]
+      # @return [Object]
+      def workflow_triggers(document)
+        return nil unless document.is_a?(Hash)
+
+        document.key?("on") ? document["on"] : document[true]
+      end
+
+      # Whether a workflow document can trigger for the given branch.
+      # On the default branch, ReleaseCLI pushes directly without opening a PR or
+      # dispatching workflow_dispatch, so a matching `push` trigger is required.
+      # On non-default branches (or when default_branch is unknown), `pull_request`
+      # or `workflow_dispatch` may trigger CI as well.
+      # @param document [Hash]
+      # @param branch [String]
+      # @param default_branch [String, nil]
+      # @return [Boolean]
+      def workflow_can_trigger_for_branch?(document, branch:, default_branch: nil, **options)
+        triggers = workflow_triggers(document)
+        return false if triggers.nil?
+        return true if push_trigger_matches_branch?(triggers, branch)
+
+        on_default_branch = !default_branch.nil? && !default_branch.empty? && branch == default_branch
+        return false if on_default_branch
+
+        trigger_present?(triggers, "pull_request") || trigger_present?(triggers, "workflow_dispatch")
+      end
+
+      # @param triggers [Object]
+      # @param branch [String]
+      # @return [Boolean]
+      def push_trigger_matches_branch?(triggers, branch)
+        case triggers
+        when String, Symbol
+          triggers.to_s == "push"
+        when Array
+          triggers.any? { |t| t.to_s == "push" }
+        when Hash
+          return false unless triggers.key?("push") || triggers.key?(:push)
+
+          push_cfg = triggers.key?("push") ? triggers["push"] : triggers[:push]
+          return true if push_cfg.nil?
+          return true unless push_cfg.is_a?(Hash)
+
+          branches = push_cfg["branches"]
+          branches_ignore = push_cfg["branches-ignore"]
+          tags = push_cfg["tags"]
+          tags_ignore = push_cfg["tags-ignore"]
+
+          return false if branches.nil? && branches_ignore.nil? && (!tags.nil? || !tags_ignore.nil?)
+          return github_branch_patterns_match?(branch, Array(branches)) unless branches.nil?
+          return !github_branch_patterns_match?(branch, Array(branches_ignore)) unless branches_ignore.nil?
+
+          true
+        else
+          false
+        end
+      end
+
+      # @param triggers [Object]
+      # @param name [String]
+      # @return [Boolean]
+      def trigger_present?(triggers, name)
+        case triggers
+        when String, Symbol
+          triggers.to_s == name
+        when Array
+          triggers.any? { |t| t.to_s == name }
+        when Hash
+          triggers.key?(name) || triggers.key?(name.to_sym)
+        else
+          false
+        end
+      end
+
+      # Evaluate GitHub Actions branch glob patterns (including leading `!` negations).
+      # @param branch [String]
+      # @param patterns [Array<String>]
+      # @return [Boolean]
+      def github_branch_patterns_match?(branch, patterns)
+        matched = false
+        Array(patterns).each do |raw_pattern|
+          pattern = raw_pattern.to_s
+          if pattern.start_with?("!")
+            negated = pattern.sub(/\A!/, "")
+            matched = false if github_glob_to_regexp(negated).match?(branch)
+          elsif github_glob_to_regexp(pattern).match?(branch)
+            matched = true
+          end
+        end
+        matched
+      end
+
+      # Convert a GitHub Actions glob pattern (`**`, `*`, `?`) into an anchored Regexp.
+      # @param pattern [String]
+      # @return [Regexp]
+      def github_glob_to_regexp(pattern)
+        escaped = pattern.to_s.gsub(/(\*\*|\*|\?|[^*?]+)/) do |token|
+          case token
+          when "**" then ".*"
+          when "*" then "[^/]*"
+          when "?" then "[^/]"
+          else Regexp.escape(token)
+          end
+        end
+        /\A#{escaped}\z/
+      end
+
+      # Human-readable summary of a workflow's configured `on:` triggers.
+      # @param triggers [Object]
+      # @return [String]
+      def describe_workflow_triggers(triggers)
+        case triggers
+        when nil
+          "missing `on:` triggers"
+        when String, Symbol
+          "triggers: #{triggers}"
+        when Array
+          "triggers: #{triggers.join(", ")}"
+        when Hash
+          parts = triggers.map do |key, value|
+            if key.to_s == "push" && value.is_a?(Hash) && value["branches"]
+              "push[branches: #{Array(value["branches"]).join(", ")}]"
+            elsif key.to_s == "push" && value.is_a?(Hash) && value["branches-ignore"]
+              "push[branches-ignore: #{Array(value["branches-ignore"]).join(", ")}]"
+            else
+              key.to_s
+            end
+          end
+          "triggers: #{parts.join(", ")}"
+        else
+          "invalid `on:` triggers"
         end
       end
 
@@ -372,10 +759,9 @@ module Kettle
             "html_url" => job["html_url"]
           }
         end
-      rescue Kettle::Dev::CIAuthError, Kettle::Dev::CIRateLimitError
-        # See latest_run: auth/rate-limit failures must abort or park the
-        # monitor, not degrade
-        # to "no jobs yet".
+      rescue Kettle::Dev::CIAuthError, Kettle::Dev::CIRateLimitError, Kettle::Dev::CIConfigurationError
+        # See latest_run: auth/configuration/rate-limit failures must abort or
+        # park the monitor, not degrade to "no jobs yet".
         raise
       rescue => e
         Kettle::Dev.debug_error(e, __method__)
