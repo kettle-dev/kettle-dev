@@ -28,9 +28,18 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
-- release interactive command: compute scrubbed prompt text before `scrub_secrets_from_chunk` mutates `@secret_scrub_carryover` (preventing held-back carryover bytes from being re-fed into a cleared prompt buffer) and require a prompt delimiter (`:`/`?`) in `otp_response_prompt?` so RubyGems' intro sentence (`Please enter OTP code.`) and `Code:   ` prompt no longer trigger two consecutive OTP requests; also stop `call_with_open3` from waiting on an open TTY stdin after child stdout/stderr close
-
 ### Security
+
+## [3.1.33] - 2026-11-27
+
+- TAG: [v3.1.33][3.1.33t]
+- COVERAGE: 92.25% -- 6038/6545 lines in 50 files
+- BRANCH COVERAGE: 76.31% -- 2307/3023 branches in 50 files
+- 55.92% documented
+
+### Fixed
+
+- release interactive command: compute scrubbed prompt text before `scrub_secrets_from_chunk` mutates `@secret_scrub_carryover` (preventing held-back carryover bytes from being re-fed into a cleared prompt buffer) and require a prompt delimiter (`:`/`?`) in `otp_response_prompt?` so RubyGems' intro sentence (`Please enter OTP code.`) and `Code:   ` prompt no longer trigger two consecutive OTP requests; also stop `call_with_open3` from waiting on an open TTY stdin after child stdout/stderr close
 
 ## [3.1.32] - 2026-11-26
 
@@ -4399,7 +4408,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.32...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.33...HEAD
+[3.1.33]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.32...v3.1.33
+[3.1.33t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.33
 [3.1.32]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.31...v3.1.32
 [3.1.32t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.32
 [3.1.31]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.30...v3.1.31
