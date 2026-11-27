@@ -615,6 +615,15 @@ module Kettle
           # Fallback if detection fails for any reason
           human_output.puts "\n🚀 Release v#{version || "unknown"} Complete 🚀"
         end
+        print_release_warnings_summary!
+      end
+
+      def print_release_warnings_summary!
+        warnings = @diagnostics.select { |diag| diag[:severity].to_s == "warning" }
+        return if warnings.empty?
+
+        human_output.puts "\nWarnings:"
+        warnings.each { |diag| human_output.puts "  - #{diag[:message]}" }
       end
 
       def normalize_appraisal_task(value)
@@ -1598,6 +1607,12 @@ module Kettle
         rescue => error
           emit_ci_monitor_event(action: "finish", status: "failed", workflows: @ci_workflows, restart_hint: restart_hint, reason: "#{error.class}: #{error.message}")
           raise
+        ensure
+          if Kettle::Dev::CIMonitor.respond_to?(:take_warnings)
+            Kettle::Dev::CIMonitor.take_warnings.each do |warning|
+              record_diagnostic(warning[:kind], warning[:message], severity: "warning", blocking: false)
+            end
+          end
         end
       end
 

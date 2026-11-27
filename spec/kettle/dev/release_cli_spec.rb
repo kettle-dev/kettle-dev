@@ -2029,6 +2029,37 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         )
       end
 
+      it "records CIMonitor redirect warnings as diagnostics and prints them in the final summary" do
+        io = StringIO.new
+        event_stream = Kettle::Ndjson.event_stream(io, types: "ci_monitor,diagnostic")
+        release_cli = described_class.new(event_stream: event_stream)
+        allow(release_cli).to receive(:ensure_ci_trigger_for_release_branch!)
+        allow(Kettle::Dev::CIMonitor).to receive(:monitor_all!) do |**_kwargs|
+          Kettle::Dev::CIMonitor.record_warning(
+            kind: "ci_remote_redirect",
+            message: "Remote 'origin' points to pboling/kettle-paths, which permanently redirected to kettle-dev/kettle-paths. Update it with: git remote set-url origin git@github.com:kettle-dev/kettle-paths.git"
+          )
+          true
+        end
+
+        release_cli.send(:monitor_workflows_after_push!)
+
+        events = io.string.lines.map { |line| JSON.parse(line) }
+        expect(events).to include(
+          include(
+            "type" => "diagnostic",
+            "kind" => "ci_remote_redirect",
+            "severity" => "warning",
+            "message" => include("git remote set-url origin git@github.com:kettle-dev/kettle-paths.git")
+          )
+        )
+
+        summary_io = StringIO.new
+        allow(release_cli).to receive(:human_output).and_return(summary_io)
+        release_cli.send(:print_release_warnings_summary!)
+        expect(summary_io.string).to include("Warnings:", "git remote set-url origin git@github.com:kettle-dev/kettle-paths.git")
+      end
+
       it "uses K_RELEASE_CI_WORKFLOWS when no explicit workflow subset is passed" do
         stub_env("K_RELEASE_CI_WORKFLOWS" => "current,style.yml")
         release_cli = described_class.new

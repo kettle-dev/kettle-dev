@@ -35,6 +35,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Fixed
 
+- GitHub CI monitoring (`CIHelpers` / `CIMonitor` / `ReleaseCLI`): follow HTTP `301`/`302`/`307`/`308` redirects (forwarding `Authorization` only on same-host redirects, capped at 5 hops) instead of silently returning `nil` for 300s, switch monitoring to the canonical `owner/repo` on permanent redirects, and surface a loud warning + non-blocking diagnostic + final summary `Warnings:` line with the exact `git remote set-url` command; pre-empt the 300s workflow-start timeout by failing fast on wrong/nonexistent remotes (HTTP 404), unpushed commits (`git ls-remote` + GitHub `/commits/:sha` 404/422 suggesting `--start-step 9`), disabled GitHub Actions or disabled workflows, broken workflow YAML, and branch trigger mismatches (fixes #71)
+
 ### Security
 
 ## [3.1.33] - 2026-11-27
