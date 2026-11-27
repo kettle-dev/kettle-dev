@@ -51,26 +51,22 @@ module Kettle
                 if reader.equal?(@input)
                   input.write(@input.readpartial(1024))
                 else
-                  chunk = output.readpartial(1024)
+                  raw_chunk = output.readpartial(1024)
                   # Two views of the same bytes, with independent state.
                   #
                   # Emitted view: holds back a trailing window so a secret
                   # split across chunks can never reach the log; the window
                   # is released by flush_secret_scrub_carryover at stream end.
                   #
-                  # Prompt view: scrubbed but never held back. A child that
-                  # prints its prompt and then blocks on stdin (Gem's OTP
-                  # `Code: ` ask) produces no further output; if the prompt
-                  # tail sat in the emitted view's holdback, detection would
-                  # never fire and the child would deadlock. The prompt view
-                  # therefore scrubs the raw chunk directly (plus the emitted
-                  # view's carryover, read-only, so bytes spanning the
-                  # boundary are still masked) instead of consuming it.
-                  chunk = scrub_secrets_from_chunk(chunk)
-                  prompt_text = scrub_secrets_for_prompt_detection(chunk)
+                  # Prompt view: computed BEFORE scrub_secrets_from_chunk
+                  # mutates @secret_scrub_carryover, so boundary secrets are
+                  # masked without holding back the prompt tail or re-feeding
+                  # old carryover bytes into a freshly cleared prompt buffer.
+                  prompt_buffer = append_prompt_text(prompt_buffer, raw_chunk)
+                  chunk = scrub_secrets_from_chunk(raw_chunk)
                   stdout_str << chunk
                   @output.print(chunk)
-                  prompt_buffer = handle_prompt(input, prompt_text, prompt_buffer: prompt_buffer)
+                  prompt_buffer = handle_prompt(input, "", prompt_buffer: prompt_buffer)
                 end
               end
             end
@@ -99,15 +95,16 @@ module Kettle
         Open3.popen3(env, *argv) do |input, output, error, wait_thread|
           readers = [output, error]
           readers << @input if @forward_stdin && @input.tty?
-          until readers.empty?
+          while readers.include?(output) || readers.include?(error)
             ready = IO.select(readers)
             ready.first.each do |reader|
               if reader.equal?(@input)
                 input.write(@input.readpartial(1024))
               else
                 begin
-                  chunk = reader.readpartial(1024)
-                  chunk = scrub_secrets_from_chunk(chunk)
+                  raw_chunk = reader.readpartial(1024)
+                  prompt_buffer = append_prompt_text(prompt_buffer, raw_chunk)
+                  chunk = scrub_secrets_from_chunk(raw_chunk)
                   if reader.equal?(output)
                     stdout_str << chunk
                     @output.print(chunk)
@@ -115,7 +112,7 @@ module Kettle
                     stderr_str << chunk
                     @error.print(chunk)
                   end
-                  prompt_buffer = handle_prompt(input, chunk, prompt_buffer: prompt_buffer)
+                  prompt_buffer = handle_prompt(input, "", prompt_buffer: prompt_buffer)
                 rescue EOFError
                   readers.delete(reader)
                 end
@@ -225,17 +222,33 @@ module Kettle
         chunk
       end
 
-      # Prompt-detection view: scrubbed, but never holds back a trailing
-      # window. Reads (never consumes) the emitted view's carryover so bytes
-      # spanning a chunk boundary are still masked here. Without this view, a
-      # prompt whose tail falls inside the holdback — a child that blocks on
-      # stdin and produces no further output — would never be answered, and
-      # the release would deadlock.
-      def scrub_secrets_for_prompt_detection(chunk)
-        return chunk if @written_secrets.empty?
+      # Prompt-detection view: appends only the newly scrubbed bytes from
+      # raw_chunk to prompt_buffer without holding back a trailing window and
+      # without re-emitting carryover bytes that were already processed (or
+      # cleared after answering a prompt). Must run before
+      # scrub_secrets_from_chunk updates @secret_scrub_carryover.
+      def append_prompt_text(prompt_buffer, raw_chunk)
+        prompt_buffer = prompt_buffer.to_s.dup
+        if @written_secrets.empty?
+          prompt_buffer << raw_chunk.to_s
+        else
+          before = @secret_scrub_carryover
+          scrubbed = (before + raw_chunk.to_s).gsub(Regexp.union(@written_secrets), "[SECRET REMOVED]")
+          prefix_len = common_prefix_bytesize(before, scrubbed)
+          overlap = before.bytesize - prefix_len
+          if overlap.positive? && prompt_buffer.end_with?(before)
+            prompt_buffer = prompt_buffer.byteslice(0, prompt_buffer.bytesize - overlap).to_s
+          end
+          prompt_buffer << scrubbed.byteslice(prefix_len, scrubbed.bytesize - prefix_len).to_s
+        end
+        prompt_buffer.byteslice([prompt_buffer.bytesize - 4096, 0].max, 4096).to_s
+      end
 
-        buffer = @secret_scrub_carryover + chunk
-        buffer.gsub(Regexp.union(@written_secrets), "[SECRET REMOVED]")
+      def common_prefix_bytesize(left, right)
+        limit = [left.bytesize, right.bytesize].min
+        index = 0
+        index += 1 while index < limit && left.getbyte(index) == right.getbyte(index)
+        index
       end
 
       def otp_prompt?(chunk)
@@ -243,7 +256,7 @@ module Kettle
       end
 
       def otp_response_prompt?(chunk)
-        chunk.match?(/(?:OTP code|one-time password|\bCode:\s*)/i)
+        chunk.match?(/(?:OTP code|one-time password|\bCode)\s*[:?]\s*\z/i)
       end
 
       def signing_password_prompt?(chunk)

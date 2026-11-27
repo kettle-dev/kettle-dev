@@ -155,7 +155,7 @@ RSpec.describe Kettle::Dev::InteractiveReleaseCommand do
     child = [
       RbConfig.ruby,
       "-e",
-      "print \"You have enabled multi-factor authentication. Please enter OTP code.\\n\"; " \
+      "print \"You have enabled multi-factor authentication. Please enter OTP code.\\nCode:   \"; " \
         "$stdout.flush; " \
         "code = STDIN.gets&.chomp; " \
         "exit(code == \"123456\" ? 0 : 1)"
@@ -168,8 +168,85 @@ RSpec.describe Kettle::Dev::InteractiveReleaseCommand do
     end
 
     expect(status).to be_success
+    expect(provider).to have_received(:rubygems_otp).once
     expect(output.string).to include("multi-factor authentication")
     expect(output.string).not_to include("registered-secret-value")
+  end
+
+  it "requests an OTP only once when RubyGems prints its intro line and Code prompt in separate chunks under scrubber holdback" do
+    skip "PTY prompt e2e is unreliable on Ruby < 3.1" if RUBY_VERSION < "3.1"
+
+    provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword, rubygems_otp: "123456")
+    output = StringIO.new
+    command = described_class.new(secrets_provider: provider, output: output)
+    skip "PTY is unavailable on this Ruby engine" unless command.send(:pty_available?)
+
+    child = [
+      RbConfig.ruby,
+      "-e",
+      "STDOUT.write(\"You have enabled multi-factor authentication. Please enter OTP code.\\n\"); " \
+        "STDOUT.flush; sleep 0.05; " \
+        "STDOUT.write(\"Code:   \"); STDOUT.flush; " \
+        "code = STDIN.gets&.chomp; " \
+        "STDOUT.puts(\"PUBLISHED:\#{code}\"); STDOUT.flush; " \
+        "exit(code == \"123456\" ? 0 : 1)"
+    ]
+
+    _stdout = _stderr = status = nil
+    Timeout.timeout(30) do
+      command.send(:register_secret!, "registered-secret-value")
+      _stdout, _stderr, status = command.call({}, child.shelljoin)
+    end
+
+    expect(status).to be_success
+    expect(provider).to have_received(:rubygems_otp).once
+    expect(output.string).to include("PUBLISHED:[SECRET REMOVED]")
+    expect(output.string).not_to include("123456")
+  end
+
+  it "does not trigger an OTP prompt on the RubyGems intro sentence or invalid-OTP error" do
+    provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword, rubygems_otp: "123456")
+    command = described_class.new(secrets_provider: provider, output: StringIO.new)
+    input = StringIO.new
+
+    prompt_buffer = command.send(
+      :handle_prompt,
+      input,
+      "You have enabled multi-factor authentication. Please enter OTP code.\n",
+      prompt_buffer: +""
+    )
+    expect(input.string).to eq("")
+
+    command.send(:handle_prompt, input, "Code:   ", prompt_buffer: prompt_buffer)
+    command.send(
+      :handle_prompt,
+      input,
+      "Your OTP code is incorrect. Please check it and retry.\n",
+      prompt_buffer: +""
+    )
+
+    expect(input.string).to eq("123456\n")
+    expect(provider).to have_received(:rubygems_otp).once
+  end
+
+  it "scrubs boundary secrets in prompt text without re-adding old carryover to a cleared prompt buffer" do
+    provider = instance_double(Kettle::Dev::ReleaseSecrets::OnePassword, rubygems_otp: "123456")
+    command = described_class.new(secrets_provider: provider, output: StringIO.new)
+    command.send(:register_secret!, "123456")
+
+    prompt_buffer = command.send(:append_prompt_text, +"", "Code: ")
+    command.send(:scrub_secrets_from_chunk, "Code: ")
+    expect(prompt_buffer).to eq("Code: ")
+
+    # After answering a prompt, prompt_buffer is cleared while carryover still
+    # holds "Code: ". Subsequent whitespace must not re-introduce "Code: ".
+    cleared = command.send(:append_prompt_text, +"", "  ")
+    expect(cleared).to eq("  ")
+
+    # A secret split across the carryover boundary is masked in place.
+    command.send(:scrub_secrets_from_chunk, "foo123")
+    split = command.send(:append_prompt_text, "foo123", "456\r\nCode: ")
+    expect(split).to eq("foo[SECRET REMOVED]\r\nCode: ")
   end
 
   it "scrubs a passphrase echoed across chunk boundaries" do
