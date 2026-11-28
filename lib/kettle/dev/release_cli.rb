@@ -2603,35 +2603,64 @@ module Kettle
           success = @git.push("all", branch)
           unless success
             warn("Normal push to 'all' failed; retrying with force push...")
-            @git.push("all", branch, force: true)
+            success = @git.push("all", branch, force: true)
           end
+          return if success
+
+          remotes = individual_push_remotes
+          if remotes.empty?
+            abort("Failed to push #{branch} to remote 'all'. Fix remote connectivity/permissions and resume with: bundle exec kettle-release --start-step 9")
+          end
+
+          warn("Push to aggregate remote 'all' failed; falling back to active individual remotes: #{remotes.join(", ")}")
+          push_individual_remotes!(remotes, branch)
           return
         end
 
-        remotes = []
-        remotes << "origin" if has_remote?("origin") && !skipped_remote?("origin")
-        remotes |= github_remote_candidates
-        remotes |= gitlab_remote_candidates
-        remotes |= codeberg_remote_candidates
-        remotes.uniq!
-
+        remotes = individual_push_remotes
         if remotes.empty?
           puts "$ git push #{branch}"
           success = @git.push(nil, branch)
           unless success
             warn("Normal push failed; retrying with force push...")
-            @git.push(nil, branch, force: true)
+            success = @git.push(nil, branch, force: true)
           end
-          return
+          return if success
+
+          abort("Failed to push #{branch}. Fix remote connectivity/permissions and resume with: bundle exec kettle-release --start-step 9")
         end
 
+        push_individual_remotes!(remotes, branch)
+      end
+
+      def individual_push_remotes
+        remotes = []
+        remotes << "origin" if has_remote?("origin") && !skipped_remote?("origin")
+        remotes |= github_remote_candidates
+        remotes |= gitlab_remote_candidates
+        remotes |= codeberg_remote_candidates
+        remotes.delete("all")
+        remotes.uniq
+      end
+
+      def push_individual_remotes!(remotes, branch)
         remotes.each do |remote|
           puts "$ git push #{remote} #{branch}"
           success = @git.push(remote, branch)
           unless success
             warn("Push to #{remote} failed; retrying with force push...")
-            @git.push(remote, branch, force: true)
+            success = @git.push(remote, branch, force: true)
           end
+          next if success
+
+          if required_remote?(remote)
+            abort("Failed to push #{branch} to required remote '#{remote}'. Fix remote connectivity/permissions and resume with: bundle exec kettle-release --start-step 9")
+          end
+
+          @skip_remotes << remote unless @skip_remotes.include?(remote)
+          message = "Failed to push #{branch} to optional remote '#{remote}'; skipping this remote for this release."
+          warn(message)
+          record_diagnostic("release_remote_skipped", message, severity: "warning", blocking: false)
         end
       end
 
@@ -2941,13 +2970,15 @@ module Kettle
 
       def push_tags!
         # After release, push tags to remotes according to policy:
-        # 1) If a remote named "all" exists, push tags only to it.
+        # 1) If a remote named "all" exists and no remotes were skipped, push tags to it;
+        #    if that fails (e.g. an optional mirror pushurl timed out), fall back to active individual remotes.
         # 2) Otherwise, if other remotes exist, push tags to each of them.
         # 3) If no remotes are configured, push tags using default remote.
         if use_all_remote?
           ok = @git.push_tags("all")
-          warn("Push tags to 'all' reported failure.") unless ok
-          return
+          return if ok
+
+          warn("Push tags to 'all' reported failure; falling back to active individual remotes...")
         end
 
         remotes = active_remotes
@@ -3042,7 +3073,7 @@ module Kettle
       end
 
       def active_remote_candidates(candidates)
-        candidates.reject { |remote| skipped_remote?(remote) }
+        candidates.reject { |remote| remote == "all" || skipped_remote?(remote) }
       end
 
       def use_all_remote?
@@ -3186,6 +3217,7 @@ module Kettle
           abort(remote_fetch_failure_message(remote, detail))
         end
 
+        @skip_remotes << remote unless @skip_remotes.include?(remote)
         message = optional_remote_fetch_failure_message(remote, detail)
         warn(message)
         emit_remote_parity_event(action: "skip", remote: remote, status: "skipped", attempts: attempts, required: false, reason: detail)

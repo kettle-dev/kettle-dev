@@ -1322,7 +1322,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         allow(cli).to receive(:has_remote?).with("all").and_return(true)
         git = cli.instance_variable_get(:@git)
         expect(git).to receive(:push).with("all", "feat").and_return(false)
-        expect(git).to receive(:push).with("all", "feat", force: true)
+        expect(git).to receive(:push).with("all", "feat", force: true).and_return(true)
         cli.send(:push!)
       end
 
@@ -1335,7 +1335,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         allow(cli).to receive(:codeberg_remote_candidates).and_return([])
         git = cli.instance_variable_get(:@git)
         expect(git).to receive(:push).with(nil, "feat").and_return(false)
-        expect(git).to receive(:push).with(nil, "feat", force: true)
+        expect(git).to receive(:push).with(nil, "feat", force: true).and_return(true)
         cli.send(:push!)
       end
 
@@ -1349,7 +1349,7 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         git = cli.instance_variable_get(:@git)
         expect(git).to receive(:push).with("origin", "feat").and_return(true)
         expect(git).to receive(:push).with("github", "feat").and_return(false)
-        expect(git).to receive(:push).with("github", "feat", force: true)
+        expect(git).to receive(:push).with("github", "feat", force: true).and_return(true)
         expect(git).to receive(:push).with("gitlab", "feat").and_return(true)
         cli.send(:push!)
       end
@@ -1367,6 +1367,71 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
         expect(git).to receive(:push).with("origin", "feat").and_return(true)
         expect(git).to receive(:push).with("gh", "feat").and_return(true)
         expect(git).to receive(:push).with("gl", "feat").and_return(true)
+        cli.send(:push!)
+      end
+
+      it "falls back to active individual remotes when aggregate 'all' push fails and skips dead optional remotes" do
+        git = cli.instance_variable_get(:@git)
+        allow(git).to receive_messages(
+          current_branch: "main",
+          remotes: %w[all origin gl cb],
+          remotes_with_urls: {
+            "all" => "git@github.com:kettle-dev/kettle-test.git",
+            "origin" => "git@github.com:kettle-dev/kettle-test.git",
+            "gl" => "git@gitlab.com:kettle-dev/kettle-test.git",
+            "cb" => "git@codeberg.org:kettle-dev/kettle-test.git"
+          }
+        )
+        expect(git).to receive(:push).with("all", "main").and_return(false)
+        expect(git).to receive(:push).with("all", "main", force: true).and_return(false)
+        expect(git).to receive(:push).with("origin", "main").and_return(true)
+        expect(git).to receive(:push).with("gl", "main").and_return(true)
+        expect(git).to receive(:push).with("cb", "main").and_return(false)
+        expect(git).to receive(:push).with("cb", "main", force: true).and_return(false)
+
+        expect { cli.send(:push!) }.not_to raise_error
+        expect(cli.send(:skipped_remote?, "cb")).to be(true)
+        expect(cli.send(:use_all_remote?)).to be(false)
+      end
+
+      it "aborts with --start-step 9 when pushing to a required remote fails" do
+        git = cli.instance_variable_get(:@git)
+        allow(git).to receive_messages(
+          current_branch: "main",
+          remotes: %w[origin],
+          remotes_with_urls: {"origin" => "git@github.com:kettle-dev/kettle-test.git"}
+        )
+        expect(git).to receive(:push).with("origin", "main").and_return(false)
+        expect(git).to receive(:push).with("origin", "main", force: true).and_return(false)
+
+        expect { cli.send(:push!) }.to raise_error(MockSystemExit, /Failed to push main to required remote 'origin'.*--start-step 9/)
+      end
+
+      it "skips an optional remote for push! after fetch_remote_for_parity! skips it" do
+        git = cli.instance_variable_get(:@git)
+        allow(git).to receive_messages(
+          current_branch: "main",
+          remotes: %w[all origin gl cb],
+          remotes_with_urls: {
+            "all" => "git@github.com:kettle-dev/kettle-test.git",
+            "origin" => "git@github.com:kettle-dev/kettle-test.git",
+            "gl" => "git@gitlab.com:kettle-dev/kettle-test.git",
+            "cb" => "git@codeberg.org:kettle-dev/kettle-test.git"
+          }
+        )
+        allow(cli).to receive(:remote_fetch_parity_attempts).and_return(1)
+        allow(cli).to receive(:run_cmd!).with("git fetch cb").and_raise(MockSystemExit, "ssh: connect to host codeberg.org port 22: Connection timed out")
+
+        expect(cli.send(:fetch_remote_for_parity!, "cb")).to be(false)
+        expect(cli.send(:skipped_remote?, "cb")).to be(true)
+        expect(cli.send(:use_all_remote?)).to be(false)
+        expect(cli.send(:github_remote_candidates)).to eq(["origin"])
+
+        expect(git).not_to receive(:push).with("all", "main")
+        expect(git).not_to receive(:push).with("cb", "main")
+        expect(git).to receive(:push).with("origin", "main").and_return(true)
+        expect(git).to receive(:push).with("gl", "main").and_return(true)
+
         cli.send(:push!)
       end
     end
@@ -3761,7 +3826,17 @@ RSpec.describe Kettle::Dev::ReleaseCLI do
       it "pushes tags only to 'all' when present" do
         allow(cli).to receive(:has_remote?).with("all").and_return(true)
         git = cli.instance_variable_get(:@git)
-        expect(git).to receive(:push_tags).with("all")
+        expect(git).to receive(:push_tags).with("all").and_return(true)
+        cli.send(:push_tags!)
+      end
+
+      it "falls back to active individual remotes when push_tags to 'all' fails" do
+        allow(cli).to receive(:has_remote?).with("all").and_return(true)
+        allow(cli).to receive(:list_remotes).and_return(%w[all origin gl])
+        git = cli.instance_variable_get(:@git)
+        expect(git).to receive(:push_tags).with("all").and_return(false)
+        expect(git).to receive(:push_tags).with("origin").and_return(true)
+        expect(git).to receive(:push_tags).with("gl").and_return(true)
         cli.send(:push_tags!)
       end
 
