@@ -22,6 +22,23 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [3.1.34] - 2026-11-27
+
+- TAG: [v3.1.34][3.1.34t]
+- COVERAGE: 91.87% -- 6259/6813 lines in 50 files
+- BRANCH COVERAGE: 75.79% -- 2413/3184 branches in 50 files
+- 56.67% documented
+
+### Changed
+
 - [kc] kettle-jem/prepare: updated 9 project files since the last release:
   - dependencies (9)
 
@@ -29,16 +46,10 @@ Please file a bug if you notice a violation of semantic versioning.
   - code and tests (2)
   - other (1)
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 
 - GitHub CI monitoring (`CIHelpers` / `CIMonitor` / `ReleaseCLI`): follow HTTP `301`/`302`/`307`/`308` redirects (forwarding `Authorization` only on same-host redirects, capped at 5 hops) instead of silently returning `nil` for 300s, switch monitoring to the canonical `owner/repo` on permanent redirects, and surface a loud warning + non-blocking diagnostic + final summary `Warnings:` line with the exact `git remote set-url` command; pre-empt the 300s workflow-start timeout by failing fast on wrong/nonexistent remotes (HTTP 404), unpushed commits (`git ls-remote` + GitHub `/commits/:sha` 404/422 suggesting `--start-step 9`), disabled GitHub Actions or disabled workflows, broken workflow YAML, and branch trigger mismatches (fixes #71)
 - `ReleaseCLI#push!` and `push_tags!`: record optional remotes skipped during fetch parity (`fetch_remote_for_parity!`) in `@skip_remotes`, exclude the aggregate `"all"` remote from individual remote candidates, fall back to pushing active individual remotes (`origin` first) if `git push all` / `git push all --tags` fails (preventing an unreachable optional mirror such as Codeberg from aborting `git push all` before GitHub is pushed), and abort with `--start-step 9` when pushing to a required remote fails instead of silently continuing into CI monitoring (fixes #73)
-
-### Security
 
 ## [3.1.33] - 2026-11-27
 
@@ -4418,7 +4429,9 @@ Please file a bug if you notice a violation of semantic versioning.
   - Selecting will run the selected workflow via `act`
   - This may move to its own gem in the future.
 
-[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.33...HEAD
+[Unreleased]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.34...HEAD
+[3.1.34]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.33...v3.1.34
+[3.1.34t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.34
 [3.1.33]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.32...v3.1.33
 [3.1.33t]: https://github.com/kettle-dev/kettle-dev/releases/tag/v3.1.33
 [3.1.32]: https://github.com/kettle-dev/kettle-dev/compare/v3.1.31...v3.1.32
